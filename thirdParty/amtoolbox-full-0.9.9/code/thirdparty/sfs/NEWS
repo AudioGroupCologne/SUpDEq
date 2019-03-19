@@ -1,0 +1,226 @@
+2.4.0 (22. August 2017)
+    - improve references in SFS_config()
+    - update structure of configuration for LWFS methods
+    - fix off-center dummy head positions for HRTFs
+    - add elevation to head orientation for binaural synthesis
+    - fix sphbesselh_zeros() for high orders
+    - fix symmetric ifft for Octave
+    - add inverse Legendre transform
+    - fix integral weights for spherical secondary sources
+    - add 3D ps and pw driving functions for NFC-HOA
+    - add 'reference_circle' as new default for focused sources in 2.5D
+    - add max-rE and tukey modal weighting windows
+    - add time-domain implementation of LWFS using spatial bandwidth-limitation
+    - add circular expansion functions
+    - fix incorporation of tapering weights for LWFS
+    - remove x0 from interpolate_ir() call
+    - fix interpolate_ir() for special cases
+    - switch handling of time from samples to seconds
+    - add freq_response_line_source()
+    - add freq_response_point_source()
+    - add time_response_line_source()
+
+2.3.0 (04. March 2017)
+    - default 2D WFS focused source is now a line sink
+    - improve point selection and interpolation of impulse responses
+    - speed up Parks-McClellan resampling method
+    - change default value of conf.usebandpass to false
+    - rename conf.wfs.t0 to conf.t0
+    - rename and improve easyffft() to spectrum_from_signal()
+    - rename and improve easyifft() to signal_from_spectrum()
+    - correct amplitude values of WFS and NFC-HOA in time domain
+    - fix default 2.5D WFS driving function in time domain
+    - add time_response_point_source()
+    - update amplitude and position of dirac in dummy_irs()
+    - fix missing secondary source selection in ssr_brs_wfs()
+    - add amplitude terms to WFS FIR pre-filter
+    - fix Gauss-Legendre quadrature weights
+    - add delay_offset as return value to NFC-HOA and ir funtions
+    - fix handling of delay_offset in WFS time domain driving functions
+
+2.2.1 (22. August 2016)
+    - fix delayoffset for FIR fractional delay filter
+    - add findconvexcone()
+    - simplify convolution()
+    - add linear interpolation working in the frequency domain
+    - fix pm option for delayline()
+
+2.2.0 (7. July 2016)
+    - fix impulse response interpolation for three points
+    - add the ability to apply modal weighting window to NFC-HOA in time domain
+    - change license to MIT
+    - update delayline() config settings
+    - add Lagrange and Thiran filters to delayline()
+    - replace wavread and warwrite by audioread and savewav
+    - convolution() excepts now two matrices as input
+    - allow headphone compensation filter to be a one- or two-channel wav file
+    - add new online doc at http://matlab.sfstoolbox.org/
+    - fix greens_function_mono() for plane wave and 3D
+    - replace conf.ir.useoriglength by conf.ir.hrirpredelay
+    - update default WFS driving functions
+    - add links to equations in online theory at http://sfstoolbox.org
+
+2.1.0 (10. March 2016)
+    - make conf struct mandatory
+    - add new start message
+    - fix handling of 0 in least squares fractional delays
+    - fix NFC-HOA order for even loudspeaker numbers to N/2-1
+    - add conf.wfs.hpreFIRorder as new config option (was hard coded to 128
+      before)
+    - speed up secondary source selection for WFS
+    - rename chromajs colormap to yellowred
+    - fix tapering_window() for non-continuous secondary sources
+    - remove cubehelix colormap as it is part of Octave
+    - add conf.wfs.t0 option which is useful, if you have more than one
+      virtual source
+    - virtual line sources are now available for monochromatic WFS and NFC-HOA
+    - allow arbritrary orders for time-domain NFC-HOA simulations
+
+2.0.0 (26. October 2015)
+    - add support for SOFA
+    - add SOFA convention SimpleFreeFieldHRIR
+    - add SOFA convention MultiSpeakerBRIR
+    - calculate integration weights (x0(:,7)) of secondary sources based on their
+      distances to their neighbours
+    - add rounded-box as new loudspeaker array geometry
+    - fix bugs in local sound field synthesis time domain implementation
+    - speedup local sound field synthesis processing by fewer calls to
+      delayline()
+    - add heuristic to find a good local wave field synthesis pre-filter
+    - loudspeaker geometry can now be read from a SOFA file
+    - now custom grids can be used during sound field simulations
+    - add 3D plot routine
+    - change plot_sound_field(P,x,y,z) to plot_sound_field(P,X,Y,Z)
+    - normalization of sound field now only happens in plot_sound_field(); this
+      comes with the new config option conf.plot.normalisation
+    - remove interaural_level_difference() and interaural_time_difference()
+    - change default config setting conf.ir.usehcomp to false
+    - lots of small bug fixes
+
+1.2.0 (2. June 2015)
+    - add PDF documentation "Theory of Sound Field Synthesis"
+    - fix remaining usegnuplot config entry
+    - change default dB color map to chromajs
+    - add missing hgls2 functionality (fractional delays)
+    - add cubehelix and chromajs color maps
+    - remove noise() function, use the one from the LTFAT Toolbox instead
+
+1.1.0 (2. April 2015)
+    - fix amplitude bug in get_ir() and ir_generic()
+    - remove direct gnuplot plotting
+    - add support for local Wave Field Synthesis
+    - the length of the dirac impulse response is now an option for dummy_irs()
+    - fix iseven(), isodd() for very large numbers
+    - correct the sign for Wave Field Synthesis driving functions
+
+1.0.1 (4 August 2014)
+    - rms() works now also with row vectors in order to be compatible with the
+      Auditory Modeling Toolbox
+    - fixed handling of number of secondary sources for a box shaped array
+    - fixed a bug in ir_auralize() regarding the contentfile configuration
+    - corrected NFC-HOA driving functions for off-center arrays
+
+1.0.0 (27 March 2014)
+    - added references for all driving functions
+    - streamlined nested conf settings; e.g. now it is no longer neccessary to set
+      conf.ir.hcompfile if conf.usehcomp == false
+    - added WFS driving functions from Völk et al. and Verheijen et al.
+    - removed secondary_source_number() and xy_grid, because they are no longer
+      needed
+    - enabled pre-equalization filter of WFS as default in SFS_config_example()
+    - fixed sound_field_mono_sdm_kx()
+    - Green's function for line sources returns now real values
+    - correct y-direction of plane waves for 3D NFC-HOA
+    - updated the test functions in the validation folder
+    - several small fixes
+
+1.0.0-beta2 (5 December 2013)
+    - rms() now works for arbitrary arrays
+    - speedup of delayline() and HRTF extrapolation
+    - delayline() now works with more than one channel
+    - fixed a critical bug in wfs_preequalization()
+    - fixed missing conf values in several functions
+    - fixed README
+    - changed location of sfs-data for automatic download, because github does
+      not allow this
+    - several minor fixes
+
+1.0.0-beta (26 August 2013)
+    - bandpass() can now handle arbritrary frequency limits
+    - sphbesselh_zeros() comes now with precomputed zeros for an order up to
+      1000
+    - renamed wave_field_* functions to sound_field_*
+    - the order for NFC-HOA can now be set manually via conf.nfchoa.order
+    - several performance improvements 
+    - added missing driving functions for WFS and NFC-HOA
+    - added convolution() which is faster than conv and can handle
+      multidimensional signals
+    - changed default plotting style of loudspeakers to
+      conf.plot.realloudspeaker=false
+    - hann_window() now uses (2*n+1) instead of (2*n) to generate the window
+    - replaced the input parameter L by conf.secondary_sources.size
+    - the aliasing frequency is now calculated by the mean distance between the
+      given secondary sources
+    - added nearest neighbour search and 3D interpolation to get_ir()
+    - moved the tapering window into x0(:,7), added new function
+      secondary_source_tapering to achieve this
+    - added a seventh column to x0 which includes integrational weights
+    - added extra directory for SSR renderer functions
+    - added 3D HRTF extrapolation
+    - changed array configuration to use number of secondary sources instead of
+      distance between them
+    - changed SFS_config to use substructs like conf.secondary_sources.*
+    - added the possibility to calculate the wave field for a arbritrary
+      positioned plane in 3D
+    - added 3D WFS functions
+    - make the Toolbox work in 3D, which brakes backwards compability!
+    - now all monochromatic functions have a time_domain counterpart
+    - reordered the argouts for the wave field functions; now P is always the
+      first argout
+    - automatically plotting of the wave fields if no argouts are wanted
+    - changed direction of focused source from the conf.xref vector directly
+      into xs. For a focused source xs is now [1x6]
+
+0.2.5 (12 July 2013)
+    - fixed a bug causing the wrong loudspeaker position in the output of
+      generic_wfs()
+
+0.2.4 (4 June 2013)
+    - added a documentation to the github README
+    - reworked the plotting, now simple saving to png is possible
+    - added a narginchk function for older Matlab versions
+    - replaced conf.frame with t in the imp functions
+    - lots of small bugs were fixed
+
+0.2.3 (9 April 2013)
+    - summed up line, point, ... sources to green_function for mono and imp
+    - introduced global wave_field functions for mono and imp
+    - fixed binaural simulations for NFC-HOA
+    - removed compatibility for octave versions <3.6
+    - fixed a critical bug for the HRTF farfield extrapolation, due to the new
+      secondary source selection behavior
+
+0.2.2 (27 November 2012)
+    - added functions to calculate the sound pressure for monochromatic WFS at a
+      single point in analogy to the point_source function
+    - changed the behavior of secondary_source_selection to returning a new x0
+      vector
+    - added compatibility for octave 3.6
+    - first fix of secondary source selection for focused sources (now they
+      point always in the direction of the reference point) 
+
+0.2.1 (15 June 2012)
+    - added NFC-HOA 2.5D monochromatic
+    - added NFC-HOA 2.5D binaural simulations
+    - added SDM 2.5D monochromatic
+    - make NFC-HOA work under Octave
+    - fixed direction of plane waves and point sources for NFC-HOA time domain
+      simulations
+    - changed syntax for wave_field_* and driving_* functions:
+
+        * xs,f,src => xs,src,f
+        * xs,L,src => xs,src,L
+        * xs,L,f,src => xs,src,f,L
+
+0.2.0 (25 April 2012)
+    - first public release (under the GPLv3+ license)

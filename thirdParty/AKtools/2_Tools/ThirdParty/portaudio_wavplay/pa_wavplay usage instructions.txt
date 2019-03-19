@@ -1,0 +1,13 @@
+
+To play audio:
+pa_wavplay(buffer, [samplerate], [deviceid], [devicetype]);
+
+To record audio:
+inputbuffer = pa_wavrecord(channels, nsamples, [samplerate], [deviceid], [devicetype]);
+
+To play and record audio simultaneously:
+inputbuffer = pa_wavplayrecord(playbuffer,[playdevice],[samplerate], [recnsamples], [recchannels], [recdevice],[devicetype])
+
+see help for each of these commands for much more information.
+
+For more useful Matlab tools for audio and video, please visit www.sens.com.

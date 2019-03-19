@@ -1,0 +1,278 @@
+\documentclass[11pt]{scrartcl}
+
+\newcommand{\rv}[1]{{\color{red}#1}}
+\newcommand{\rb}[1]{{\color{blue}#1}}
+\newcommand{\filesep}[0]{/}
+\newcommand\tab[1][0.2cm]{\hspace*{#1}}
+
+\usepackage[a4paper, top=2cm, bottom=3cm, footskip=1cm]{geometry}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage[usenames,dvipsnames,svgnames,table]{xcolor}
+\definecolor{tu_red}{rgb}{.656,.074,.141}
+\usepackage[colorlinks=true, linkcolor=tu_red, urlcolor=tu_red, citecolor=tu_red, linktoc=all]{hyperref}
+\usepackage{enumerate}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{natbib}
+\usepackage{url}
+\usepackage[export]{adjustbox}
+\renewcommand\refname{} % for making the heading of the bibliography disappear
+
+\begin{document}
+% ----------- title ------------- %
+\begin{titlepage}
+    \centering
+        \includegraphics[width=.8\textwidth]{logo_blank}\\
+    	\includegraphics[width=.4\textwidth]{logo}\\ 
+    	\textbf{\url{www.ak.tu-berlin.de/AKtools}}
+    \vfill
+    {\Large
+        \textbf{Fabian Brinkmann, Stefan Weinzierl}\\
+        \vskip.5cm
+        \emph{Audio Communication Group}\\
+        \emph{Technical University Berlin}\\
+        \emph{Einsteinufer 17c}\\
+        \emph{10587 Berlin - Germany}\\
+        \vskip.5cm
+        \href{mailto:ak-tools@ak.tu-berlin.de}{ak-tools@ak.tu-berlin.de}
+        \vskip2cm
+        \today
+    }    
+    \vfill
+    \vfill
+    \vfill
+    \includegraphics[width=1\textwidth]{logo_footer}
+\end{titlepage}
+
+
+% ------------------------------------------ page ------------------------------------------ %
+\section*{{\color{tu_red}Getting Started}}
+\label{sec:genralInfo}
+\setcounter{page}{1}
+
+To start using AKtools open Matlab, navigate to the AKtools folder and run
+\begin{itemize}
+	\item[] \texttt{AKtoolsStart.m}
+\end{itemize}
+This will add all needed folders to the end of your Matlab search path. Follow the output in the command window in case you want to save AKtools to your Matlab search path.\\
+
+\noindent AKtools contains scripts that illustrate the usage of all main functions, and can be found in the folder
+\begin{itemize}
+	\item[] \texttt{1\_DemoScripts}
+\end{itemize}
+The scripts are named according to their purpose and include a description of their content at the beginning. They are subdivided into blocks that can be evaluated using \texttt{ctrl+enter}. The processing steps in
+each block are commented for documentation.\\
+
+\noindent The demo scripts call one or more functions inside
+\begin{itemize}
+	\item[] \texttt{2\_Tools}
+\end{itemize}
+If you want more information on a certain function either type \texttt{help functionName} in the Matlab Command Window or open it. For your convenience, each function header contains
+\begin{itemize}
+		\item The function definition, e.g.\\\texttt{sweep = AKsweepFD(varargin)}
+		\item Exemplary function calls with short explanations, e.g.\\\emph{To obtain a perfect sweep with 4096 samples call}\\\texttt{sweep = AKsweepFD('NFFT', 4096, 'preset', 'perfect')}, and/or
+		\item a link to a demo script inside \texttt{1\_DemoScripts} (if there is one)
+		\item A list of input and output arguments
+		\item Author, and contact information
+		\item License information
+		\item References for further reading (if available)
+\end{itemize}
+
+\noindent AKtools use the ``FABIAN head-related transfer function database'' from \cite{fabian_hrtf_misc} that is available from
+\begin{itemize}
+	\item \url{https://dx.doi.org/10.14279/depositonce-5718.2}
+\end{itemize}
+
+\vfill
+\begin{figure}[b!]
+  \center
+  \includegraphics[width=1\textwidth]{logo_footer}
+\end{figure}
+
+\clearpage
+
+% ------------------------------------------ page ------------------------------------------ %
+\section*{{\color{tu_red}Demo contents}}
+
+\noindent
+{\color{tu_red}\texttt{AKplotDemo:}} Visualization of audio signals. This can be used to display single impulse responses, magnitude/phase/group-delay spectra, but also is able to visualize data on spherical sampling grids, and show interaural-time and level-differences in head-related impulse responses.\\
+
+\noindent
+{\color{tu_red}\texttt{AKioDemo:}} Is short for AK in/out and introduces multi-channel audio playback and recording with sample accuracy to AKtools. For this purpose \emph{pa\_wavplay} and \emph{playrec} are used which are Matlab externals that directly use audio libraries of the operating system for best performance.\\
+
+\noindent
+{\color{tu_red}\texttt{AKmeasureDemo:}} Shows how to measure impulse responses in Matlab, including sine-sweep generation, deconvolution, and basic post-processing and inspection of the results. It can be used for single or multi channel systems, and tackles averaging multiple measurements for an improved signal-to-noise ratio, and automatically detects and corrects clipping in the recorded signals.\\
+\texttt{Further reading:} \citet{Muller2001}\\
+
+\noindent
+{\color{tu_red}\texttt{AKtestSignalsDemo:}} Generation of some common audio signals that can be used for testing audio equipment, and acoustic measurements. Among others, this includes pink and white noise, as well as a large variate of sine sweeps designed in the time or frequency domain (linear, logarithmic, perfect, arbitrary spectral envelope).\\
+\texttt{Further reading:} \citet{Muller2001, Antweiler2011, Novak2010}\\
+
+\noindent
+{\color{tu_red}\texttt{AKdeconvolutionDemo:}} Often, acoustic measurements use deconvolution to obtain impulse responses. The demo shows the use of \texttt{AKdeconv} which is able to address some common issues in acoustic measurements such as noise signals, transfer function inversion or compensation of electro-acoustic transducers (e.g. microphones).\\
+\texttt{Further reading:} \citet{Muller2001}\\
+
+\noindent
+{\color{tu_red}\texttt{AKfilterDemo:}} Shows the use of \texttt{AKfilter} for filtering audio signals with high/low/band-passes, band-stops, parametric equalizers (PEQs), shelve filters, cross-over networks, and fractional octave filters.\\
+\texttt{Further reading:} \citet{Zoelzer2002, Bristow1994, Bohn2005}\\
+
+\noindent
+{\color{tu_red}\texttt{AKroomSimulationDemo:}} A binaural simulation of a shoebox shaped room including source and receiver directivity. Uses image sources for calculating early reflections and decaying noise for the late reverberation.\\
+\texttt{Further reading:} \citet{Brinkmann2018}\\
+
+\vfill
+\begin{figure}[b!]
+  \center
+  \includegraphics[width=1\textwidth]{logo_footer}
+\end{figure}
+
+\clearpage
+
+\noindent
+{\color{tu_red}\texttt{AKhrirInterpolationDemo:}} Shows how to use spherical harmonics for head-related impulse response interpolation, and includes the possibility to interpolate between different head-above-torso orientations.\\
+\texttt{Further reading:} \citet{Brinkmann2015}\\
+
+\noindent
+{\color{tu_red}\texttt{AKregulatedInversionDemo:}} Inverting transfer functions of electro-acoustic systems is a common, but not necessarily trivial task. This demo shows how to use regulated inversion to invert headphone transfer functions for use in binaural technology. It includes different approaches of the regularization differing in their complexity and quality and handles everything from averaging the transfer functions to saving the generated filters.\\
+\texttt{Further reading:} \citet{Kirkeby1999, Norcross2006, Scharer2009, Lindau2012}\\
+
+\noindent
+{\color{tu_red}\texttt{AKperceptualMixingTimeDemo:}} Estimates the perceptual mixing time, i.e.  the instant a room's sound field is percieved as being diffuse. The perceptual mixing time is estimated using model- and/or signal-based predictors. It can be used to split (binaural) room impulse responses into an early part containing directional information, and a late part without directional information.\\
+\texttt{Further reading:} \citet{Lindau2012b, Abel2006}\\ 
+
+\noindent
+{\color{tu_red}\texttt{AKsphericalHarmonicsDemo:}} Gives some examples for generating and manipulating spherical harmonics basis functions.\\
+\texttt{Further reading:} \citet{William1999, Rafaely2015}\\
+
+\noindent
+{\color{tu_red}\texttt{AKsphericalHarmonicsTransformDemo:}} Shows how to apply the spherical harmonic transform (also termed spherical Fourier transform) to a dataset of head-related impulse responses. It can be used to show the effect of truncation order, and the influence of using complex spectra or magnitude/phase spectra as input for the transform.\\
+\texttt{Further reading:} \citet{William1999, Rafaely2015}\\
+
+\noindent
+{\color{tu_red}\texttt{AKsphericalHeadDemo:}} Spherical harmonics based model of a spherical head. This is a range depended simulation of the sound field scattered by a rigid sphere.\\
+\texttt{Further reading:} \citet{Duda1998}\\
+
+\noindent
+{\color{tu_red}\texttt{AKsphericalCapExtrapolationDemo:}} Gives an example of how to extrapolate missing data on spherical sampling grids based on low order spherical harmonics representation of the data.\\
+\texttt{Further reading:} \citet{Ahrens2012a}\\
+
+\noindent
+{\color{tu_red}\texttt{AKtoaDemo:}} Shows how to detect and remove the time of arrival (TOA) from impulse responses with sub-sample accuracy. This his for example helpful for interpolating impulse responses, for estimating the interaural time difference (ITD), or for ITD estimation.\\
+\texttt{Further reading:} \citet{Brinkmann2015, Katz2014, Lindau2010c}\\
+
+
+\vfill
+\begin{figure}[b!]
+  \center
+  \includegraphics[width=1\textwidth]{logo_footer}
+\end{figure}
+
+\clearpage
+
+% ------------------------------------------ page ------------------------------------------ %
+\noindent
+{\color{tu_red}\texttt{AKsubGridDemo:}} Makes it possible to quickly select points from spatial sampling grids including horizontal, median, and frontal planes.\\
+
+\noindent
+{\color{tu_red}\texttt{AKphaseManipulationDemo:}} Gives examples of how to manipulate the phase of a transfer function and can be used to transform it to minimum, linear, and zero phase.\\
+\texttt{Further reading:} \citet{Oppenheim1999}\\
+
+\noindent
+{\color{tu_red}\texttt{AKnormalizationDemo:}} Makes it possible to normalize multi channel data in the time and frequency domain.\\
+
+\noindent
+{\color{tu_red}\texttt{AKsphSplineInterpDemo:}} Demonstrated the use of spherical spline interpolation which might be useful for instance if a dataset does not meet the requirements for spherical harmonics based transformations.\\
+\texttt{Further reading:} \citet{Wahba1981, Wahba1982}\\
+
+\noindent
+{\color{tu_red}\texttt{AKboxplotDemo:}} Visualization of distributed data such as ratings from listening tests or results from repeated measurements. Allows grouping of conditions and selection of different box layouts including confidence intervals, percentile ranges, mean and median, and support of subplots.\\
+
+\vfill
+\begin{figure}[b!]
+  \center
+  \includegraphics[width=1\textwidth]{logo_footer}
+\end{figure}
+
+\clearpage
+% ------------------------------------------ page ------------------------------------------ %
+\section*{{\color{tu_red}Acknowledgement}}
+If you use AKtools please cite
+\begin{itemize}
+	\item[] Fabian Brinkmann, Stefan Weinzierl: ``AKtools---An Open Software Toolbox for Signal Acquisition, Processing, and Inspection in Acoustics,'' \emph{142$^\text{nd}$ AES Convention}, e-Brief 309, Berlin, Germany, 2017.
+\end{itemize}
+\vfill
+
+\section*{{\color{tu_red}Availablility}}
+\noindent The latest release of AKtools is available from \url{www.ak.tu-berlin.de/aktools}, the current state of work can be accessed via subversion
+\begin{itemize}
+	\item[] \url{https://svn.ak.tu-berlin.de/svn/AKtools}\\
+	\emph{username:~aktools, password:~ak}
+\end{itemize}
+\vfill
+
+\section*{{\color{tu_red}Support}}
+\noindent We welcome any feedback on bugs inside AKtools as well as features that could be added. You can contact us via \href{mailto:ak-tools@ak.tu-berlin.de}{ak-tools@ak.tu-berlin.de} or use our bug tracker at
+\begin{itemize}
+	\item[] \url{https://www2.ak.tu-berlin.de/bug-tracker}\\
+\end{itemize}
+\vfill
+
+\section*{{\color{tu_red}License}}
+AKtools are licensed under the European Union Public License (EUPL) v.~1.1 of which a copy can be found inside AKtools.
+The license gives you the right to
+\begin{itemize}
+	\item use AKtools in any circumstance and for all usage
+	\item reproduce AKtools
+	\item modify the original AKtools, and make derivative works based upon AKtools
+	\item communicate to the public, including the right to make available or display AKtools or copies thereof to the public
+	\item distribute AKtools or copies thereof
+	\item lend and rent AKtools or copies thereof
+	\item sub-license rights in AKtools or copies thereof
+\end{itemize}
+
+\vfill
+\vfill
+\vfill
+\begin{figure}[b!]
+  \center
+  \includegraphics[width=1\textwidth]{logo_footer}
+\end{figure}
+
+\clearpage
+
+
+% ------------------------------------------ page ------------------------------------------ %
+\section*{{\color{tu_red}Contributions}}
+Alexander Lindau, Andreas Rotter, Andr\'e Giese, David Ackermann, Daniel Kahlh\"ofer, Dmitry Grigoriev, Fabian Brinkmann, Frank Schultz, Hannes Helmholz, Jan-Henrik Hanschke, Marc Voigt, Omid Kokabi, Silke B\"ogelein, Stefan Weinzierl, Zora Sch\"arer Kalkandjiev
+\vskip.5cm
+
+\section*{{\color{tu_red}Third party code \small{(included)}}}
+\texttt{pa\_wavplay} by Matt Frear \& Joseph Desloge; \texttt{playrec} by Robert Humphrey, \texttt{SOFA Matlab API} by Piotr Majdak \emph{et al.}, parts of the \texttt{auditory toolbox} by Malcolm Slaney, \texttt{cbfreeze}, \texttt{cbhandle} by Carlos Adrian Vargas Aguilera; \texttt{makeColormap} by Doug Hall; \texttt{mmpolar} by Duane Hanselman; \texttt{subtightplot} by Felipe G. Nievinski \& Pekka Kumpulainen \& Nikolay S.; \texttt{j\_polynomial} by John Burkardt; This product includes color specifications and designs developed by Cynthia Brewer (\texttt{http://colorbrewer.org/}).
+
+\vskip.5cm
+
+\section*{{\color{tu_red}Third party code \small{(needed)}}}
+\noindent\texttt{ASIO4all} by Michael Tippach (only needed for Windows computers) \newline\url{http://www.asio4all.com}
+
+\begin{figure}[b!]
+  \center
+  \includegraphics[width=1\textwidth]{logo_footer}
+\end{figure}
+\clearpage
+
+
+\section*{{\color{tu_red}References}}
+\vskip-1cm
+
+\bibliography{references.bib}
+\bibliographystyle{references}
+
+\begin{figure}[b!]
+  \center
+  \includegraphics[width=1\textwidth]{logo_footer}
+\end{figure}
+
+\clearpage
+
+\end{document}
