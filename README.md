@@ -1,5 +1,5 @@
 ## SUpDEq - Spatial Upsampling by Directional Equalization
-This toolbox is a MATLAB implementation of the SUpDEq method, as presented by Pörschmann et al. (2018) [1]. In general, the SUpDEq method is an approach to generate dense HRTF datasets based on sparsely measured HRTF datasets. For example, applying the SUpDEq method, a (technically) appropriate full-spherical dense HRTF dataset with 2702 directions can be derived from only 38 actually measured HRTFs. 
+This toolbox is a MATLAB implementation of the SUpDEq method, as presented by Pörschmann et al. (2019) [1]. In general, the SUpDEq method is an approach to generate dense HRTF datasets based on sparsely measured HRTF datasets. For example, applying the SUpDEq method, a (technically) appropriate full-spherical dense HRTF dataset with 2702 directions can be derived from only 38 actually measured HRTFs. 
 
 Basically, the method attempts to remove direction-dependent temporal and spectral components of the sparse HRTF dataset by a spectral division (equalization) of the HRTFs with corresponding rigid sphere transfer functions (STFs). This equalized HRTF dataset is then transformed to the spherical harmonics (SH) domain by means of a spherical Fourier transform [2][3]. Next, a de-equalization is performed by extracting the equalized HRTFs at the spatial sampling points of the dense grid (SH-interpolation / spatial upsampling) and multiplying these HRTFs with the respective STFs in frequency domain.
 
@@ -46,7 +46,7 @@ Thanks to Fabian Brinkmann (Audio Communication Group, TU Berlin) for useful dis
 
 
 ## References
-[1] C. Pörschmann, J.M. Arend, and F. Brinkmann, “Directional Equalization of Sparse HRTF-Sets for Spatial Upsampling,”  (manuscript in preparation)    
+[1] C. Pörschmann*, J.M. Arend*, and F. Brinkmann, “Directional Equalization of Sparse HRTF-Sets for Spatial Upsampling,” IEEE Transaction on Audio, Speech, and Language Processing (in press), *Those authors contributed equally to this work.  
 [2] B. Bernschütz, “Microphone Arrays and Sound Field Decomposition for Dynamic Binaural Recording,” TU Berlin, 2016.  
 [3] B. Rafaely, Fundamentals of Spherical Array Processing. Berlin Heidelberg: Springer-Verlag, 2015.  
 [4] B. Bernschütz, C. Pörschmann, S. Spors, and S. Weinzierl, “SOFiA Sound Field Analysis Toolbox,” in Proceedings of the International Conference on Spatial Audio - ICSA 2011, 2011, pp. 8–16.  
