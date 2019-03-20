@@ -46,7 +46,7 @@ Thanks to Fabian Brinkmann (Audio Communication Group, TU Berlin) for useful dis
 
 
 ## References
-[1] C. Pörschmann*, J.M. Arend*, and F. Brinkmann, “Directional Equalization of Sparse Head-Related Transfer Function Sets for Spatial Upsampling,” IEEE Transaction on Audio, Speech, and Language Processing (in press), *Those authors contributed equally to this work.  
+[1] C. Pörschmann*, J.M. Arend*, and F. Brinkmann, “Directional Equalization of Sparse Head-Related Transfer Function Sets for Spatial Upsampling,” IEEE Transaction on Audio, Speech, and Language Processing (in press), *These authors contributed equally to this work.  
 [2] B. Bernschütz, “Microphone Arrays and Sound Field Decomposition for Dynamic Binaural Recording,” TU Berlin, 2016.  
 [3] B. Rafaely, Fundamentals of Spherical Array Processing. Berlin Heidelberg: Springer-Verlag, 2015.  
 [4] B. Bernschütz, C. Pörschmann, S. Spors, and S. Weinzierl, “SOFiA Sound Field Analysis Toolbox,” in Proceedings of the International Conference on Spatial Audio - ICSA 2011, 2011, pp. 8–16.  
