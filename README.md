@@ -41,7 +41,9 @@ https://www.th-koeln.de/akustik
 Audio Communication Group  
 Einsteinufer 17c, D-10587 Berlin, Germany  
 
-Thanks to Fabian Brinkmann (Audio Communication Group, TU Berlin) for useful discussions and contributions!
+Thanks to Fabian Brinkmann (Audio Communication Group, TU Berlin) for useful discussions and contributions!  
+
+The SUpDeq method is patent protected.
 
 
 
