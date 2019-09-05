@@ -6,10 +6,13 @@
 % reference HRTF dataset at given spatial sampling points
 %
 % Output:
-% results               - Results struct with spectral difference averaged 
-%                         over all spatial sampling points in dB (20*log10) 
-%                         for left and right channel (specDifference) as well as
-%                         mean of specDifference in dB for left and right channel
+% results               - Results struct with spectral difference per
+%                         frequency and sampling point in dB (20*log10)
+%                         (specDifferencePerPoint) for left and right channel
+%                         spectral difference averaged over all spatial 
+%                         sampling points in dB (20*log10) for left and 
+%                         right channel (specDifference) as well as mean of 
+%                         specDifference in dB for left and right channel
 %                         --> Spectral difference averaged over all spatial 
 %                         sampling points and frequencies
 %                         (meanSpecDifference). Additionally, 
@@ -18,10 +21,12 @@
 %                         100Hz and 12kHz. "f" is a frequency vector
 %
 %                         Optional: filterMode = true
-%                         Results struct with spectral difference averaged
-%                         over all spatial sampling points in dB
-%                         (20*log10) for the left and the right channel 
-%                         and for every of the 40 filter bands
+%                         Results struct with spectral difference per
+%                         frequency and sampling point in dB (20*log10)
+%                         (specDifferencePerPoint) for left and right
+%                         channel, spectral difference averaged over all spatial 
+%                         sampling points in dB (20*log10) for left and 
+%                         right channel and for every of the 40 filter bands
 %                         ("specDiffPerBand_L/R"). Additionally,
 %                         "specDiffL_meanPerBand" returns the mean spectral
 %                         difference per band (mean per band of
@@ -86,14 +91,16 @@ if ~filterMode
     
     %Get HRTFs according to sampling grid
     fprintf('Extracting 2 x %d HRTFs. This may take some time...\n',size(samplingGrid,1));
-    [HRTFs_Test_L,HRTFs_Test_R] = supdeq_getArbHRTF(testHRTFdataset,samplingGrid);
-    [HRTFs_Ref_L,HRTFs_Ref_R]   = supdeq_getArbHRTF(referenceHRTFdataset,samplingGrid);
+    [HRTFs_Test_L,HRTFs_Test_R] = supdeq_getArbHRTF(testHRTFdataset,samplingGrid,[],[],'ak');
+    [HRTFs_Ref_L,HRTFs_Ref_R]   = supdeq_getArbHRTF(referenceHRTFdataset,samplingGrid,[],[],'ak');
     fprintf('2 x %d HRTFs extracted...\n',size(samplingGrid,1))
     
     %Calculate spectral difference
     disp('Calculating spectral differences...');
     specDiffL = abs( 20*log10(abs(HRTFs_Ref_L.')) - 20*log10(abs(HRTFs_Test_L.')));
     specDiffR = abs( 20*log10(abs(HRTFs_Ref_R.')) - 20*log10(abs(HRTFs_Test_R.')));
+    specDiffLperPoint = specDiffL;
+    specDiffRperPoint = specDiffR;
     specDiffL = sum(specDiffL,2);
     specDiffR = sum(specDiffR,2);
     specDiffL = specDiffL/size(samplingGrid,1);
@@ -104,6 +111,7 @@ if ~filterMode
     highBin = round(size(referenceHRTFdataset.f,2) / referenceHRTFdataset.f(end) * 12000) + 1; 
 
     %Write results struct
+    results.specDifferencePerPoint          = {specDiffLperPoint, specDiffRperPoint};
     results.specDifference                  = [specDiffL,specDiffR];
     results.meanSpecDifference              = mean(results.specDifference);
     results.meanSpecDifference_freqRange    = mean(results.specDifference(lowBin:highBin,:));
@@ -133,8 +141,8 @@ if filterMode
     HRIRs_Ref = zeros((size(referenceHRTFdataset.f,2)*2-2) / referenceHRTFdataset.FFToversize,2,size(samplingGrid,1));
     
     fprintf('Extracting 2 x %d HRIRs. This may take some time...\n',size(samplingGrid,1));
-    [HRIRs_Test_L,HRIRs_Test_R] = supdeq_getArbHRIR(testHRTFdataset,samplingGrid);
-    [HRIRs_Ref_L,HRIRs_Ref_R]   = supdeq_getArbHRIR(referenceHRTFdataset,samplingGrid);
+    [HRIRs_Test_L,HRIRs_Test_R] = supdeq_getArbHRIR(testHRTFdataset,samplingGrid,[],[],'ak');
+    [HRIRs_Ref_L,HRIRs_Ref_R]   = supdeq_getArbHRIR(referenceHRTFdataset,samplingGrid,[],[],'ak');
     %Kind of a workaround, but 4-D arrays needed later....
     HRIRs_Test(:,1,:)   = reshape(HRIRs_Test_L,[size(HRIRs_Test,1),1,size(HRIRs_Test,3)]);
     HRIRs_Test(:,2,:)   = reshape(HRIRs_Test_R,[size(HRIRs_Test,1),1,size(HRIRs_Test,3)]);
@@ -174,6 +182,8 @@ if filterMode
     %Calculate spectral difference for each band
     specDiffL = squeeze(abs(20*log10(abs(HRTFs_Ref_filt(:,:,1,:))) - 20*log10(abs(HRTFs_Test_filt(:,:,1,:)))));
     specDiffR = squeeze(abs(20*log10(abs(HRTFs_Ref_filt(:,:,2,:))) - 20*log10(abs(HRTFs_Test_filt(:,:,2,:)))));
+    specDiffLperPoint = specDiffL;
+    specDiffRperPoint = specDiffR;
     %Average across spatial sampling points
     specDiffL = sum(specDiffL,3);
     specDiffR = sum(specDiffR,3);
@@ -188,12 +198,14 @@ if filterMode
     end
     
     %Write results struct
-    results.specDiffPerBand_L       = specDiffL;
-    results.specDiffPerBand_R       = specDiffR;
-    results.specDiffL_meanPerBand   = specDiffL_meanPerBand;
-    results.specDiffR_meanPerBand   = specDiffR_meanPerBand;
-    results.fc                      = fc;
-    results.f                       = f;
+    results.specDiffPerPointAndBand_L   = specDiffLperPoint;
+    results.specDiffPerPointAndBand_R   = specDiffRperPoint; 
+    results.specDiffPerBand_L           = specDiffL;
+    results.specDiffPerBand_R           = specDiffR;
+    results.specDiffL_meanPerBand       = specDiffL_meanPerBand;
+    results.specDiffR_meanPerBand       = specDiffR_meanPerBand;
+    results.fc                          = fc;
+    results.f                           = f;
 
     disp('Done with calculation of spectral differences...');
     

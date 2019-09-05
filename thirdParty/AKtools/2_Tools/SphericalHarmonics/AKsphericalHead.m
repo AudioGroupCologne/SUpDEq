@@ -23,10 +23,6 @@
 %             two values are passed, symmetrical ears are assumed.
 %             (defualt = [85 -13], average values from [2], Tab V,
 %             condition All, O-A) 
-% a         - radius of the spherical head in m (default = 0.0875)
-% r_0       - distance of the free-field point source in m that used as
-%             reference (by default the radius from the sampling grid is
-%             taken: r_0 = sg(1,3) )
 % offCenter - false   : the spherical head is centered in the coordinate
 %                       system (default)
 %             true    : the interaural axis (i.e., the connection between
@@ -37,6 +33,10 @@
 %                       E.g., [-4e3 1e3 2e3] moves the spherical head 4 mm
 %                       to the back, 1 mm to the left (left ear away from
 %                       the origin of coordinates) and 2 mm up.
+% a         - radius of the spherical head in m (default = 0.0875)
+% r_0       - distance of the free-field point source in m that used as
+%             reference (by default the radius from the sampling grid is
+%             taken: r_0 = sg(1,3) )
 % Nsh       - spherical harmonics order (default = 100)
 % Nsamples  - length in samples (default = 1024)
 % fs        - sampling rate in Hz (default = 44100)
@@ -220,7 +220,7 @@ end
 
 % check parameter values
 if any(sg(:,3)<a) || r_0 < a
-    error('AKsphericalHead:Input', 'sg(:,3), and r_0 must be smaller than a')
+    error('AKsphericalHead:Input', 'sg(:,3), and r_0 must be larger than a')
 end
 
 %% --------------------------------------------------- spherical head model
@@ -240,11 +240,14 @@ f = 0:fs/Nsamples:fs/2;
 % calculate complex the transfer function in the frequency domain
 H = sphericalHead_Duda1998( a, r, r_0, GCD/180*pi, f, c, Nsh );
 
-% set 0 Hz bin to 1 (0 dB)
+% % set 0 Hz bin to 1 (0 dB)
 H(1,:) = 1;
 
+% set 0 Hz bin to value of first bin %JMA-Edit
+%H(1,:) = real(H(2,:));
+
 % make sure bin at fs/2 is real
-if f(end) == 22050
+if f(end) == fs/2
     H(end,:) = abs(H(end,:));
 end
 

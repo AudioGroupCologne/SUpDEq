@@ -115,12 +115,13 @@ end
 f = linspace(0,SOFAobj.Data.SamplingRate/2,NFFT/2+1);
 
 %Write output struct
-hrtfDataset.HRTF_L        = HRTF_L;
-hrtfDataset.HRTF_R        = HRTF_R;
-hrtfDataset.f             = f;
-hrtfDataset.Nmax          = N;
-hrtfDataset.FFToversize   = FFToversize;
-hrtfDataset.samplingGrid  = samplingGrid;
+hrtfDataset.HRTF_L          = HRTF_L;
+hrtfDataset.HRTF_R          = HRTF_R;
+hrtfDataset.f               = f;
+hrtfDataset.Nmax            = N;
+hrtfDataset.FFToversize     = FFToversize;
+hrtfDataset.samplingGrid    = samplingGrid;
+hrtfDataset.sourceDistance  = SOFAobj.SourcePosition(1,3); 
 
 end
 

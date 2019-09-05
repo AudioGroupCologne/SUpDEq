@@ -58,7 +58,7 @@
 
 function SOFAobj = supdeq_writeSOFAobj(HRIR_L, HRIR_R, samplingGrid, fs, earDistance, sourceDistance)
 
-if nargin < 4
+if nargin < 4 || isempty(fs)
     fs = 48000;
 end
 

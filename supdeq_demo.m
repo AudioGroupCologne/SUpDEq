@@ -5,6 +5,12 @@
 % This script presents the SUpDEq processing and a basic technical
 % evaluation of the final (de-equalized) dense HRTF dataset
 %
+% Reference: 
+% C. Pörschmann*, J.M. Arend*, and F. Brinkmann, "Directional Equalization 
+% of Sparse Head-Related Transfer Function Sets for Spatial Upsampling," 
+% IEEE/ACM Trans. Audio, Speech, Lang. Process., vol. 27, no. 6, 
+% pp. 1060?1071, 2019, *These authors contributed equally to this work.
+%
 % (C) 2018 by JMA, Johannes M. Arend
 %             TH Köln - University of Applied Sciences
 %             Institute of Communications Engineering
@@ -49,7 +55,7 @@ end
 
 %% (3) - Get equalization dataset (SH-coefficients)
 %The eqDataset describes the sound pressure distribution on a sphere 
-%Use defaults: earDistance = 0.165m, NFFT = 512, fs = 48000;
+%Use defaults: N = 35, earDistance = 0.165m, NFFT = 512, fs = 48000;
 eqDataset = supdeq_getEqDataset;
 
 %% (4) - Perform equalization

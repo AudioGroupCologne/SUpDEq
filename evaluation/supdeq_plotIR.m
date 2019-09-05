@@ -112,7 +112,7 @@ if plotir2
         plot(tVecir2,20*log10(abs(ir2)),'r','Linewidth',linewidth);
     else
         plot(tVecir2,ir2,'r','Linewidth',linewidth);
-        legend('ir1','ir2','Location','NorthEast');
+        legend('IR1','IR2','Location','NorthEast');
     end
 end
 xlabel('Time [s]');
@@ -160,8 +160,6 @@ title('Group Delay');
 xlabel('Frequency [Hz]');
 ylabel('Group Delay [ms]');
 grid on;
-
-
 
 end
 

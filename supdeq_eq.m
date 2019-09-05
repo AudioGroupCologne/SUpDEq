@@ -1,6 +1,6 @@
 %% SUpDEq - Spatial Upsampling by Directional Equalization
 %
-% function eqHRTFdataset = supdeq_eq(sparseHRTFdataset, eqDataset, N, samplingGrid)
+% function eqHRTFdataset = supdeq_eq(sparseHRTFdataset, eqDataset, N, samplingGrid, tikhEps)
 %
 % This function performs the equalization of a sparse HRTF dataset (in
 % SH-domain / stored as SH-coefficients) with the pre-defined eqDataset
@@ -13,8 +13,10 @@
 % Output:
 % eqHRTFdataset         - Struct with the equalized HRTF dataset as
 %                         SH-coefficients for the left (Hl_nm) and 
-%                         right (Hr_nm) channel/ear, absolute frequency 
-%                         scale f, transform order N, and FFToversize
+%                         right (Hr_nm) channel/ear, equalized HRTFs
+%                         for the left (HRTF_L) and right (HRTF_R) ear,
+%                         absolute frequency scale f, transform order N, 
+%                         and FFToversize
 %
 % Input:        
 % sparseHRTFdataset     - Struct with sparse HRTF dataset in frequency
@@ -24,30 +26,48 @@
 %                         SH-coefficients. Can be the output of 
 %                         supdeq_getEqDataset.
 % N                     - Transform order N
-% samplingGrid          - Spatial sampling grid (Q x 2 matrix), where the first 
-%                         column holds the azimuth and the second the
-%                         elevation (both in degree).
+% samplingGrid          - Spatial sampling grid (Q x 2 or Q x 3 matrix), 
+%                         where the first column holds the azimuth, 
+%                         the second the elevation (both in degree), and
+%                         optionally the third the sampling weights.
 %                         Azimuth in degree
 %                         (0=front, 90=left, 180=back, 270=right)
 %                         (0 points to positive x-axis, 90 to positive y-axis)
 %                         Elevations in degree
 %                         (0=North Pole, 90=front, 180=South Pole)
 %                         (0 points to positive z-axis, 180 to negative z-axis)
+% tikhEps               - Define epsilon of Tikhonov regularization if
+%                         regularization should be applied
+%                         Applying the Tikhonov regularization will always result 
+%                         in a least-square fit solution for the SH transform. 
+%                         Variable 'transformCore' is neglected when 'tikhEps' is 
+%                         defined as the regularized least-square spherical Fourier 
+%                         transform is applied directly without any third party 
+%                         toolbox. Depending on the sampling grids, weights are
+%                         applied or not.
+%                         Default: 0 (no Tikhonov regularization)
 %
-% Dependencies: SOFiA toolbox
+% Dependencies: SOFiA toolbox, AKTools
 %   
-% (C) 2018 by CP,  Christoph Pörschmann
-%             JMA, Johannes M. Arend
-%             TH Köln - University of Applied Sciences
-%             Institute of Communications Engineering
-%             Department of Acoustics and Audio Signal Processing
+% (C) 2018/2019 by  JMA, Johannes M. Arend
+%                   CP,  Christoph Pörschmann
+%                   TH Köln - University of Applied Sciences
+%                   Institute of Communications Engineering
+%                   Department of Acoustics and Audio Signal Processing
 
-function eqHRTFdataset = supdeq_eq(sparseHRTFdataset, eqDataset, N, samplingGrid)
+function eqHRTFdataset = supdeq_eq(sparseHRTFdataset, eqDataset, N, samplingGrid, tikhEps)
+
+if nargin < 5 || isempty(tikhEps)
+    tikhEps = 0;
+end
+
+%Get fs
+fs = sparseHRTFdataset.f(end)*2;
 
 %Transform eqDataset to Fourier domain at sparse sampling grid points
 %(inverse spherical Fourier transform)
 fprintf('Extracting %d eq transfer functions. This may take some time...\n',size(samplingGrid,1));
-[eqTF_L,eqTF_R] = supdeq_getArbHRTF(eqDataset,samplingGrid);
+[eqTF_L,eqTF_R] = supdeq_getArbHRTF(eqDataset,samplingGrid,[],[],'ak'); %Use AKtools...
 fprintf('%d eq transfer functions extracted...\n',size(samplingGrid,1))
 
 %Perform equalization (division in frequency domain)
@@ -64,8 +84,21 @@ end
 
 % Transform equalized HRTFs to SH-domain
 fprintf('Performing spherical Fourier transform with N = %d. This may take some time...\n',N);
-eqHRTFdataset = supdeq_hrtf2sfd(HRTF_equalized_L,HRTF_equalized_R,N,samplingGrid);
+eqHRTFdataset = supdeq_hrtf2sfd(HRTF_equalized_L,HRTF_equalized_R,N,samplingGrid,fs,'ak',tikhEps); %Use AKtools...
+eqHRTFdataset.HRTF_L = HRTF_equalized_L;
+eqHRTFdataset.HRTF_R = HRTF_equalized_R;
 eqHRTFdataset.FFToversize = sparseHRTFdataset.FFToversize;
+eqHRTFdataset.eqEarDistance = eqDataset.earDistance;
+eqHRTFdataset.eqWaveType = eqDataset.waveType;
+if eqDataset.waveType == 1
+    eqHRTFdataset.sourceDistance = eqDataset.sourceDistance;
+end
+if isfield(eqDataset,'limited')
+    if eqDataset.limited
+        eqHRTFdataset.limited = true;
+        eqHRTFdataset.limitInfo = eqDataset.limitInfo;
+    end
+end
 fprintf('Done with equalization...\n');
 
 end

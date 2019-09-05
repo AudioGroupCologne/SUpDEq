@@ -94,8 +94,8 @@ end
 %% (1) - Get HRIRs according to sampling grid
 
 fprintf('Extracting 2 x %d HRIRs. This may take some time...\n',size(samplingGrid,1));
-[HRIRs_Test_L,HRIRs_Test_R] = supdeq_getArbHRIR(testHRTFdataset,samplingGrid);
-[HRIRs_Ref_L,HRIRs_Ref_R]   = supdeq_getArbHRIR(referenceHRTFdataset,samplingGrid);
+[HRIRs_Test_L,HRIRs_Test_R] = supdeq_getArbHRIR(testHRTFdataset,samplingGrid,[],[],'ak');
+[HRIRs_Ref_L,HRIRs_Ref_R]   = supdeq_getArbHRIR(referenceHRTFdataset,samplingGrid,[],[],'ak');
 fprintf('2 x %d HRIRs extracted...\n',size(samplingGrid,1))
     
 %% (2) - Save in SOFA format
