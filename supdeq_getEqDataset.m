@@ -17,7 +17,7 @@
 % Input:        
 % N             - Transform order N
 %                 Default: 35
-% earDistance   - Distance between both ear positions in m (radius/2)
+% earDistance   - Distance between both ear positions in m (radius*2)
 %                 Default: 0.165
 % NFFT          - FFT size of the SH-coefficients to be returned
 %                 Default: 512
