@@ -33,7 +33,7 @@
 %                 with big sampling grids
 %                 Default: 'sofia'
 %
-% Dependencies: SOFiA toolbox
+% Dependencies: SOFiA toolbox, AKtools
 %
 % Reference: 
 % Bernschütz, B. (2016). Microphone Arrays and Sound Field Decomposition 
