@@ -1,6 +1,6 @@
 %% SUpDEq - Spatial Upsampling by Directional Equalization
 %
-% function eqHRTFdataset = supdeq_eq(sparseHRTFdataset, eqDataset, N, samplingGrid, tikhEps)
+% function [eqHRTFdataset, HRTF_equalized_L, HRTF_equalized_R] = supdeq_eq(sparseHRTFdataset, eqDataset, N, samplingGrid, tikhEps)
 %
 % This function performs the equalization of a sparse HRTF dataset (in
 % SH-domain / stored as SH-coefficients) with the pre-defined eqDataset
@@ -17,6 +17,7 @@
 %                         for the left (HRTF_L) and right (HRTF_R) ear,
 %                         absolute frequency scale f, transform order N, 
 %                         and FFToversize
+% HRTF_equalized_L/R    - Equalized complex HRTFs 
 %
 % Input:        
 % sparseHRTFdataset     - Struct with sparse HRTF dataset in frequency
@@ -55,7 +56,7 @@
 %                   Institute of Communications Engineering
 %                   Department of Acoustics and Audio Signal Processing
 
-function eqHRTFdataset = supdeq_eq(sparseHRTFdataset, eqDataset, N, samplingGrid, tikhEps)
+function [eqHRTFdataset, HRTF_equalized_L, HRTF_equalized_R] = supdeq_eq(sparseHRTFdataset, eqDataset, N, samplingGrid, tikhEps)
 
 if nargin < 5 || isempty(tikhEps)
     tikhEps = 0;
