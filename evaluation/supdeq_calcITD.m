@@ -18,8 +18,7 @@
 % us                - Upsampling factor for onset detection
 %                     Default: 10
 % fc                - Frequency in Hz at which an 8th order Butterworth 
-%                     lowpass is applied to the hrir before onset detection, 
-%                     and the sampling frequency.
+%                     lowpass is applied to the hrir before onset detection
 %                     Default: 3000
 %
 % Dependencies: AKTools

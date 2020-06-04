@@ -97,7 +97,7 @@ SOFAobj.Data.IR(:,:,2) = IRs(:,:,2); %Channel2 - Right
 SOFAobj.Data.IR = shiftdim(SOFAobj.Data.IR,1); % convert from [N M R] to [M R N]
 SOFAobj.Data.SamplingRate = fs;
 %Fill the mandatory variables (0 -radius 0; 0 radius 0)
-SOFAobj.ReceiverPosition = [0 -earDistance/2 0; 0 earDistance/2 0];  
+SOFAobj.ReceiverPosition = [0 earDistance/2 0; 0 -earDistance/2 0];  
 SOFAobj.ListenerPosition = [0 0 0];
 SOFAobj.ListenerView = [1 0 0];
 SOFAobj.ListenerUp = [0 0 1];

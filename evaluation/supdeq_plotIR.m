@@ -115,9 +115,9 @@ if plotir2
         legend('IR1','IR2','Location','NorthEast');
     end
 end
-xlabel('Time [s]');
+xlabel('Time in s');
 if logIR
-    ylabel('Magnitude [dB]');
+    ylabel('Magnitude in dB');
     title('Log Impulse Response');
 else
     ylabel('Amplitude');
@@ -133,8 +133,8 @@ if plotir2
 end
 xlim([20, fs/2]);
 title('Magnitude Spectrum');
-xlabel('Frequency [Hz]');
-ylabel('Magnitude [dB]');
+xlabel('Frequency in Hz');
+ylabel('Magnitude in dB');
 grid on;
 
 subplot(2,2,3)
@@ -144,8 +144,8 @@ if plotir2
     semilogx(fVec,phiir2,'r','Linewidth',linewidth);
 end
 xlim([20, fs/2]);
-xlabel('Frequency [Hz]');
-ylabel('Phase [°]');
+xlabel('Frequency in Hz');
+ylabel('Phase in degrees');
 title('Phase');
 grid on;
 
@@ -157,8 +157,8 @@ if plotir2
 end
 xlim([20, fs/2]);
 title('Group Delay');
-xlabel('Frequency [Hz]');
-ylabel('Group Delay [ms]');
+xlabel('Frequency in Hz');
+ylabel('Group Delay in ms');
 grid on;
 
 end

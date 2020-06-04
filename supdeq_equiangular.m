@@ -30,7 +30,7 @@ elseif N <= 0
 elseif N > 44
     error('Sorry, but we only have equiangular grids up to N = 44');
 else
-    % Load nodes from resources
+    % Load nodes from materials
     % Nodes calculated with ITA toolbox (ita_sph_sampling_equiangular)
     load('equiangularNodes_1_44.mat');
     

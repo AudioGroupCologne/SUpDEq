@@ -30,7 +30,7 @@ elseif N <= 0
 elseif N > 29
     error('Sorry, but we only have Fliege grids up to N = 29');
 else
-    % Load nodes from resources
+    % Load nodes from materials
     % Nodes copied from "Spherical Harmonic Transform Library" by Archontis
     % Politis, http://research.spa.aalto.fi/projects/sht-lib/sht.html
     load('fliegeMaierNodes_1_30.mat');

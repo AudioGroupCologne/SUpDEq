@@ -17,7 +17,7 @@
 %             Department of Acoustics and Audio Signal Processing
 
 %% (1) - Load reference HRTF dataset (stored as SH-coefficients in spherical harmonics domain)
-%See small script "get_HRIRs_sfd_N35.m" in resources folder to see how the
+%See small script "get_HRIRs_sfd_N35.m" in materials folder to see how the
 %dataset was obtained based on the "HRIR_L2702.sofa" HRIR dataset of a
 %Neumann KU100 dummy head. The reference dataset is only needed for
 %comparison with the final de-equalized dataset...
@@ -25,7 +25,7 @@ referenceHRTFdataset = importdata('HRIRs_sfd_N35.mat');
 
 %% (2) - Load sparse HRTF dataset (stored as FFT-bins in Fourier domain)
 %This is just an example. You could use any sparse HRTF dataset here! Also
-%have a look at the script "get_sparse_HRTF_set.m" in resources folder to
+%have a look at the script "get_sparse_HRTF_set.m" in materials folder to
 %see how the sparse datasets are obtained.
 
 %Here, we use a sparse HRTF daset with only 38 sample points (Lebedev grid)

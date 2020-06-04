@@ -44,7 +44,7 @@ end
 % ----------------------------------------------------------- add all paths
 addpath(pwd, '-end')
 addpath(genpath(fullfile(pwd,'evaluation')), '-end')
-addpath(genpath(fullfile(pwd,'resources')), '-end')
+addpath(genpath(fullfile(pwd,'materials')), '-end')
 addpath(genpath(fullfile(pwd,'thirdParty')), '-end')
 
 % add SOFA correctly using the start script (try if the silent option works)
