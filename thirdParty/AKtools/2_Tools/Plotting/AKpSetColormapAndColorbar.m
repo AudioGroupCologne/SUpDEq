@@ -134,9 +134,12 @@ if cm_inv
 end
 
 % make a colorbar
-if cb ~= 0
-    c_obj = colorbar('location', cb);
-    
+if all(cb ~= 0)
+    if ischar(cb)
+        c_obj = colorbar('location', cb);
+    else
+        c_obj = colorbar('position', cb);
+    end
     % label it
     if iscell(cl)
         ylabel(c_obj, cl)

@@ -240,11 +240,8 @@ f = 0:fs/Nsamples:fs/2;
 % calculate complex the transfer function in the frequency domain
 H = sphericalHead_Duda1998( a, r, r_0, GCD/180*pi, f, c, Nsh );
 
-% % set 0 Hz bin to 1 (0 dB)
+% set 0 Hz bin to 1 (0 dB)
 H(1,:) = 1;
-
-% set 0 Hz bin to value of first bin %JMA-Edit
-%H(1,:) = real(H(2,:));
 
 % make sure bin at fs/2 is real
 if f(end) == fs/2

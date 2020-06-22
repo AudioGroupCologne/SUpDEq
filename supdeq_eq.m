@@ -1,6 +1,6 @@
 %% SUpDEq - Spatial Upsampling by Directional Equalization
 %
-% function [eqHRTFdataset, HRTF_equalized_L, HRTF_equalized_R] = supdeq_eq(sparseHRTFdataset, eqDataset, N, samplingGrid, tikhEps)
+% function [eqHRTFdataset, HRTF_equalized_L, HRTF_equalized_R] = supdeq_eq(sparseHRTFdataset, eqDataset, N, samplingGrid, tikhEps, phaseOnly)
 %
 % This function performs the equalization of a sparse HRTF dataset (in
 % SH-domain / stored as SH-coefficients) with the pre-defined eqDataset
@@ -47,6 +47,10 @@
 %                         toolbox. Depending on the sampling grids, weights are
 %                         applied or not.
 %                         Default: 0 (no Tikhonov regularization)
+% phaseOnly             - Set to 1 if only phase response of eqDataset
+%                         should be applied for equalization and not 
+%                         the magnitude response too
+%                         Default: 0 (equalize with magnitude and phase)
 %
 % Dependencies: SOFiA toolbox, AKTools
 %   
@@ -56,10 +60,14 @@
 %                   Institute of Communications Engineering
 %                   Department of Acoustics and Audio Signal Processing
 
-function [eqHRTFdataset, HRTF_equalized_L, HRTF_equalized_R] = supdeq_eq(sparseHRTFdataset, eqDataset, N, samplingGrid, tikhEps)
+function [eqHRTFdataset, HRTF_equalized_L, HRTF_equalized_R] = supdeq_eq(sparseHRTFdataset, eqDataset, N, samplingGrid, tikhEps, phaseOnly)
 
 if nargin < 5 || isempty(tikhEps)
     tikhEps = 0;
+end
+
+if nargin < 6 || isempty(phaseOnly)
+    phaseOnly = 0;
 end
 
 %Get fs
@@ -70,6 +78,17 @@ fs = sparseHRTFdataset.f(end)*2;
 fprintf('Extracting %d eq transfer functions. This may take some time...\n',size(samplingGrid,1));
 [eqTF_L,eqTF_R] = supdeq_getArbHRTF(eqDataset,samplingGrid,[],[],'ak'); %Use AKtools...
 fprintf('%d eq transfer functions extracted...\n',size(samplingGrid,1))
+
+if phaseOnly    
+    fprintf('Phase only equalization...\n')
+    %Get only phase response of eqTF
+    eqTF_L_phase = angle(eqTF_L);
+    eqTF_R_phase = angle(eqTF_R);
+    eqTF_L_mag = ones(size(eqTF_L,1),size(eqTF_L,2));
+    eqTF_R_mag = ones(size(eqTF_R,1),size(eqTF_R,2));
+    eqTF_L = eqTF_L_mag.*exp(1i*eqTF_L_phase);
+    eqTF_R = eqTF_R_mag.*exp(1i*eqTF_R_phase);
+end
 
 %Perform equalization (division in frequency domain)
 HRTF_equalized_L = zeros(size(samplingGrid,1),length(eqDataset.f));
@@ -93,6 +112,9 @@ eqHRTFdataset.eqEarDistance = eqDataset.earDistance;
 eqHRTFdataset.eqWaveType = eqDataset.waveType;
 if eqDataset.waveType == 1
     eqHRTFdataset.sourceDistance = eqDataset.sourceDistance;
+end
+if phaseOnly
+    eqHRTFdataset.phaseOnly = 1;
 end
 if isfield(eqDataset,'limited')
     if eqDataset.limited

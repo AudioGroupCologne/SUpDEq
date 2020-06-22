@@ -1,4 +1,4 @@
-% [h, f, srcPos, recPos, unit] = AKsofa2ak(Obj)
+% [h, f, srcPos, recPos, unit] = AKsofa2ak(Obj, type)
 % returns the data (impulse responses or complex spectra) from a SOFA 
 % object in a format used by AKtools along with the most important meta
 % data entries.
@@ -20,6 +20,8 @@
 %          'MultiSpeakerBRIR'
 %          'GeneralTF'
 %          'SimpleFreeFieldTF'
+% type   - desired type of srcPos and recPos (see below).
+%          'cartesian' or 'spherical'
 %
 % O U T P U T:
 % h      - impulse responses or complex spectra of size [N M R E], with
@@ -52,7 +54,7 @@
 % WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either expressed or implied.
 % See the License for the specific language governing  permissions and
 % limitations under the License. 
-function [h, f, srcPos, recPos, unit] = AKsofa2ak(Obj)
+function [h, f, srcPos, recPos, unit] = AKsofa2ak(Obj, type)
 
 % Check which SOFA convention we have and pass the corresponding data
 if any(strcmpi(Obj.GLOBAL_SOFAConventions, {'GeneralFIR' 'SimpleFreeFieldHRIR' 'SimpleHeadphoneIR' 'SingleRoomDRIR'}))
@@ -72,6 +74,40 @@ end
 srcPos = Obj.SourcePosition;
 recPos = Obj.ReceiverPosition;
 
+% check if unit is as desired
+if exist('type', 'var')
+    if ~strcmpi(Obj.SourcePosition_Type, type)
+        if strcmpi(type, 'spherical')
+            srcPos = ak_spherical(srcPos);
+        elseif strcmpi(type, 'cartesian')
+            srcPos = ak_cartesian(srcPos);
+        else
+            error('AKsofa2ak:Input', 'type must be ''spherical'' or ''cartesian''')
+        end
+    end
+    
+    if ~strcmpi(Obj.ReceiverPosition_Type, type)
+        if strcmpi(type, 'spherical')
+            recPos = ak_spherical(recPos);
+        elseif strcmpi(type, 'cartesian')
+            recPos = ak_cartesian(recPos);
+        else
+            error('AKsofa2ak:Input', 'type must be ''spherical'' or ''cartesian''')
+        end
+    end
+end
+
 unit = {'srcPos' Obj.SourcePosition_Type   Obj.SourcePosition_Units; ...
         'recPos' Obj.ReceiverPosition_Type Obj.ReceiverPosition_Units};
 
+end
+
+function pos = ak_spherical(pos)
+[pos(:,1), pos(:,2), pos(:,3)] = cart2sph(pos(:,1), pos(:,2), pos(:,3));
+
+pos(:, 1:2) = pos(:,1:2) / pi * 180;
+end
+
+function pos = ak_cartesian(pos)
+[pos(:,1), pos(:,2), pos(:,3)] = sph2cart(pos(:,1)/180*pi, pos(:,2)/180*pi, pos(:,3));
+end

@@ -1,4 +1,4 @@
-% [err, f_c, n] = AKerbError(x, target, f_lim, fs)
+% [err, f_c, n, C] = AKerbError(x, target, f_lim, fs)
 %
 % Returns the energetic error between a (multi channel) impulse
 % response [x] and target function(s) [target] calculated in auditory
@@ -19,10 +19,10 @@
 %
 % I N P U T
 % x         - (multi channel) impulse response to be compared to the target
-%             function (1 channel = 1 column).
-% target    - (multi channel) target function. If x is multi- and target is
-%             single-channel, the channel is repeated to match the size of
-%             x.
+%             function. Size [N C M] where N are the number of samples and
+%             C and M are integers >= 1.
+% target    - (multi channel) impulse response giving the target to which x
+%             is compared. Size can be [N C M], [N 1 M], [N C 1], or [N 1 1]
 % f_lim     - upper and lower frequency bounds in Hz.
 %             (Default = [50 20000])
 % fs        - sampling freuqnecy in Hz. (Default = 44100);
@@ -31,6 +31,7 @@
 % err       - error in dB for each ERB filter
 % f_c       - mid-frequencies of ERB-Filters
 % n         - number of ERB filters used for error analysis
+% C         - Filterbank
 %
 % see also: MakeERBFilters, ERBFilterBank (Auditory Toolbox, Slaney 1993)
 %
@@ -51,7 +52,7 @@
 % WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 % See the License for the specific language governing  permissions and
 % limitations under the License. 
-function [err,f_c,n] = AKerbError(x,target, f_lim, fs)
+function [err,f_c,n,C] = AKerbError(x,target, f_lim, fs)
 
 % check if auditory toolbox is in the Matlab search path
 AKdependencies('auditory')
@@ -68,12 +69,12 @@ end
 % throw a warning if input appears to be zero phase
 % (all checks if all angles for one spectrum are zero,
 %  any checks if this is true for any channel)
-xPhase      = any(all(abs(angle(fft(x)))      < 1e-10));
-targetPhase = any(all(abs(angle(fft(target))) < 1e-10));
+xPhase      = any(any(all(abs(angle(fft(x)))      < 1e-10)));
+targetPhase = any(any(all(abs(angle(fft(target))) < 1e-10)));
 
 % don't throw the warning if it is zero phase but a dirac impulse
-xDirac      = all( all( x(2:end,:)      < 1e-10 ) );
-targetDirac = all( all( target(2:end,:) < 1e-10 ) );
+xDirac      = all(all( all( x(2:end,:,:)      < 1e-10 ) ));
+targetDirac = all(all( all( target(2:end,:,:) < 1e-10 ) ));
 
 if xPhase && ~xDirac
     warning('AKerbError:Input', 'At least one channel of ''x'' appears to be zero phase. This can produce errors, and can be avoided by circshift(x, [round(size(x,1)/2) 0])')
@@ -86,20 +87,24 @@ end
 % match IR length
 if size(x,1)~=size(target,1)
     if size(x,1)>size(target,1)
-        target(end+1:size(x,1),:) = 0;
+        target(end+1:size(x,1),:,:) = 0;
     else
-        x(end+1:size(target,1),:) = 0;
+        x(end+1:size(target,1),:,:) = 0;
     end
 end
 
 % match IR channels
 if size(x,2) > size(target,2)
-    target = repmat(target, [1 size(x,2)]);
+    target = repmat(target(:,1,:), [1 size(x,2) 1]);
+end
+if size(x,3) > size(target,3)
+    target = repmat(target(:,:,1), [1 1 size(x,3)]);
 end
 
 % get length and channels
 N = size(x,1);  % ir length
 c = size(x,2);  % ir num. of channels
+m = size(x,3);  % ir num. of pages
 
 % ---------------------------------------- 1. get FIR filter in freq domain
 % get ERB filter coefficients
@@ -128,7 +133,7 @@ C = ERBFilterBank(C',fcoefs)';
 C = AKphaseManipulation(C, fs, 'min', 4, 0);
 
 % filter x with filerbank and calculate error in each band
-err = zeros(n,c);
+err = zeros(n,c, m);
 
 % ------------------------------------- 2. filter signals and get ERB error
 for k = 1:n
@@ -148,13 +153,13 @@ for k = 1:n
     f_lim_id(2) = round(f_lim(2)/(fs/Ncur))+1;
     
     % filter input signals
-    X      = repmat(abs(fft(C(:,k), Ncur)), [1, c]) .* (abs(fft(x,      Ncur)).^2);
-    TARGET = repmat(abs(fft(C(:,k), Ncur)), [1, c]) .* (abs(fft(target, Ncur)).^2);
+    X      = repmat(abs(fft(C(:,k), Ncur)), [1 c m]) .* (abs(fft(x,      Ncur)).^2);
+    TARGET = repmat(abs(fft(C(:,k), Ncur)), [1 c m]) .* (abs(fft(target, Ncur)).^2);
     
     % get energy
-    X      = sum(X     (f_lim_id(1):f_lim_id(2),:));
-    TARGET = sum(TARGET(f_lim_id(1):f_lim_id(2),:));
+    X      = sum(X     (f_lim_id(1):f_lim_id(2),:, :));
+    TARGET = sum(TARGET(f_lim_id(1):f_lim_id(2),:, :));
     
     % get ERB error
-    err(k,:) = 10*log10(abs(X)./abs(TARGET));
+    err(k,:, :) = 10*log10(abs(X)./abs(TARGET));
 end

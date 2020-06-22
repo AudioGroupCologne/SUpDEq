@@ -16,7 +16,7 @@
 % extention  - 4 element vector targeting the directions
 %              [ left , bottom , right , top ]
 %              negative values can be given to shrink the figure even more,
-%              default = [.01,.01,.01,.01]
+%              default = [.03,.03,.03,.03]
 %
 % v1 03/2017 helmholz@campus.tu-berlin.de, Audio Communicatin Group,
 %            TU Berlin
@@ -39,10 +39,10 @@ function AKtightenFigure(hfig,extention)
 
 if nargin < 1
     hfig = gcf;
-    extention = [.01,.01,.01,.01];
+    extention = [.03,.03,.03,.03];
 elseif nargin < 2
     if isa(hfig,'matlab.ui.Figure')
-        extention = [.01,.01,.01,.01];
+        extention = [.03,.03,.03,.03];
     else
         extention = hfig;
         hfig = gcf;

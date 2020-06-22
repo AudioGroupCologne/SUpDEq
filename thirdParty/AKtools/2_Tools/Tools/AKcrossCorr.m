@@ -1,4 +1,4 @@
-% [ccArgMax, ccSign] = AKcrossCorr(x, y, corrRange, upSample, absolute)
+% [ccArgMax, ccSign, ccMax] = AKcrossCorr(x, y, corrRange, upSample, absolute)
 % finds the maximum cross correlation between x, and y with the possibility
 % of up-sampling for sub-sample accuracy.
 %
@@ -37,6 +37,7 @@
 %             cross-correlation, i.e. a value of 1.5 means that the largest
 %             correlation occured if y was delayed by 1.5 samples.
 % ccSign    - sign of the cross-correlation at ccArgMax.
+% ccMax     - maximum value of the cross correlation.
 %
 % 11/2016 - fabian.brinkmann@tu-berlin.de
 
@@ -52,7 +53,7 @@
 % WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either expressed or implied.
 % See the License for the specific language governing  permissions and
 % limitations under the License.
-function [ccArgMax, ccSign] = AKcrossCorr(x, y, corrRange, upSample, absolute)
+function [ccArgMax, ccSign, ccMax] = AKcrossCorr(x, y, corrRange, upSample, absolute)
 
 %% ---------------------------------------------- 1. check size of x, and y
 if size(x,1) < size(y,1)
@@ -155,10 +156,13 @@ for mm = 1:numel(shift)
         crossCorr(mm,:) = sum( x(shift(mm)+1:end, :)      .* y(1:end-shift(mm), :) );
     end
     
-    % normalize it
+    % normalize it to the number of elements
     crossCorr(mm,:) = crossCorr(mm,:) / (size(x,1)-abs(shift(mm)));
     
 end
+
+% normalize it to the standard deviations
+crossCorr = crossCorr / (std(x) * std(y));
 
 % find maximum
 if absolute
@@ -166,6 +170,9 @@ if absolute
 else
     [ccSign, ccID] = max(crossCorr);
 end
+
+ccMax = crossCorr(ccID);
+
 % restore the sign
 for mm = 1:size(x,2)
     ccSign(mm) = sign(crossCorr(ccID(mm), mm));

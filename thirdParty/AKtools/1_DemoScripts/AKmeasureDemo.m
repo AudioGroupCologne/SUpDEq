@@ -109,7 +109,8 @@ s.N        = false; % shorten to p.N samples before saving IRs, false for keepin
 
 %% ----------------------------------------------- 5. reference measurement
 % cancel out some effects of your measurement chain by selecting one of the
-% following referenceTypes
+% following referenceTypes. The reference will always contain a single
+% channel.
 %  false     - nothing is done (if desired set s.referenceLatency below manually)
 %  'latency' - the latency is measured and corrected using a circular shift
 %  'complex' - the complex frequency response is measured and corrected
@@ -150,15 +151,21 @@ if s.calibrate
     AKmeasureCalibrate
 end
 
+
 %% ------------------------------------------------------ 7. IR measurement
 %  This will start the measurement. Make sure the output level is ok, and
 %  does not blow your ears!
 
 % Define input and output channels
-s.chOut = 1;       % output channels e.g. [1 3].
-                   % Output channels are measured one after another!
-s.chIn  = 1;       % first and last channel for recording audio, e.g. [1 2], or 1
+s.chOut = 1;       % list of output channels e.g. [1 3].
+                   % Output channels can measured be measured one after
+                   % another or at the same time -> see s.chMode below.
+s.chIn  = 1;       % list of input channels e.g. [1 3].
                    % Input channels are recorded simultaneously!
+
+% Define how the output channels are measured
+s.chMode= 'single'; % 'single' each channel is measured separately
+                    % 'all'    all channels are measured at the same time
 
 % Level and averaging
 s.levelOut_dB   = -40; % output level in dB FS

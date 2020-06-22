@@ -60,9 +60,11 @@ if ~exist('doPlot', 'var')
     doPlot = false;
 end
 
+f = reshape(f, [numel(f) 1]);
+
 % discard valus above fs/2
-H = H(f<=fs/2);
-f = f(f<=fs/2);
+H = H(f<=fs/2,:);
+f = f(f<=fs/2,:);
 
 H_cp = H;
 

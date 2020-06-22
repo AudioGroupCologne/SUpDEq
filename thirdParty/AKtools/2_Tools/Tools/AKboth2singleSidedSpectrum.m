@@ -34,12 +34,12 @@
 % See the License for the specific language governing  permissions and
 % limitations under the License. 
 function [single_sided, is_even] = AKboth2singleSidedSpectrum(both_sided)
-NFFT = size(both_sided,1);
 
-if ~mod(NFFT,2)
+NFFT    = size(both_sided,1);
+is_even = ~mod(NFFT,2);
+
+if is_even
     single_sided = both_sided(1:NFFT/2+1,:,:);
 else
     single_sided = both_sided(1:ceil(NFFT/2),:,:);
 end
-
-is_even = 1-mod(size(both_sided,1),2);

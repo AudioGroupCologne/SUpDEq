@@ -18,11 +18,15 @@
 %        
 % N    - Number of steps / colors in the colormap (default is 128)
 %
+% IsInvert - boolean specifying if generated color map should be flipped
+%            (default is false)
+%
 % O U T P U T
 % AKcm - colormap, that is a [N x 3] matrix with rgb values
 %
 % 06/2016 - fabian.brinkmann@tu-berlin.de, initial dev.
 % 10/2016 - helmholz@campus.tu-berlin.de, added brewer colormap support
+% 09/2019 - hannes.helmholz@chalmers.se, added option to invert
 
 % AKtools
 % Copyright (C) 2016 Audio Communication Group, Technical University Berlin
@@ -36,14 +40,19 @@
 % WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 % See the License for the specific language governing  permissions and
 % limitations under the License.
-function AKcm = AKcolormaps(AKcm, N)
+function AKcm = AKcolormaps(AKcm, N, IsInvert)
 
 if ~nargin
-    AKcolormapsBrewer
+    AKcolormapsBrewer();
 else
     
     if ~exist('N', 'var')
         N = 128;
+    elseif N <= 0
+        error('Invalid number of steps "%d".', N);
+    end
+    if ~exist('IsInvert', 'var')
+        IsInvert = false;
     end
     
     switch upper(AKcm)
@@ -53,7 +62,7 @@ else
             AKcm = makeColorMap([1 1 1], [1 .2 .2], N);
         case 'AKGYR'
             AKcm = makeColorMap([18 159 73]/255, [239 238 36]/255, [238 36 36]/255, N);
-        case {'LGBT' 'LGBTFLAG' 'LGBTCAT'}
+        case {'LGBT', 'LGBTFLAG', 'LGBTCAT'}
             LGBT = [220  38  36   % red
                     251  91  19   % orange
                     241 221  45   % yellow
@@ -78,7 +87,11 @@ else
                 brewer_struct = AKcolormapsBrewer(AKcm);
                 AKcm = cbrewer(brewer_struct, AKcm, N, 'PCHIP');
             catch
-                error(['AKcolormap ' AKcm ' not defined'])
+                error('AKcolormap "%s" not defined.', AKcm);
             end
+    end
+    
+    if IsInvert
+        AKcm = flipud(AKcm);
     end
 end

@@ -76,7 +76,7 @@ if fit == 0
     fit = 360;
 end
 if rem(1, res_ang)
-    error('AKgreatCircleGrid:Input', '1/res_ang must be an integer numer')
+     warning('AKgreatCircleGrid:Input', 'results can contain errors if 1/res_ang is NOT an integer numer')
 end
 
 % calculate delta phi to meet the criterion

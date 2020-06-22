@@ -55,6 +55,11 @@
 %                 -> Adjustable trade of between time and frequency
 %                    resolution, second shortest processing time
 %
+%                 'simple' averages the desired reverberation time across
+%                 frequencies and applies a frequency independent decay
+%                 directly in the time domain.
+%                 -> fastest, but frequency independent
+%
 % decay_range   - Specifies the desired decay in dB up to which the tail is
 %                 calculated (default = 90 dB). E.g. for max(T)=1 and
 %                 decay_range=90, the reverb_tail will be 1.5 s long.
@@ -237,7 +242,7 @@ switch decay_mode
             decay    = AKsingle2bothSidedSpectrum(decay, is_even);
             decay    = ifft(decay, 'symmetric');
             decay    = circshift(decay, round(N/2));
-            decay    = phase_manipulation(decay, fs, 'min', 1, 0);
+            decay    = AKphaseManipulation(decay, fs, 'min', 1, 0);%phase_manipulation(decay, fs, 'min', 1, 0);%JMA-EDit
             
             % non-stationary combination
             nb = min([N n]);     % upper limit of hrir samples used
@@ -420,6 +425,32 @@ switch decay_mode
         reverb_tail                    = tmp_a;
         reverb_tail(N/2+1:end-N/2,:,:) = reverb_tail(N/2+1:end-N/2,:,:) + tmp_b;
         
+    case 'simple'
+        % --- average reverberation times ---
+        T_interp = mean(T);
+        f_interp = mean(f);
+        
+        % --- generate the noise ---
+        % get length of binaural tail in samples
+        T_max = ceil(decay_range/60 *T_interp * fs);
+        
+        % time axis
+        t = (0:T_max-1)/fs;
+        
+        % get gaussian white noise
+        reverb_tail = randn(T_max,rev_channel);
+                
+        % --- get decay ---
+        % delta from decay formula in Heinrich Kutruff (2009): Room acoustics
+        % 5.ed. Oxon: Spon Press, chpt. 5
+        A     = 0.161*V./T_interp;
+        delta = c*A/8/V;
+          
+        decay = sqrt( exp( -2*delta.*t' ) );
+        
+        % apply decay
+        reverb_tail = reverb_tail .* decay;
+               
 end
 
 %% ------------------------------------------- 3. applay diffuse field HRTF

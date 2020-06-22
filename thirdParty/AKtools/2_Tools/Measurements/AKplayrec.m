@@ -88,7 +88,7 @@ switch lower(playrecMode)
         if missedSamples
             fprintf('\n%u samples missed during playback! Try to change the page size or re-run AKplayrecSetup if this occurs again.\n\n', missedSamples)
         else
-            fprintf('\nplayback successfull\n\n')
+            fprintf('\nplayback successful\n\n')
         end
         
     case 'rec'
@@ -115,7 +115,7 @@ switch lower(playrecMode)
         if missedSamples
             fprintf('\n%u samples missed during recording! Try to change the page size or re-run AKplayrecSetup if this occurs again.\n\n', missedSamples)
         else
-            fprintf('\nrecording successfull\n\n')
+            fprintf('\nrecording successful\n\n')
         end
         
     case 'playrec'
@@ -149,7 +149,7 @@ switch lower(playrecMode)
         if missedSamples
             fprintf('\n%u samples missed during playback and recording! Try to change the page size or re-run AKplayrecSetup if this occurs again.\n\n', missedSamples)
         else
-            fprintf('\nplayback & recording successfull\n\n')
+            fprintf('\nplayback & recording successful\n\n')
         end
         
 end

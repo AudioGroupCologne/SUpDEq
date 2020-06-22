@@ -130,6 +130,8 @@ if ~isempty(ISM)
             for nn = 2:numel(tmp)
                 IS_id = [IS_id; find(Nis == tmp(nn))]; %#ok<AGROW>
             end
+        else
+            IS_id = ISnumber;
         end
         
         colors = 'pgy';

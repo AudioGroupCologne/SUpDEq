@@ -44,7 +44,11 @@ function AKcheckDep(typeString)
             end
         case 'fabian'
             if ~exist('FABIAN_HRIR_measured_HATO_0.sofa', 'file')
-                error('AKtools:dependencies', 'This part of AKtools needs the FABIAN HRIR data set which is available from: https://dx.doi.org/10.14279/depositonce-5718.2 inside the Matlab search path.');
+                error('AKtools:dependencies', 'This part of AKtools needs the FABIAN HRIR data set which is available from: https://dx.doi.org/10.14279/depositonce-5718.4 inside the Matlab search path.');
+            end
+        case 'hutubs'
+            if ~exist('pp1_HRIRs_measured.sofa', 'file')
+                error('AKtools:dependencies', 'This part of AKtools needs the HUTUBS HRTF database inside the Matlab search path. It is available from https://dx.doi.org/10.14279/depositonce-8487');
             end
         otherwise
             error('AKtools:dependencies', ['''' typeString ''' is not a valid input to AKdependencies'])

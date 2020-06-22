@@ -213,6 +213,7 @@
 % axis_m (20)   : marker size for marking posititve x,y and z in spherical
 %                 plots
 % axis_s        : style of the axis
+%                 0: do not draw axis
 %                 1: x, y, and z axis are marked by red, green, and blue
 %                    lines. Positive x, y, and z direction is marked by dot
 %                 2: like 1, but additonal lines mark intermediate angles
@@ -584,7 +585,7 @@ min_dB = -300;
 
 % define plot function for 3D plots
 if ~plot_func
-    if strfind(hp_view, 'top')
+    if strfind(hp_view, 'top') %#ok<*STRIFCND>
         plot_func = 'img';
     else
         plot_func = 'surf';
@@ -688,16 +689,16 @@ if strcmpi(plot_type, 'gd')
     t_str  = 'Group delay';
     
     if strcmpi(du, 'n')
-        d_type = 'group delay in samples';
+        d_type = 'Group delay in samples';
     elseif strcmpi(du, 's')
         data   = data/fs;
-        d_type = 'group delay in s';
+        d_type = 'Group delay in s';
     elseif strcmpi(du, 'ms')
         data   = data/fs*10^3;
-        d_type = 'group delay in ms';
+        d_type = 'Group delay in ms';
     elseif strcmpi(du, 'us')
         data   = data/fs*10^6;
-        d_type = 'group delay in \mus';
+        d_type = 'Group delay in \mus';
     else
         error('AKp:InputDataUnit',[du ' is not a valid data unit. See doc hp for a list of valid d_units'])
     end
@@ -708,10 +709,10 @@ if strcmpi(plot_type, 'p')
     t_str  = 'Phase spectrum';
     
     if strcmpi(du, 'rad')
-        d_type = 'phase in radians';
+        d_type = 'Phase in radians';
     elseif strcmpi(du, 'deg')
         data   = rad2deg(data);
-        d_type = 'phase in degree';
+        d_type = 'Phase in degree';
     else
         error('AKp:InputDataUnit',[du ' is not a valid data unit. See doc hp for a list of valid d_units'])
     end
@@ -722,10 +723,10 @@ if strcmpi(plot_type, 'pu')
     t_str  = 'Unwrapped phase spectrum';
     
     if strcmpi(du, 'rad')
-        d_type = 'phase in radians';
+        d_type = 'Phase in radians';
     elseif strcmpi(du, 'deg')
         data   = rad2deg(data);
-        d_type = 'phase in degree';
+        d_type = 'Phase in degree';
     else
         error('AKp:InputDataUnit',[du ' is not a valid data unit. See doc hp for a list of valid d_units'])
     end
@@ -796,10 +797,10 @@ if strfind(d_type, 'in dB')
 end
 
 %% ----------------------------------------- 4. fractional octave smoothing
-% (discard frequency bin at fs/2 if N is even)
 if ~islogical(frac) && (strcmpi(plot_type, 'm'))
-    data = AKfractOctSmooth(data(1:ceil(N/2),:), 'welti', fs, frac);
-    f    = f(1:ceil(N/2));
+    data = AKboth2singleSidedSpectrum(data);
+    data = AKfractOctSmooth(data, 'amp', fs, frac);
+    f    = f(1:size(data,1));
 end
 
 
@@ -848,6 +849,10 @@ clear tmp_max
 
 %% ------------------------------------ 7. process data for spherical plots
 if ~ischar(plot_look) && any(strcmpi(plot_type, {'m' 'p' 'pu' 'toa' 'itd' 'ild' 'x'}))
+    
+    % index of frequency to be plotted
+    fID    = round(sph_f / (fs/N)) + 1;
+    
     if (strcmpi(sph_proc, 'none') && plot_look ~= 6) || ...
         strcmpi(plot_type, 'x')     
         data_c = data;
@@ -883,10 +888,12 @@ if ~ischar(plot_look) && any(strcmpi(plot_type, {'m' 'p' 'pu' 'toa' 'itd' 'ild' 
             if strcmpi(du, 'rad')
                 d_type = 'phase in radians';
                 if strcmpi(plot_type, 'pu')
-                    dr = [min(min(data)) max(max(data))];
-                    if dr(1) == dr(2)
-                        dr(1) = dr(1)-1;
-                        dr(2) = dr(2)+1;
+                    if ~isnumeric(dr)
+                        dr = [min(min(data(fID,:))) max(max(data(fID,:)))];
+                        if dr(1) == dr(2)
+                            dr(1) = dr(1)-1;
+                            dr(2) = dr(2)+1;
+                        end
                     end
                 else
                     dr = [-pi pi];
@@ -897,10 +904,12 @@ if ~ischar(plot_look) && any(strcmpi(plot_type, {'m' 'p' 'pu' 'toa' 'itd' 'ild' 
                 end
                 d_type = 'phase in degree';
                 if strcmpi(plot_type, 'pu')
-                    dr = [min(min(data)) max(max(data))];
-                    if dr(1) == dr(2)
-                        dr(1) = dr(1)-1;
-                        dr(2) = dr(2)+1;
+                    if ~isnumeric(dr)
+                        dr = [min(min(data(fID,:))) max(max(data(fID,:)))];
+                        if dr(1) == dr(2)
+                            dr(1) = dr(1)-1;
+                            dr(2) = dr(2)+1;
+                        end
                     end
                 else
                     dr = [-180 180];
@@ -920,10 +929,12 @@ if ~ischar(plot_look) && any(strcmpi(plot_type, {'m' 'p' 'pu' 'toa' 'itd' 'ild' 
             if strcmpi(du, 'rad')
                 d_type = 'phase in radians';
                 if strcmpi(plot_type, 'pu')
-                    dr = [min(min(data_c)) max(max(data_c))];
-                    if dr(1) == dr(2)
-                        dr(1) = dr(1)-1;
-                        dr(2) = dr(2)+1;
+                    if ~isnumeric(dr)
+                        dr = [min(min(data_c(fID,:))) max(max(data_c(fID,:)))];
+                        if dr(1) == dr(2)
+                            dr(1) = dr(1)-1;
+                            dr(2) = dr(2)+1;
+                        end
                     end
                 else
                     dr = [-pi pi];
@@ -934,10 +945,12 @@ if ~ischar(plot_look) && any(strcmpi(plot_type, {'m' 'p' 'pu' 'toa' 'itd' 'ild' 
                 end
                 d_type = 'phase in degree';
                 if strcmpi(plot_type, 'pu')
-                    dr = [min(min(data_c)) max(max(data_c))];
-                    if dr(1) == dr(2)
-                        dr(1) = dr(1)-1;
-                        dr(2) = dr(2)+1;
+                    if ~isnumeric(dr)
+                        dr = [min(min(data_c(fID,:))) max(max(data_c(fID,:)))];
+                        if dr(1) == dr(2)
+                            dr(1) = dr(1)-1;
+                            dr(2) = dr(2)+1;
+                        end
                     end
                 else
                     dr = [-180 180];
@@ -949,15 +962,15 @@ if ~ischar(plot_look) && any(strcmpi(plot_type, {'m' 'p' 'pu' 'toa' 'itd' 'ild' 
         
         % pick the frequency to be plotted - or use plot type for title
         if any(strcmpi(plot_type, {'m' 'p' 'pu'}))
-            tmp    = round(sph_f / (fs/N)) + 1;
-            data   = data(tmp,:);
-            data_c = data_c(tmp,:);
-            sph_f  = f(tmp);
+            fID    = round(sph_f / (fs/N)) + 1;
+            data   = data(fID,:);
+            data_c = data_c(fID,:);
+            sph_f  = f(fID);
         else
             sph_f = upper(plot_type);
         end
         
-        clear data_abs data_ang tmp
+        clear data_abs data_ang fID
     end
     
     % coordinate conversion from user to matlab default format
@@ -1009,12 +1022,12 @@ if ~ischar(plot_look) && any(strcmpi(plot_type, {'m' 'p' 'pu' 'toa' 'itd' 'ild' 
                 % copy smalles value to 0 and 360 degree to avoid
                 % extrapolation which would result in a discontinuity at 0
                 [tmp_min, tmp_id] = min(co.az);
-                if tmp_min == 0 && max(co.az) < 2*pi
+                if tmp_min ~= 0
+                    co.az = [0; co.az];
+                    data  = [data(tmp_id) data];
+                elseif max(co.az) < 2*pi
                     co.az = [co.az; 2*pi];
                     data  = [data data(tmp_id)];
-                else
-                    co.az = [0; co.az; 2*pi];
-                    data  = [data(tmp_id) data data(tmp_id)];
                 end
                 % interpolate
                 data = interp1(co.az, data, (0:360)/180*pi);
@@ -1033,7 +1046,8 @@ if ~ischar(plot_look) && any(strcmpi(plot_type, {'m' 'p' 'pu' 'toa' 'itd' 'ild' 
                 % interpolate
                 data = interp1(co.az, data, tmp);
                 co.az = tmp;
-            end   
+            end
+        elseif strcmpi(sph_proc, 'none') 
         elseif strcmpi(sph_proc, 'tri') 
             error('AKp:InputShpericalProcessing','Triangularization is not implemeted for polar plots')
         elseif strfind('interpspline', lower(sph_proc))
@@ -1163,40 +1177,42 @@ end
 % convert (from samples to sec, etc.)
 if strcmpi(xu, 's')
     n = (0:N-1) * 1/fs;
-    x_label = 't in s';
+    x_label = 'Time in s';
 elseif strcmpi(xu, 'ms')
     n =  (0:N-1) * 1/fs * 10^3;
-    x_label = 't in ms';
+    x_label = 'Time in ms';
 elseif strcmpi(xu, 'us')
     n = (0:N-1) * 1/fs * 10^6;
-    x_label = 't in \mus';
+    x_label = 'Time in \mus';
 elseif strcmpi(xu, 'n')
     n = 1:N;
-    x_label = 't in samples';
+    x_label = 'Time in samples';
 elseif strcmpi(xu, 'm')
     n = (0:N-1) * 343/fs;
-    x_label = 'distance of flight in m';
+    x_label = 'Distance of flight in m';
 elseif strcmpi(xu, 'hz')
     n = f;
-    x_label = 'f in Hz';
+    x_label = 'Frequency in Hz';
     % default xtick and label for frequency plots
-    f_tick  = [1:10 20:10:100 200:100:1000 2000:1000:10000 20000:10000:40000]';
-    f_label = {'1'   '' '' '' '' '' '' '' '' ...
-               '10'  '' '' '' '' '' '' '' '' ...
-               '100' '' '' '' '' '' '' '' '' ...
-               '1k'  '' '' '' '' '' '' '' '' ...
-               '10k' '20k' '' '40k'}';
+    if fs <= 48e3
+        [f_tick, f_label]  = AKfrequencyTicks('Hz', false, 20e3);
+    elseif fs <= 100e3
+        [f_tick, f_label]  = AKfrequencyTicks('Hz', false, 40e3);
+    else
+        [f_tick, f_label]  = AKfrequencyTicks('Hz', false, 90e3);
+    end
 elseif strcmpi(xu, 'khz')
     n = f;
-    x_label = 'f in kHz';
+    x_label = 'Frequency in kHz';
     % frequency axis   
     % default xtick and label for frequency plots
-    f_tick  = [1:10 20:10:100 200:100:1000 2000:1000:10000 20000:10000:40000]';
-    f_label = {'.001' '' '' '' '' '' '' '' '' ...
-               '.01'  '' '' '' '' '' '' '' '' ...
-               '.1'   '' '' '' '' '' '' '' '' ...
-               '1'    '' '' '' '' '' '' '' '' ...
-               '10'   '20' '' '40'}';
+    if fs <= 48e3
+        [f_tick, f_label]  = AKfrequencyTicks('kHz', false, 20e3);
+    elseif fs <= 100e3
+        [f_tick, f_label]  = AKfrequencyTicks('kHz', false, 40e3);
+    else
+        [f_tick, f_label]  = AKfrequencyTicks('kHz', false, 90e3);
+    end
 else
     error('AKp:InputAxisUnit',[xu ' is not a valid x axis unit. See doc hp for a list of valid x_units'])
 end
@@ -1298,8 +1314,7 @@ if strcmpi(plot_look, '2D')
         ylim([dr(1) dr(2)])
     end
     if strcmpi(plot_domain, 'freq')
-        set(gca, 'xTick', f_tick(f_tick >= min(x) & f_tick <= max(x)),...
-           'xtickLabel', f_label(f_tick >= min(x) & f_tick <= max(x)))
+        set(gca, 'xTick', f_tick, 'xtickLabel', f_label)
     end
     grid on
     box on
@@ -1336,6 +1351,9 @@ if strcmpi(plot_look, '2D')
         ylabel(d_type, 'fontsize', f_size)
         title(t_str, 'fontsize', f_size)
     end
+    
+    % remove tick marks (the grid already marks everything)
+    set(gca, 'TickLength', [0 0])
     
     % set output struct
     dataOut.data = data;
@@ -1402,8 +1420,7 @@ elseif strcmpi(plot_look, '3D')
         set(gca, 'Layer', 'top');
         box on
         if strcmpi(plot_domain, 'freq')
-            set(gca, 'xTick', f_tick(f_tick >= min(x) & f_tick <= max(x)),...
-                'xtickLabel', f_label(f_tick >= min(x) & f_tick <= max(x)))
+            set(gca, 'xTick', f_tick, 'xtickLabel', f_label)
         end
         xlim([x(1) x(2)])
         ylim([min(y) max(y)])
@@ -1532,7 +1549,7 @@ elseif strcmpi(plot_look, '3D')
             x_t = f_tick(f_tick >= min(x) & f_tick <= max(x));
             x_l = f_label(f_tick >= min(x) & f_tick <= max(x));
             for m = 1:numel(x_t)
-                [~, x_t(m,1)] = min(abs(x_t(m)-n_img));
+                [~, x_t(m)] = min(abs(x_t(m)-n_img));
             end
             
             if strcmpi(hp_view, 'top_h')
@@ -1740,7 +1757,9 @@ elseif ~ischar(plot_look)
         if co.L == 0
             co.L = 1;
         end
-        AKpDrawCoordinates(co, axis_s, axis_m, axis_l)
+        if axis_s
+            AKpDrawCoordinates(co, axis_s, axis_m, axis_l)
+        end
         axis([-co.L co.L -co.L co.L -co.L co.L])
         
         % set view and use default if not specified

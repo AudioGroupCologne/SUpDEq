@@ -114,6 +114,12 @@ clear nn num_sh pos_start Naz
 
 % --- calculate spherical harmonics ---
 % scalar (dependend on n,m; independend from az, el)
+
+% check if all factorials can be computed
+if any( [N-M N+M] > 170 )
+    error('AKist:input', 'SH basis functions can only be computed up to order 85. Otherwise the factorials can not easiliy be computed with built in variable types.')
+end
+
 if strcmpi(mode, 'complex')
     a = sqrt((2*N+1)./(4*pi) .* factorial(N-M)     ./factorial(N+M));
 else

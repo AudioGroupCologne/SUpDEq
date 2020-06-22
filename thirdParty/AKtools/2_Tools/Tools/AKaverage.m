@@ -231,14 +231,21 @@ switch lower(averageMode)
             data = ifft(data, 'symmetric');
             
         elseif any(strcmpi(phaseMode, {'min' 'lin'}))
+            
+            data = ifft(data_mag, 'symmetric');
+            
             % default parameter
-            if ~exist('phaseParameter', 'var')
+            if ~phaseParameter
                 phaseParameter = [44100 2];
             elseif numel(phaseParameter) == 1
                 phaseParameter = [phaseParameter 0];
             end
+            % default parameter for lin phase
+            if strcmpi(phaseMode, 'lin')
+                phaseParameter(2) = (size(data,1)-1)/2;
+            end
             
-            data = AKphaseManipulation(ifft(data_mag, 'symmetric'), phaseParameter(1), phaseMode, phaseParameter(2), 0);
+            data = AKphaseManipulation(data, phaseParameter(1), phaseMode, phaseParameter(2), 0);
             
         elseif (islogical(phaseMode) && ~phaseMode) ...
                 || strcmpi(phaseMode, 'zero')

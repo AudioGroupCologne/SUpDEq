@@ -6,6 +6,11 @@ function SOFAstart(flags)
 %
 %   SOFAstart(0) or SOFAstart('silent') will suppress any message during the start.
 %   SOFAstart ('short') will show a short header only during the start.
+%
+%   SOFAstart checks if SOFA has been started within the MATLAB session. If
+%   it is the case, SOFAstart skips all the initialization. If the initialization
+%   is required, SOFA('restart') performs the initialization in any case. 
+%
 
 % SOFA API - function SOFAstart
 % Copyright (C) 2012-2013 Acoustics Research Institute - Austrian Academy of Sciences
@@ -17,19 +22,27 @@ function SOFAstart(flags)
 
 %% Input parameters
 verbose = 2; 
+restart = 0;
 if nargin>0
 	if strcmp(lower(flags),'silent'), verbose=0; end;
 	if strcmp(lower(flags),'short'), verbose=1; end;
 	if isnumeric(flags), if flags==0, verbose=0; end; end;
+    if strcmp(lower(flags),'restart'), restart=1; end
 end
 
-
+%% do not start when already started but not forced to restart
+persistent started
+if ~isempty(started) && ~restart, 
+    return; 
+end
+started=1;
 %% Check required support
 if exist('OCTAVE_VERSION','builtin')
     % We're in Octave
   if compare_versions(OCTAVE_VERSION,'3.6.0','<=')   % check if the octave version is high enough
     error('You need Octave >=3.6.0 to work with SOFA.');
-  end  
+  end
+  pkg load netcdf  
   if ~which('test_netcdf') % check if octcdf is installed
     error('You have to install the netcdf package in Octave to work with SOFA.');
   end

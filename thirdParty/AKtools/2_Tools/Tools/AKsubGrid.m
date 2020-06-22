@@ -7,9 +7,9 @@
 % AKsubGrid(gridIn, 'transverse', 0)    -> extracts horizontal plane
 % AKsubGrid(gridIn, 'sagittal', 0)      -> extracts median plane
 % AKsubGrid(gridIn, 'corconal', 90)     -> extracts frontal plane
-% AKsubGrid(10, 'transverse, 0)         -> generates horizontal plane
+% AKsubGrid(10, 'transverse', 0)        -> generates horizontal plane
 %                                          (10 degree resolution)
-% AKsubGrid(10, 'transverse, -90:10:90) -> generates gauss like grid
+% AKsubGrid(10, 'transverse', -90:10:90)-> generates gauss like grid
 %                                          (10 degree resolution)
 %
 % See AKsubGridDemo.m for more examples
@@ -161,6 +161,10 @@ elseif strcmpi(subGrid, 'transverse')
         angle   = reshape( angle, numel(angle), 1 );
         subGrid = [repmat( az, numel(angle), 1 ) repelem( angle, numel(az), 1 )];
         
+        % remove double entries at the poles
+        id      = subGrid(:,1) ~= 0 & abs(subGrid(:,2)) == 90;
+        subGrid = subGrid(~id, :);
+        
         % transform to inteaural polar
         if exist('sph2hor', 'file')
             [azHor, elHor] = sph2hor(subGrid(:,1), subGrid(:,2));
@@ -211,6 +215,10 @@ elseif strcmpi(subGrid, 'sagittal')
         % construc the grid
         angle   = reshape( angle, numel(angle), 1 );
         subGridHor = [repelem( angle, numel(el), 1 ) repmat( el, numel(angle), 1 )];
+        
+        % remove double entries at the poles
+        id         = subGridHor(:,2) ~= 0 & abs(subGridHor(:,1)) == 90;
+        subGridHor = subGridHor(~id, :);
         
         % transform to vertical polar
         if exist('hor2sph', 'file')
@@ -271,6 +279,10 @@ elseif strcmpi(subGrid, 'corconal')
         % construc the grid
         angle   = reshape( angle, numel(angle), 1 );
         subGridHor = [repelem( angle, numel(el), 1 ) repmat( el, numel(angle), 1 )];
+        
+        % remove double entries at the poles
+        id         = subGridHor(:,2) ~= 0 & abs(subGridHor(:,1)) == 90;
+        subGridHor = subGridHor(~id, :);
         
         % rotate 
         [az, el]  = hor2sph(subGridHor(:,1), subGridHor(:,2));

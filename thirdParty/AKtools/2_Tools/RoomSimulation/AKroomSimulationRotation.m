@@ -39,7 +39,7 @@
 % WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either expressed or implied.
 % See the License for the specific language governing  permissions and
 % limitations under the License. 
-function [azRot, elRot] = AKroomSimulationRotation6(az, el, rotAz, rotEl)
+function [azRot, elRot] = AKroomSimulationRotation(az, el, rotAz, rotEl)
 
 % check input format
 try

@@ -1,7 +1,7 @@
 % hFigureHandle = AKf(fWidth, fHeight, num)
 %
 % creates a figure with white background color on center of screen.
-% AKf() create a large figure
+% AKf() create a maximized figure
 % AKf(fWidth) creates a square figure
 % 
 % See AKplotDemo.m for examples
@@ -14,7 +14,16 @@
 % O U T P U T:
 % hFigureHandle   - handle to the figure
 %
-% fabian.brinkmann@tu-berlin.de
+% 
+% v1         Fabian Brinkmann, fabian.brinkmann@tu-berlin.de,
+%            Audio Communicatin Group, TU Berlin,
+%            initial dev
+% v2         Hannes Helmholz, helmholz@campus.tu-berlin.de,
+%            Audio Communicatin Group, TU Berlin,
+%            introduction of AKf() creating a figure with somehow maximum
+%            screen dimensions
+% v2 04/2018 modification of AKf() to use MAXIMIZE for creating a properly
+%            maximized figure window
 
 % AKtools
 % Copyright (C) 2016 Audio Communication Group, Technical University Berlin
@@ -31,41 +40,39 @@
 function hFigureHandle = AKf(fWidth, fHeight, num)
 
 if nargin == 0
-    % get size screen size
-    if exist('groot', 'file')
-        scrn = get(groot, 'ScreenSize');
-    else
-        scrn = get(0, 'Screensize');
-    end
-    
-    % sometines task bars will shadow the figure - this makes the
-    % figure smaller
-    try
-        % get the size of the matlab main window
-        desktop = com.mathworks.mde.desk.MLDesktop.getInstance;
-        desktopMainFrame = desktop.getMainFrame;
-        desktopDims = desktopMainFrame.getSize;
-        % set figure size accordingly
-        margin.offset = 10; % works great with Windows 10
-        margin.x = scrn(3)-min(scrn(3),desktopDims.getWidth)+margin.offset;
-        margin.y = scrn(4)-min(scrn(4),desktopDims.getHeight)+margin.offset;
-        margin.X = scrn(3)-2*margin.x;
-        margin.Y = scrn(4)-2*margin.y;
-        if margin.X > 0 && margin.Y > 0
-            scrn = [margin.x margin.y scrn(3)-2*margin.x scrn(4)-2*margin.y];
-        else
-            scrn = [round(.1*scrn(3)) round(.1*scrn(4)) round(.8*scrn(3)) round(.8*scrn(4))];
-        end
-    catch
-        % if this does not work make the figure smaller by hand
-        scrn = [round(.1*scrn(3)) round(.1*scrn(4)) round(.8*scrn(3)) round(.8*scrn(4))];
-    end
-    
-    % create a figure with correct dimensions
-    hFigureHandle = figure('outerposition', scrn, 'PaperSize', [scrn(3) scrn(4)], 'PaperPosition', scrn);
-    
+
+    hFigureHandle = figure;
+
     % set background color to white
     set(gcf, 'color', [1 1 1]);
+    
+    % The MAXIMIZE function throws a warning about the used API being
+    % depricated in the future. The warning occured but functions seem to
+    % work fine: R2017b (9.3).
+    %
+    % Other versions have not been tested yet. Since what version does it
+    % occur? From what version will the API be fully discharged? The
+    % warning surpression with verLessThan() should be adjusted or
+    %  new relaeses of maximize() should be introduced!
+    %
+    % To not clog up the command windows this warning can be deactivated
+    % during the call. For future Matlab releases this way has to be
+    % reevaluated.
+    %
+    % msgid:  'MATLAB:HandleGraphics:ObsoletedProperty:JavaFrame'
+    %
+    % msgstr: 'figure JavaFrame property will be obsoleted in a future
+    %          release. For more information see <a
+    %          href="http://www.mathworks.com/javaframe">the JavaFrame
+    %          resource on the MathWorks web site</a>.'
+    if exist('verLessThan', 'file') && ~verLessThan('matlab', '9.2')
+        % at least Matlab R2017a
+        warning('off', 'MATLAB:HandleGraphics:ObsoletedProperty:JavaFrame');
+        maximize(hFigureHandle);
+        warning('on', 'MATLAB:HandleGraphics:ObsoletedProperty:JavaFrame');
+    else
+        maximize(hFigureHandle);
+    end
     
 elseif nargin == 1
     

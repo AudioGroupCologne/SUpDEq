@@ -100,6 +100,13 @@ if isfield(eqHRTFdataset,'limited') && isfield(deqDataset,'limited')
     end
 end
 
+%Check if phaseOnly equalization was applied
+if isfield(eqHRTFdataset,'phaseOnly')
+    phaseOnly = 1;
+else
+    phaseOnly = 0;
+end
+
 %Get fs
 fs = eqHRTFdataset.f(end)*2;
 
@@ -112,6 +119,17 @@ if deqDataset.waveType == 0
     fprintf('Extracting %d deq transfer functions. This may take some time...\n',size(samplingGrid,1));
     [deqTF_L,deqTF_R] = supdeq_getArbHRTF(deqDataset,samplingGrid,[],[],'ak'); %Use AKtools...
     fprintf('%d deq transfer functions extracted...\n',size(samplingGrid,1))     
+    
+    if phaseOnly    
+        fprintf('Phase only de-equalization...\n')
+        %Get only phase response of eqTF
+        deqTF_L_phase = angle(deqTF_L);
+        deqTF_R_phase = angle(deqTF_R);
+        deqTF_L_mag = ones(size(deqTF_L,1),size(deqTF_L,2));
+        deqTF_R_mag = ones(size(deqTF_R,1),size(deqTF_R,2));
+        deqTF_L = deqTF_L_mag.*exp(1i*deqTF_L_phase);
+        deqTF_R = deqTF_R_mag.*exp(1i*deqTF_R_phase);
+    end
     
     %Get HRTF from equalized HRTF dataset by inverse spherical Fourier transform at
     %sampling points of dense sampling grid

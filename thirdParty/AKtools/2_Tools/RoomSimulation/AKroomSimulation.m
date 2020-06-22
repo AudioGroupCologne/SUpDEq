@@ -377,6 +377,7 @@ if rs.ISM
 else
     ISM  = [];
     hISM = [];
+    H.N  = 2^10;
 end
 
 

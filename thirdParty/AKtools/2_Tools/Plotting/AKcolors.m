@@ -78,6 +78,7 @@ if input && ~ischar(input)
     AKp(data, 't2d', 'c', colors.string, 'xu', 'n', 'dr', [0 1.05], 'lw', 5)
     grid off; box off; axis off
     set(gcf, 'color', [.8 .8 .8]);
+    title ''
     
     for nn = 1:numel(colors.string)
         text(1.01, data(1,nn)+.03, [num2str(colors.names{nn,1}) ': ' colors.names{nn,2} ' (''' colors.names{nn,3} '''), RGB: ' ...

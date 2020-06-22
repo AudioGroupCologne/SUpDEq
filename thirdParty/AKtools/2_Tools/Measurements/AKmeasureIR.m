@@ -15,7 +15,12 @@
 % limitations under the License. 
 
 Nin  = numel(s.chIn);
-Nout = numel(s.chOut);
+
+if strcmpi(s.chMode, 'single')
+    Nout = numel(s.chOut);
+else
+    Nout = 1;
+end
 
 % allocate memory for raw and final data
 raw = zeros(2^x.NFFT, Nin, Nout);
@@ -26,8 +31,12 @@ for Nsrc = 1:Nout
     s.measurementTime = datestr(now);
     fprintf('\n********************* %s *********************\n', s.measurementTime)
     
-    % get current source (output channel)
-    curSrc = s.chOut(Nsrc);
+    % get current source - output channel(s)
+    if strcmpi(s.chMode, 'single')
+        curSrc = s.chOut(Nsrc);
+    else
+        curSrc = s.chOut;
+    end
     
     % record and get time data
     nAVG = 0;
@@ -42,7 +51,8 @@ for Nsrc = 1:Nout
         elseif strcmpi(s.audio_engine, 'pa_wavplay')
             
             % generate output buffer
-            wavBuffer = [zeros(size(s.sweep,1), curSrc-1) s.sweep];
+            wavBuffer           = zeros(size(s.sweep,1), max(curSrc));
+            wavBuffer(:,curSrc) = repmat(s.sweep, 1, numel(curSrc));
             
             % record the sweep
             % pa_wavplayrecord(playbuffer,[playdevice],[samplerate], [recnsamples], [recfirstchannel], [reclastchannel], [recdevice], [devicetype])
@@ -75,9 +85,24 @@ for Nsrc = 1:Nout
         end
     end
     
-    fprintf('Peak level output ch. %2.i: %7.2f  [dBFS]\n',s.chOut(Nsrc),db(max(abs(rec_raw))));
-    fprintf('RMS level output ch. %2.i : %7.2f  [dBFS]\n',s.chOut(Nsrc),db(rms(rec_raw)));
-    
+    for Nrec = 1:Nin
+        if Nrec == 1
+            fprintf('Peak level:   ch. %2.i ',s.chOut(Nsrc));
+        else
+            fprintf('                     ');
+        end
+        fprintf('-> ch. %2.i    %7.2f  [dBFS]\n',...
+            s.chIn(Nrec),db(max(abs(rec_raw(:,Nrec)))));
+    end
+    for Nrec = 1:Nin
+        if Nrec == 1
+            fprintf('RMS level:    ch. %2.i ',s.chOut(Nsrc));
+        else
+            fprintf('                     ');
+        end
+        fprintf('-> ch. %2.i    %7.2f  [dBFS]\n',...
+            s.chIn(Nrec),db(rms(rec_raw(:,Nrec))));
+    end
     % scale according to averages and clip reduction
     rec_raw = rec_raw / nAVG * 10^(Nclip_reduction*s.clipReduction/20);
     

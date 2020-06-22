@@ -10,7 +10,8 @@
 % fileName - expression to search for, e.g. '*.wav' will return all wave
 %            files and '*raw*.wav' will return all wave files whose name
 %            contains the word 'raw'. By default, all files are returned,
-%            which is equivalent to passing '*'.
+%            which is equivalent to passing '*'. Multiple expressions can
+%            be passed in a struct, e.g., {'*.wav', '*.mat'}
 %
 % O U T P U T
 % fileList - a cell array that lists all found files by full path and file
@@ -35,6 +36,20 @@
 % See the License for the specific language governing  permissions and
 % limitations under the License. 
 function [fileList, nameList] = AKcollectFiles(baseDir, fileName)
+
+% check if multiple fileNames are passed
+if nargin == 2 && iscell(fileName)
+    fileList = [];
+    nameList = [];
+    
+    for ff = 1:numel(fileName)
+        [fileListTmp, nameListTmp] = AKcollectFiles(baseDir, fileName{ff});
+        
+        fileList = [fileList; fileListTmp]; %#ok<AGROW>
+        nameList = [nameList; nameListTmp]; %#ok<AGROW>
+    end
+    return
+end
 
 % allocate space
 fileList  = cell(1e6, 1);
@@ -72,3 +87,4 @@ for nn = 1:numel(dirs)
 end
 
 fileList = fileList(1:i-1);
+nameList = nameList(1:i-1);

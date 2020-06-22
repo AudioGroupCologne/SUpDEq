@@ -238,6 +238,8 @@ if any(Rview)
     [Raz, Rel] = AKroomSimulationRotation(Raz, Rel, Rview(1), Rview(2));
 end
 
+Raz = mod(Raz, 360);
+
 % ----------------------------------------- exit sound angles at the source
 
 % --- angles for neutral source view
