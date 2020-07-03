@@ -162,7 +162,7 @@ end
 
 if tikhEps ~= 0
     
-    %Get SH functions
+    %Get SH functions, weights omitted
     [Ynm,n] = AKsh(N,[],samplingGrid(:,1),samplingGrid(:,2));
     n = n';
     nSH = (N+1).^2;
@@ -170,13 +170,9 @@ if tikhEps ~= 0
     %Create diagonal matrix according to Duraiswami2004
     I = eye(nSH);
     D = diag(1 + n.*(n+1)) .* I;
-
-    if weightsPassed %% For Least-Square SH transform with Tikhonov regularization and weights
-        W = diag(samplingGrid(:,3)); %Weights
-        YnmInvTik = (Ynm' * W * Ynm + tikhEps*D)^-1 * Ynm' * W;
-    else %% For Least-Square SH transform with Tikhonov regularization
-        YnmInvTik = (Ynm' * Ynm + tikhEps*D)^-1 * Ynm';
-    end
+    
+    % Inverse SH matrix for Least-Square SH transform with Tikhonov regularization
+    YnmInvTik = (Ynm' * Ynm + tikhEps*D)^-1 * Ynm';
     
     %Get SH-coefficients for left and right channel
     Hl_nm = YnmInvTik*HRTF_L;
@@ -190,11 +186,8 @@ if tikhEps ~= 0
     HRIRs_sfd.FFToversize   = 1;
     HRIRs_sfd.tikhEps       = tikhEps;
     
-    if weightsPassed 
-        disp('Transformation done with least-squares method with Tikhonov regularization - Sampling weights passed');
-    else 
-        disp('Transformation done with least-squares method with Tikhonov regularization - No sampling weights passed');
-    end
+    disp('Transformation done with least-squares method with Tikhonov regularization');
+    
 end
 
 end
