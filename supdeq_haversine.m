@@ -46,8 +46,7 @@ dAz = AzEl2(:,1) - AzEl1(:,1);
 dEl = AzEl2(:,2) - AzEl1(:,2);
 
 %Get great circular distance
-%d = 2 * radius * asin( sqrt( sin(dAz/2).^2 + cos(AzEl1(:,1)) .* cos(AzEl2(:,1)) .* sin(dEl/2).^2));
-d = 2 * radius * asin( sqrt( sin(dEl/2).^2 + cos(AzEl1(:,2)) .* cos(AzEl2(:,2)) .* sin(dAz/2).^2)); %According to 3D Tune In
+d = 2 * radius * asin( sqrt( sin(dAz/2).^2 + cos(AzEl1(:,1)) .* cos(AzEl2(:,1)) .* sin(dEl/2).^2));
 
 end
 

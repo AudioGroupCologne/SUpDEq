@@ -2,8 +2,8 @@
 %
 % function [eqTF_L, eqTF_R] = supdeq_getEqTF(eqDataset,samplingGrid,mode,channel,transformCore,phaseOnly)
 %
-% This function returns a HRTF (separately for the left/right ear) for an 
-% arbitrary direction, based on interpolation in the SH-domain and inverse 
+% This function returns an equalization transfer function (separately for the left/right ear) 
+% for an arbitrary direction, based on interpolation in the SH-domain and inverse 
 % spherical Fourier transform.
 %
 % Output:
