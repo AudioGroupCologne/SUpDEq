@@ -168,6 +168,10 @@ for kk = 0:N
     hn_r1(kk+1,:) = AKshRadial(kr1,'hankel',2,kk);
 end
 
+%Set 0 Hz bin to 1
+hn_r0(:,1) = 1;
+hn_r1(:,1) = 1;
+
 %Calculate hankel quotient
 hn_ext = hn_r1./hn_r0;
 

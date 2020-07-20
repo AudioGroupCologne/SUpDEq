@@ -1,6 +1,6 @@
 %% SUpDEq - Spatial Upsampling by Directional Equalization
 %
-% function [sparseHRTFdataset, sparseHRIRdataset] = supdeq_getSparseDataset(sparseGrid,NmaxSparse,referenceOrder)
+% function [sparseHRTFdataset, sparseHRIRdataset] = supdeq_getSparseDataset(sparseGrid,NmaxSparse,referenceOrder,type)
 %
 % This function returns a sparse HRTF or HRIR dataset by spatial
 % subsampling of a high order reference HRTF dataset of the Neumann KU100 
@@ -18,6 +18,10 @@
 % referenceOrder        - Chose N = 35 or N = 44 (SH order used to
 %                         transform the reference dataset)
 %                         Default: N = 35
+% type                  - Choose between Neumann KU100 (TH Köln), FABIAN
+%                         (TU Berlin) or HMSII (TH Köln) HRTFs. Define by
+%                         string 'ku100','fabian',or 'hmsII'
+%                         Default: 'ku100'
 %
 % Dependencies: SOFiA toolbox, AKtools
 %
@@ -26,7 +30,7 @@
 %             Institute of Communications Engineering
 %             Department of Acoustics and Audio Signal Processing
 
-function [sparseHRTFdataset, sparseHRIRdataset] = supdeq_getSparseDataset(sparseGrid,NmaxSparse,referenceOrder)
+function [sparseHRTFdataset, sparseHRIRdataset] = supdeq_getSparseDataset(sparseGrid,NmaxSparse,referenceOrder,type)
 
 if nargin < 1
     error('Please define a sparse grid.');
@@ -40,6 +44,10 @@ if nargin < 3 || isempty(referenceOrder)
     referenceOrder = 35;
 end
 
+if nargin < 4 || isempty(type)
+    type = 'ku100';
+end
+
 if referenceOrder ~= 35 && referenceOrder ~= 44
     error('Reference dataset only available at N = 35 or N = 44.');
 end
@@ -48,10 +56,26 @@ end
 
 %Load reference dataset
 if referenceOrder == 35
-    referenceHRTFdataset = importdata('HRIRs_sfd_N35.mat');
+    if strcmp(type,'ku100')
+        referenceHRTFdataset = importdata('HRIRs_sfd_N35.mat');
+    end
+    if strcmp(type,'fabian')
+        referenceHRTFdataset = importdata('HRIRs_FABIAN_sfd_N35.mat');
+    end
+    if strcmp(type,'hmsII')
+        referenceHRTFdataset = importdata('HRIRs_HMSII_sfd_N35.mat');
+    end
 end
 if referenceOrder == 44
-    referenceHRTFdataset = importdata('HRIRs_sfd_N44.mat');
+    if strcmp(type,'ku100')
+        referenceHRTFdataset = importdata('HRIRs_sfd_N44.mat');
+    end
+    if strcmp(type,'fabian')
+        referenceHRTFdataset = importdata('HRIRs_FABIAN_sfd_N44.mat');
+    end
+    if strcmp(type,'hmsII')
+        referenceHRTFdataset = importdata('HRIRs_HMSII_sfd_N44.mat');
+    end
 end
 
 %Get HRTFs from referenceHRTFdataset

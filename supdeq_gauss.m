@@ -2,7 +2,7 @@
 %
 % function [gridData, Npoints, Nmax] = supdeq_gauss(N)
 %
-% This function returns a Fliege sampling grid with azimuth and elevation
+% This function returns a Gaussian sampling grid with azimuth and elevation
 % in degree plus the respective sampling weights.
 %
 % Output:

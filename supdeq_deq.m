@@ -168,38 +168,8 @@ if deqDataset.waveType == 1
         
         fprintf('Considering acoustic parallax...\n');
     
-        %Factor acoustic parallax effect into dense sampling grid
-        %(1) - Transform sampling grid and ear positions to radiant in matlab coordinates system
-        samplingGridRad(:,1:2) = samplingGrid(:,1:2)*pi/180;
-        samplingGridRad(:,2) = pi/2 - samplingGridRad(:,2);
-        earPosition_L = deqDataset.earPosition(1:2)*pi/180;
-        earPosition_L(2) = pi/2 - earPosition_L(2);
-        earPosition_R = deqDataset.earPosition(3:4)*pi/180;
-        earPosition_R(2) = pi/2 - earPosition_R(2);
-        %(2) - Transform sampling grid and ear positions to cartesian coordinates and apply parallax shift
-        [x,y,z] = sph2cart(samplingGridRad(:,1),samplingGridRad(:,2),deqDataset.sourceDistance);
-        [x_ear_L,y_ear_L,z_ear_L] = sph2cart(earPosition_L(:,1),earPosition_L(:,2),deqDataset.radius); 
-        [x_ear_R,y_ear_R,z_ear_R] = sph2cart(earPosition_R(:,1),earPosition_R(:,2),deqDataset.radius);  
-        xL = x-x_ear_L;
-        xR = x-x_ear_R;
-        yL = y-y_ear_L;
-        yR = y-y_ear_R;
-        zL = z-z_ear_L;
-        zR = z-z_ear_R;
-        [AzParL,ElParL] = cart2sph(xL,yL,zL);
-        [AzParR,ElParR] = cart2sph(xR,yR,zR);
-        %(3) - Transform back to degree in SH coordinates system
-        AzParL = mod(AzParL,2*pi);
-        AzParR = mod(AzParR,2*pi);
-        AzParL = AzParL*180/pi;
-        AzParR = AzParR*180/pi;
-        ElParL=pi/2-ElParL;
-        ElParR=pi/2-ElParR;
-        ElParL = ElParL*180/pi;
-        ElParR = ElParR*180/pi;
-        %(4) - Store in new samplingGrids for left and right channel
-        samplingGridParL = [AzParL,ElParL];
-        samplingGridParR = [AzParR,ElParR];
+        %Get parallax shifted dense sampling grid for left and right ear
+        [samplingGridParL,samplingGridParR] = supdeq_parallax(samplingGrid,deqDataset.sourceDistance,deqDataset.radius,deqDataset.earPosition);
 
         %Get HRTF from equalized HRTF dataset by inverse spherical Fourier transform at
         %sampling points of dense sampling grid 
