@@ -17,7 +17,7 @@
 %                         for the left (HRTF_L) and right (HRTF_R) ear,
 %                         absolute frequency scale f, transform order N, 
 %                         and FFToversize
-% HRTF_equalized_L/R    - Equalized complex HRTFs 
+% HRTF_equalized_L/R    - Equalized complex HRTFs (single-sided spectrum)
 %
 % Input:        
 % sparseHRTFdataset     - Struct with sparse HRTF dataset in frequency
@@ -44,8 +44,7 @@
 %                         Variable 'transformCore' is neglected when 'tikhEps' is 
 %                         defined as the regularized least-square spherical Fourier 
 %                         transform is applied directly without any third party 
-%                         toolbox. Depending on the sampling grids, weights are
-%                         applied or not.
+%                         toolbox. 
 %                         Default: 0 (no Tikhonov regularization)
 % phaseOnly             - Set to 1 if only phase response of eqDataset
 %                         should be applied for equalization and not 

@@ -91,17 +91,14 @@ if sum(az < 0) > 0 || sum(el < 0) > 0
     error('Only positive azimuth/elevation values allowed!');
 end
 
-%% Perform transform with sofia_itc
-
-%Get fs
-fs = eqDataset.f(end)*2;
+%% Perform transform
 
 %Transform eqDataset to Fourier domain at sparse sampling grid points
 %(inverse spherical Fourier transform)
 [eqTF_L,eqTF_R] = supdeq_getArbHRTF(eqDataset,samplingGrid,mode,channel,transformCore);
 
 if phaseOnly    
-    fprintf('Phase only eqTFs...\n')
+    %fprintf('Phase only eqTFs...\n')
     %Get only phase response of eqTF
     eqTF_L_phase = angle(eqTF_L);
     eqTF_R_phase = angle(eqTF_R);

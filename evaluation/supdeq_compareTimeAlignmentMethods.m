@@ -242,8 +242,8 @@ phaseCorDenseL = exp(1j*rKU100 * k .* cosThetaDenseL);
 cosThetaDenseR = cos(denseSamplingGridRad(:,2)')*cos(pi/2) + sin(denseSamplingGridRad(:,2)')*sin(pi/2) .* cos(denseSamplingGridRad(:,1)'-pi/2);
 %No minus before 1j to get inverse phase term. Could also be achieved by division instead of multiplication
 phaseCorDenseR = exp(1j*rKU100 * k .* cosThetaDenseR);
-HRTF_L_Dense_PC = HRTF_L_Dense_PC .* phaseCorDenseL'; %Just flip, no conjugate complex
-HRTF_R_Dense_PC = HRTF_R_Dense_PC .* phaseCorDenseR';
+HRTF_L_Dense_PC = HRTF_L_Dense_PC .* phaseCorDenseL.'; %Just flip, no conjugate complex
+HRTF_R_Dense_PC = HRTF_R_Dense_PC .* phaseCorDenseR.';
 
 %Transform dense HRTF dataset to SH domain
 denseHRTFdataset_pc = supdeq_hrtf2sfd(HRTF_L_Dense_PC,HRTF_R_Dense_PC,Ndense,denseSamplingGrid,fs,'ak');

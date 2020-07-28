@@ -48,9 +48,7 @@
 %                 in a least-square fit solution for the SH transform. 
 %                 Variable 'transformCore' is neglected when 'tikhEps' is 
 %                 defined as the regularized least-square spherical Fourier 
-%                 transform is applied directly without any third party 
-%                 toolbox. Depending on the sampling grids, weights are
-%                 applied or not.
+%                 transform is applied directly without any third party toolbox. 
 %                 Default: 0 (no Tikhonov regularization)
 %
 % Dependencies: SOFiA toolbox, AKtools, SOFA API
