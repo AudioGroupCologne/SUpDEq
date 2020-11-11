@@ -9,35 +9,37 @@
 % inverse alignment. The methods are described and compared in more detail in [6].
 %
 % Dependencies: SUpDEq toolbox with SOFiA and AKtools
+%               https://github.com/AudioGroupCologne/SUpDEq
 %
 % References:
 % Onset-Based Time-Alignment (OBTA)
-% [1] M. J. Evans, J. A. S. Angus, and A. I. Tew, ?Analyzing head-related transfer function measurements 
-% using surface spherical harmonics,? 
-% J. Acoust. Soc. Am., vol. 104, no. 4, pp. 2400?2411, 1998.
-% [2] F. Brinkmann and S. Weinzierl, ?Comparison of head-related transfer functions pre-processing 
-% techniques for spherical harmonics decomposition,? 
-% in Proceedings of the AES Conference on Audio for Virtual and Augmented Reality, 2018, pp. 1?10.
+% [1] M. J. Evans, J. A. S. Angus, and A. I. Tew, "Analyzing head-related transfer function measurements 
+% using surface spherical harmonics," 
+% J. Acoust. Soc. Am., vol. 104, no. 4, pp. 2400-2411, 1998.
+% [2] F. Brinkmann and S. Weinzierl, "Comparison of head-related transfer functions pre-processing 
+% techniques for spherical harmonics decomposition," 
+% in Proceedings of the AES Conference on Audio for Virtual and Augmented Reality, 2018, pp. 1-10.
 %
 % Frequency-Dependenten Time-Alignment (FDTA)
 % [3] M. Zaunschirm, C. Schoerkhuber, and R. Hoeldrich, 
-% ?Binaural rendering of Ambisonic signals by HRIR time alignment and a diffuseness constraint,? 
-% J. Acoust. Soc. Am., vol. 143, no. 6, pp. 3616?3627, 2018.
+% "Binaural rendering of Ambisonic signals by HRIR time alignment and a diffuseness constraint," 
+% J. Acoust. Soc. Am., vol. 143, no. 6, pp. 3616-3627, 2018.
 %
 % Spatial Upsampling by Directional Equalization (SUpDEq)
 % [4] C. Pörschmann, J. M. Arend, and F. Brinkmann, 
-% ?Directional Equalization of Sparse Head-Related Transfer Function Sets for Spatial Upsampling,? 
-% IEEE/ACM Trans. Audio, Speech, Lang. Process., vol. 27, no. 6, pp. 1060?1071, 2019.
+% "Directional Equalization of Sparse Head-Related Transfer Function Sets for Spatial Upsampling," 
+% IEEE/ACM Trans. Audio, Speech, Lang. Process., vol. 27, no. 6, pp. 1060-1071, 2019.
 %
 % Phase-Correction (PC)
-%?[5] Z. Ben-Hur, D. Lou Alon, R. Mehra, and B. Rafaely, 
-% ?Efficient Representation and Sparse Sampling of Head-Related Transfer Functions 
-% Using Phase-Correction Based on Ear Alignment,? 
-% IEEE/ACM Trans. Audio, Speech, Lang. Process., vol. 27, no. 12, pp. 2249?2262, 2019.
+% [5] Z. Ben-Hur, D. Lou Alon, R. Mehra, and B. Rafaely, 
+% "Efficient Representation and Sparse Sampling of Head-Related Transfer Functions 
+% Using Phase-Correction Based on Ear Alignment," 
+% IEEE/ACM Trans. Audio, Speech, Lang. Process., vol. 27, no. 12, pp. 2249-2262, 2019.
 %
 % Submission
 % [6] J.M. Arend, F. Brinkmann, and C. Pörschmann, 
-% ?Spherical Harmonics Interpolation of Time-Aligned Head-Related Transfer Functions: Physical and Perceptual Evaluation,? 
+% "Assessing Spherical Harmonics Interpolation of Time-Aligned Head-Related
+% Transfer Functions"
 % Manuscript submitted for publication, 2020.
 %
 % (C) 2020 by JMA, Johannes M. Arend
