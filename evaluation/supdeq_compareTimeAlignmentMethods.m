@@ -3,7 +3,7 @@
 % script supdeq_compareTimeAlignmentMethods
 % 
 % In this script, various preprocessing / time-alignment methods [1,2,3,5] are implemented
-% and compared to the SUpDEq method [4]. It is the basis for the journal submission [6].
+% and compared to the SUpDEq method [4]. It is the basis for the journal publication [6].
 % In brief, the sparse HRTF set gets time-aligned with the respective method, interpolated
 % to a dense HRTF set in SH domain, and then HRTFs get reconstructed with the respective
 % inverse alignment. The methods are described and compared in more detail in [6].
@@ -36,11 +36,9 @@
 % Using Phase-Correction Based on Ear Alignment," 
 % IEEE/ACM Trans. Audio, Speech, Lang. Process., vol. 27, no. 12, pp. 2249-2262, 2019.
 %
-% Submission
 % [6] J.M. Arend, F. Brinkmann, and C. Pörschmann, 
 % "Assessing Spherical Harmonics Interpolation of Time-Aligned Head-Related
-% Transfer Functions"
-% Manuscript submitted for publication, 2020.
+% Transfer Functions", Journal of the Audio Engineering Society (JAES)
 %
 % (C) 2020 by JMA, Johannes M. Arend
 %             Technische Hochschule Köln
