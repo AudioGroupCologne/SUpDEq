@@ -51,7 +51,7 @@ clear all;
 close all;
 
 %Chose SH order of sparse HRTF dataset (Lebedev sampling scheme)
-sparseOrder = 4;
+sparseOrder = 2;
 %Get sparse HRTF set
 [sparseHRTFdataset,sparseHRIRdataset] = supdeq_getSparseDataset(supdeq_lebedev([],sparseOrder),sparseOrder,44);
 %Get fs
@@ -236,10 +236,10 @@ denseSamplingGridRad = denseSamplingGrid * pi / 180;
 
 %Add relative TOAs of dense sampling grid to HRTFs (inverse phase
 %correction)
-cosThetaDenseL = cos(denseSamplingGridRad(:,2)')*cos(pi/2) + sin(denseSamplingGridRad(:,2)')*sin(pi/2) .* cos(denseSamplingGridRad(:,1)'+pi/2); %Inverse phase has +- pi at end of cosTheta equation
+cosThetaDenseL = cos(denseSamplingGridRad(:,2)')*cos(pi/2) + sin(denseSamplingGridRad(:,2)')*sin(pi/2) .* cos(denseSamplingGridRad(:,1)'-pi/2);
 %No minus before 1j to get inverse phase term. Could also be achieved by division instead of multiplication
 phaseCorDenseL = exp(1j*rKU100 * k .* cosThetaDenseL);
-cosThetaDenseR = cos(denseSamplingGridRad(:,2)')*cos(pi/2) + sin(denseSamplingGridRad(:,2)')*sin(pi/2) .* cos(denseSamplingGridRad(:,1)'-pi/2);
+cosThetaDenseR = cos(denseSamplingGridRad(:,2)')*cos(pi/2) + sin(denseSamplingGridRad(:,2)')*sin(pi/2) .* cos(denseSamplingGridRad(:,1)'+pi/2);
 %No minus before 1j to get inverse phase term. Could also be achieved by division instead of multiplication
 phaseCorDenseR = exp(1j*rKU100 * k .* cosThetaDenseR);
 HRTF_L_Dense_PC = HRTF_L_Dense_PC .* phaseCorDenseL.'; %Just flip, no conjugate complex
