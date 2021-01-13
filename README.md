@@ -27,7 +27,7 @@ A HTML documentation of the MATLAB code can be found here: http://audiogroup.web
 The third-party toolboxes are excluded from the documentation.
 
 ## About
-Christoph Pörschmann and Johannes M. Arend^a  
+Johannes M. Arend and Christoph Pörschmann  
 TH Köln - University of Applied Sciences  
 Institute of Communications Engineering  
 Department of Acoustics and Audio Signal Processing  
@@ -35,7 +35,7 @@ Betzdorfer Str. 2, D-50679 Cologne, Germany
 https://www.th-koeln.de/akustik  
 
 
-^a Also at: Technical University of Berlin  
+J. M. Arend is also at Technical University of Berlin  
 Audio Communication Group  
 Einsteinufer 17c, D-10587 Berlin, Germany  
 
@@ -46,7 +46,7 @@ The SUpDeq method is patent protected.
 
 
 ## References
-[1] C. Pörschmann*, J.M. Arend*, and F. Brinkmann, “Directional Equalization of Sparse Head-Related Transfer Function Sets for Spatial Upsampling,” IEEE/ACM Trans. Audio, Speech, Lang. Process., vol. 27, no. 6, pp. 1060–1071, 2019, *These authors contributed equally to this work.  
+[1] C. Pörschmann\*, J.M. Arend\*, and F. Brinkmann, “Directional Equalization of Sparse Head-Related Transfer Function Sets for Spatial Upsampling,” IEEE/ACM Trans. Audio, Speech, Lang. Process., vol. 27, no. 6, pp. 1060–1071, 2019, \*These authors contributed equally to this work.  
 [2] C. Pörschmann and J. M. Arend, “A Method for Spatial Upsampling of Directivity Patterns of Human Speakers by Directional Equalization,” in Proceedings of the 45th DAGA, 2019, pp. 1458–1461.  
 [3] J. M. Arend and C. Pörschmann, “Synthesis of Near-Field HRTFs by Directional Equalization of Far-Field Datasets,” in Proceedings of the 45th DAGA, 2019, pp. 1454–1457.  
 [4] C. Pörschmann and J. M. Arend, “Obtaining Dense HRTF Sets from Sparse Measurements in Reverberant Environments,” in Proceedings of the AES International Conference on Immersive and Interactive Audio, York, UK, 2019, pp. 1–10.  
