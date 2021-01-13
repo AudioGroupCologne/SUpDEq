@@ -8,14 +8,10 @@ Various extentions of the toolbox, as presented in [2-6], allow e.g. the synthes
 ## Requirements
 The toolbox is implemented in MATLAB R2015b and R2018a and requires the Signal Processing Toolbox. Older versions of MATLAB might also work. The following third party toolboxes are required for full functionality. All listed toolboxes are part of the SUpDEq toolbox and are stored in the folder "thirdParty".
 
-- SOFiA (Sound Field Analysis Toolbox) [9]  
- https://github.com/AudioGroupCologne/SOFiA
-- AKtools [10]   
-https://www.ak.tu-berlin.de/menue/digitale_ressourcen/research_tools/aktools/
-- SOFA API (Spatially Oriented Format for Acoustics) [11]  
-https://sourceforge.net/projects/sofacoustics/
-- AMT (Auditory Modeling Toolbox) [12]  
-http://amtoolbox.sourceforge.net  
+- [SOFiA](https://github.com/AudioGroupCologne/SOFiA) (Sound Field Analysis Toolbox) [9]  
+- [AKtools](https://www.ak.tu-berlin.de/menue/publications/open_research_tools/aktools/) [10]   
+- [SOFA API](https://sourceforge.net/projects/sofacoustics/) (Spatially Oriented Format for Acoustics) [11]  
+- [AMT](http://amtoolbox.sourceforge.net) (Auditory Modeling Toolbox) [12]   
 
 SOFiA and AMT partly work with MEX files. The required MEX files for Mac and Windows (64 Bit) are pre-compiled and stored in the respective folders. 
 
