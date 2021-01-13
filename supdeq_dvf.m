@@ -2,11 +2,11 @@
 %
 % function [shiftedHRTF_L, shiftedHRTF_R, ffShiftedHRTFdataset] = supdeq_dvf(HRTFdataset, newDistance, samplingGrid ,shiftToFarField, adjustAmplitude, radius, earPosition, N_HRTF)
 %
-% This function applies a distance variation shift to HRTFs using distance 
-% variation functions (DVF). As it works with HRTF in SH domain, acoustic 
-% parallax effects (high frequency parallax effects induced by the pinna 
-% which are not covered by the rigid sphere transfer functinos) can be
-% embedded into the distance shifted HRTFs.
+% This function applies a distance shift to HRTFs using distance variation 
+% functions (DVFs). As it works with HRTFs in spherical harmonics domain, 
+% acoustic parallax effects (high frequency parallax effects induced by 
+% the pinna which are not covered by the rigid sphere transfer functions) 
+% can be embedded into the distance shifted HRTFs.
 %
 % Output:
 % shiftedHRTF_L/R      - Shifted HRTF_L/R in frequency domain (single sided complex spectrum)
