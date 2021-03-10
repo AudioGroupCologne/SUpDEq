@@ -141,9 +141,6 @@ h_LFE = ifft(H_LFE, 'symmetric');
 
 % ----------------------------------------------------------------- 5 plots
 if ALFE_plot 
-    if ~exist('hp.m', 'file')
-        error('Obtain hp.m plot function from fabian.brinkmann@tu-berlin.de')
-    else
     fID = figure;
     fWidth = 30; fHeight = 20;
     set(fID,'PaperUnits', 'centimeters');
@@ -165,16 +162,14 @@ if ALFE_plot
     
     % spec fullrange
     subplot(2,2,1)
-        hp(h_org, 's2d', 'c', [.7 .7 .7])
-        hp(h_LFE, 's2d', 'c', 'k', 'x', [20 fs/2])
+        AKp(h_org, 's2d', 'c', [.7 .7 .7])
+        AKp(h_LFE, 's2d', 'c', 'k', 'x', [20 fs/2])
         ylim([y_min y_max])
-        nice_ticks
         title({'Magnitude response' '(grey: input; black: output)'})
     % phase fullrange
     subplot(2,2,3)
-        hp(h_org, 'ph2d', 'c', [.7 .7 .7])
-        hp(h_LFE, 'ph2d', 'c', 'k', 'x', [20 fs/2])
-        nice_ticks
+        AKp(h_org, 'ph2d', 'c', [.7 .7 .7])
+        AKp(h_LFE, 'ph2d', 'c', 'k', 'x', [20 fs/2])
         
     % restrict limits of y-axis
     y_max = 20*log10(ALFE_abs(1));
@@ -192,23 +187,21 @@ if ALFE_plot
         
     % spec crossover
     subplot(2,2,2)
-        hp(h_org, 's2d', 'c', [.7 .7 .7])
-        hp(h_LFE, 's2d', 'c', 'k', 'x', [f_link * 2^-(2/2) f_link * 2^(2/2)])
+        AKp(h_org, 's2d', 'c', [.7 .7 .7])
+        AKp(h_LFE, 's2d', 'c', 'k', 'x', [f_link * 2^-(2/2) f_link * 2^(2/2)])
         % plot limits for averaging level and group delay and plot f_link
         hold on
         plot(n2freq([n_link(1) n_link(1)], NFFT, fs), [y_max y_min], '--g')
         plot(n2freq([n_link(2) n_link(2)], NFFT, fs), [y_max y_min], '--g')
         ylim([y_min y_max])
-        nice_ticks
         title({'Magnitude response' '(green: linking frequencies)'})
     % phase crossover
     subplot(2,2,4)
-        hp(h_org, 'ph2d', 'c', [.7 .7 .7])
-        hp(h_LFE, 'ph2d', 'c', 'k', 'x', [f_link * 2^-(2/2) f_link * 2^(2/2)])
+        AKp(h_org, 'ph2d', 'c', [.7 .7 .7])
+        AKp(h_LFE, 'ph2d', 'c', 'k', 'x', [f_link * 2^-(2/2) f_link * 2^(2/2)])
         % plot limits for averaging level and group delay and plot f_link
         hold on
         plot(n2freq([n_link(1) n_link(1)], NFFT, fs), [-200 200], '--g')
         plot(n2freq([n_link(2) n_link(2)], NFFT, fs), [-200 200], '--g')
-        nice_ticks
-    end
+end
 end
