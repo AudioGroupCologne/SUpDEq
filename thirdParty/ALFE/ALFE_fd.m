@@ -156,7 +156,7 @@ if ALFE_plot
     
     % restrict limits of y-axis
     y_max = max(20*log10(abs(fft(h_org))));
-    y_max = y_max + 5-mod(y_max,5);
+    y_max = max(y_max + 5-mod(y_max,5));
     y_min = 20*log10(ALFE_abs(1));
     y_min = y_min - 40 - mod(y_min, 5);
     
