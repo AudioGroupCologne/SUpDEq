@@ -1,4 +1,4 @@
-% [f_nm, f, is_even, YnmInv] = AKsht(x, doFFT, multi, N, SHTmode, fs, compact, SHmode)
+% [f_nm, f, is_even, YnmInv] = AKsht(x, doFFT, multi, N, SHTmode, fs, compact, SHmode, tikhEps)
 %
 % does a discrtete spherical harmonics/fourier transform (SHT) with
 % sampling weights according to eq. (3.2) in [1] or without sampling
@@ -43,6 +43,10 @@
 %           in less data. If compact = false it can be used with SHTmodes
 %           db_unwrap, abs_unwrap, and real_imag. It can be used with
 %           SHTmodes db , and abs regardless of the compact parameter.
+% tikhEps - Define epsilon of Tikhonov regularization if regularization 
+%           should be applied [3]. Only appicable to least-squares solution
+%           (without weights)
+%           Default: 0 (no Tikhonov regularization)
 %
 % O U T P U T:
 % f_nm    - spherical harmonics coefficients. One column holds coefficients
@@ -67,9 +71,15 @@
 % [2] Franz Zotter: Analysis and synthesis of sound-radiation with 
 %     spherical arrays. Ph.D. dissertation, University of Music and
 %     Performing arts (2009).
+% [3] Ramani Duraiswami, Dimitry N. Zotkin, and Nail A. Gumerov: "Inter-
+%     polation and range extrapolation of HRTFs." IEEE Int. Conf. Acoustics
+%     , Speech, and Signal Processing (ICASSP), Montreal, Canada, May 2004,
+%     p. 45-48, doi: 10.1109/ICASSP.2004.1326759.
+
 %
 % fabian.brinkmann@tu-berlin.de, Audio Communication Group, TU Berlin
-% 09/2015
+% 09/2015 - inital dev. (fabian.brinkmann@tu-berlin.de)
+% 07/2020 - added Tikhonov regularization (Johannes.Arend@th-koeln.de)
 
 % AKtools
 % Copyright (C) 2016 Audio Communication Group, Technical University Berlin
@@ -83,7 +93,7 @@
 % WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 % See the License for the specific language governing  permissions and
 % limitations under the License.
-function [f_nm, f, is_even, YnmInv] = AKsht(x, doFFT, multi, N, SHTmode, fs, compact, SHmode)
+function [f_nm, f, is_even, YnmInv] = AKsht(x, doFFT, multi, N, SHTmode, fs, compact, SHmode, tikhEps)
 
 % -------------------------------------------------- set default parameters
 if ~exist('fs', 'var')
@@ -97,6 +107,9 @@ if ~exist('compact', 'var')
 end
 if ~exist('SHmode', 'var')
     SHmode = 'complex';
+end
+if ~exist('tikhEps', 'var')
+    tikhEps = 0;
 end
 
 % ------------------------------- transfer into frequency domain if desired
@@ -119,8 +132,19 @@ if size(multi, 2) <= 3
     [Ynm, n, m] = AKsh(N, [], multi(:,1), multi(:,2), SHmode);
     
     if size(multi, 2) == 2
-        % discrete SHT without sampling weights: calculate inverse matrix
-        YnmInv = pinv(Ynm);
+        %Check if Tikhonov regularization should be applied and perform
+        %least-squares solution with Tikhonov
+        if tikhEps == 0
+            % discrete SHT without sampling weights and without regularization: calculate inverse matrix
+            YnmInv = pinv(Ynm);
+        else
+            %Create diagonal matrix according to [3]
+            I = eye(size(n,2));
+            D = diag(1 + n.*(n+1)) .* I;
+            
+            % Inverse SH matrix for Least-Squares SH transform with Tikhonov regularization
+            YnmInv = (Ynm' * Ynm + tikhEps*D)^-1 * Ynm';
+        end
     else
         % discrete SHT using sampling weights: calculate conjugate matrix
         YnmConj = zeros(size(Ynm));
