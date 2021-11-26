@@ -46,7 +46,7 @@ if strcmp(method,'Algazi')
 end
 
 if strcmp(method,'Bahu')
-    %r_opt = ?0.44*X1 + 0.23*X3 + 3.2 cm
+    %r_opt = 0.44*X1 + 0.23*X3 + 3.2 cm
     %width X1 = head half width, X2 = head half height, X3 = head half length
     r_opt = 0.44*(headWidth/2) + 0.23*(headLength/2) + 0.032;
 end
