@@ -10,7 +10,7 @@
 % r             - Optimal radius r in m
 %
 % Input:
-% headWidth      - Head width in m
+% headWidth     - Head width in m
 % headHeight    - Head height in m
 % headLength    - Head length/depth in m
 % method        - 'Algazi' (ILD optimized) or 'Bahu' (ITD optimized)  
