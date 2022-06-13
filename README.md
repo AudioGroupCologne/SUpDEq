@@ -33,7 +33,8 @@ After installation, we recommend to go through the `supdeq_demo` script step by 
 For an extended selection of pre-processing and interpolation methods, we recommend checking the `supdeq_interpHRTF` function. The function provides various SUpDEq pre-processing methods as well as other time-alignment methods as described in [7]. In addition, the function allows SH, Natural Neighbor, or Barycentric interpolation of the (pre-processed) HRTFs [8]. Pre-processing and interpolation can be freely combined to obtain the best results depending on the specific conditions.
 
 ## Documentation
-A HTML documentation of the MATLAB code can be found here: http://audiogroup.web.th-koeln.de/SUpDEq_doc/index.html  
+A HTML documentation of the MATLAB code can be found here:  
+[http://audiogroup.web.th-koeln.de/SUpDEq_doc/index.html](https://www.ak.tu-berlin.de/menue/fachgebiet_audiokommunikation/)  
 The third-party toolboxes are excluded from the documentation.
 
 ## About
@@ -42,16 +43,14 @@ TH Köln - University of Applied Sciences
 Institute of Communications Engineering  
 Department of Acoustics and Audio Signal Processing  
 Betzdorfer Str. 2, D-50679 Cologne, Germany  
-https://www.th-koeln.de/akustik  
+[https://www.th-koeln.de/akustik ](https://www.ak.tu-berlin.de/menue/fachgebiet_audiokommunikation/) 
 
-
-J. M. Arend is also at Technical University of Berlin  
+J. M. Arend is now at Technical University of Berlin  
 Audio Communication Group  
 Einsteinufer 17c, D-10587 Berlin, Germany  
+[https://www.ak.tu-berlin.de/menue/fachgebiet_audiokommunikation ](https://www.ak.tu-berlin.de/menue/fachgebiet_audiokommunikation/)
 
 Thanks to Fabian Brinkmann (Audio Communication Group, TU Berlin) for useful discussions and contributions!  
-
-The SUpDeq method is patent protected.
 
 ## References
 [1] C. Pörschmann\*, J.M. Arend\*, and F. Brinkmann, “Directional Equalization of Sparse Head-Related Transfer Function Sets for Spatial Upsampling,” IEEE/ACM Trans. Audio, Speech, Lang. Process., vol. 27, no. 6, pp. 1060–1071, 2019, \*These authors contributed equally to this work.  
