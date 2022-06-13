@@ -49,9 +49,9 @@ addpath(genpath(fullfile(pwd,'thirdParty')), '-end')
 
 % add SOFA correctly using the start script (try if the silent option works)
 try
-    run(fullfile(pwd, 'thirdParty', 'sofa-api-mo-1.0.2', 'API_MO', 'SOFAstart(''silent'')'))
+    run(fullfile(pwd, 'thirdParty', 'SOFA_API', 'API_MO', 'SOFAstart(''silent'')'))
 catch %#ok<CTCH>
-    run(fullfile(pwd, 'thirdParty', 'sofa-api-mo-1.0.2', 'API_MO', 'SOFAstart'))
+    run(fullfile(pwd, 'thirdParty', 'SOFA_API', 'API_MO', 'SOFAstart'))
 end
 
 % - remove third party tools if they were already installed outside supdeq
