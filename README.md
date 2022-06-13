@@ -34,7 +34,7 @@ For an extended selection of pre-processing and interpolation methods, we recomm
 
 ## Documentation
 A HTML documentation of the MATLAB code can be found here:  
-[http://audiogroup.web.th-koeln.de/SUpDEq_doc/index.html](https://www.ak.tu-berlin.de/menue/fachgebiet_audiokommunikation/)  
+[http://audiogroup.web.th-koeln.de/SUpDEq_doc/index.html](http://audiogroup.web.th-koeln.de/SUpDEq_doc/index.html)  
 The third-party toolboxes are excluded from the documentation.
 
 ## About
@@ -43,12 +43,12 @@ TH Köln - University of Applied Sciences
 Institute of Communications Engineering  
 Department of Acoustics and Audio Signal Processing  
 Betzdorfer Str. 2, D-50679 Cologne, Germany  
-[https://www.th-koeln.de/akustik ](https://www.ak.tu-berlin.de/menue/fachgebiet_audiokommunikation/) 
+[https://www.th-koeln.de/akustik](https://www.th-koeln.de/akustik) 
 
 J. M. Arend is now at Technical University of Berlin  
 Audio Communication Group  
 Einsteinufer 17c, D-10587 Berlin, Germany  
-[https://www.ak.tu-berlin.de/menue/fachgebiet_audiokommunikation ](https://www.ak.tu-berlin.de/menue/fachgebiet_audiokommunikation/)
+[https://www.ak.tu-berlin.de/menue/fachgebiet_audiokommunikation](https://www.ak.tu-berlin.de/menue/fachgebiet_audiokommunikation/)
 
 Thanks to Fabian Brinkmann (Audio Communication Group, TU Berlin) for useful discussions and contributions!  
 
