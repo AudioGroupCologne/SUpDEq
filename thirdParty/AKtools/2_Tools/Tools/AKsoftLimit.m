@@ -200,23 +200,28 @@ for ll = 1:numel(lim_dir)
         % precompute values
         H_dB = 20*log10(H_abs);
         
-        % select different ranges for soft knee limiting - [2], eq. (4)
-        idSoft = 2 * abs(H_dB - limit_dB) <= knee(1) & f;
+        if knee(1) ~= 0
+        
+            % range for soft limiting - [2], eq. (4)
+            idSoft = 2 * abs(H_dB - limit_dB) <= knee(1) & f;
+            
+            % calculate and apply the soft limit gains
+            gainSoft = (1/knee(2)-1) * ( H_dB(idSoft)-limit_dB(idSoft) + ...
+                knee(1)/2 ).^2 / (2*knee(1));
+            gainSoft = 10.^(gainSoft/20);
+            
+            H(idSoft) = H(idSoft) .* gainSoft;
+        end
+        
+        % range for hard limiting - [2], eq. (4)
         idHard = 2 *    (H_dB - limit_dB) >  knee(1) & f;
-        
-        % calculate and apply the soft limit gains
-        gainSoft = (1/knee(2)-1) * ( H_dB(idSoft)-limit_dB(idSoft) + ...
-            knee(1)/2 ).^2 / (2*knee(1));
-        gainSoft = 10.^(gainSoft/20);
-        
-        H(idSoft) = H(idSoft) .* gainSoft;
         
         % calculate and apply the compression/limiting
         if knee(2) ~= inf
             gainHard = limit_dB(idHard) + (H_dB(idHard)-limit_dB(idHard))/knee(2);
             gainHard = 10.^(gainHard/20);
             
-            H(idHard) = H(idHard)./H_abs(idHard) .* gainHard(idHard);
+            H(idHard) = H(idHard)./H_abs(idHard) .* gainHard;
         else
             H(idHard) = H(idHard)./H_abs(idHard) .* limit_lin(idHard);
         end
