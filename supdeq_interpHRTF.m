@@ -1,6 +1,6 @@
 %% SUpDEq - Spatial Upsampling by Directional Equalization
 %
-% function [interpHRTFset, HRTF_interp_L, HRTF_interp_R] = supdeq_interpHRTF(HRTFset, ipSamplingGrid, ppMethod, ipMethod, headRadius, tikhEps) 
+% function [interpHRTFset, HRTF_interp_L, HRTF_interp_R] = supdeq_interpHRTF(HRTFset, ipSamplingGrid, ppMethod, ipMethod, mc, headRadius, tikhEps, limitMC, mcKnee, mcMinPhase, limFade) 
 %
 % This function performs HRTF interpolation of the input HRTFset according
 % to the passed interpolation sampling grid. Various interpolation and
@@ -39,18 +39,35 @@
 %                         'PC'              - Phase-Correction according to BenHur et al., 2019 (open sphere transfer functions)
 %                         'OBTA'            - Onset-Based Time-Alignment according to Brinkmann & Weinzierl, 2018 
 %                         'MagPhase'        - Split HRTF to magnitude and unwrapped phase - No time-alignment
-%                          Default: 'SUpDEq_Lim_AP'
+%                          Default: 'SUpDEq'
 % ipMethod              - String defining the ipMethod
 %                         'SH'      - Spherical harmonics interpolation
 %                         'NN'      - Natural neighbor interpolation with Voronoi weights
 %                         'Bary'    - Barycentric interpolation
 %                          Default: 'SH'
+% mc                     - Define maximum boost in dB if magnitude constraint to interpolated HRTFs based on ERB filters should be applied (Arend & Brinkmann, 2022)
+%                          Set to nan if magnitude constraint should not be applied
+%                          Default: 100 (100 dB maximum boost (no limiting), infinity attenuation)
 % headRadius             - Head radius in m. Required for time-alignment methods SUpDEq and PC
 %                          Default: 0.0875
 % tikhEps                - Define epsilon of Tikhonov regularization if regularization should be applied
 %                          Applying the Tikhonov regularization will always result in a least-square fit 
 %                          solution for the SH transform. Only relevant if ipMethod is 'SH'.
 %                          Default: 0 (no Tikhonov regularization)
+% limitMC                - Boolean to set compensation to 0 dB below spatial aliasing frequency fA, assuming 
+%                          that interpolation below fA works correctly. 
+%                          Default: true (compensation filter works only above fA)
+%                          Only applies if 'mc' is not nan
+% mcKnee                 - Knee in dB of the soft-limiting applied to the compensation filter. Soft-limiting is applied according to maximum boost 'mc' 
+%                          Only applies if 'mc' is not nan
+%                          Default: 0 dB (no knee)
+% mcMinPhase             - Boolean to design compensation filter as minimum-phase filter. If set to false, compensation filter is a zero-phase filter
+%                          Default: true (minimum-phase filter) as this provides a better performance in terms of ITD errors in combination with classical SUpDEq processing. 
+%                          When applying other preprocessing methods, using zero-phase filters can be more appropriate. 
+% limFade                - String to define whether to apply a linear fade upwards from aliasing frequency fA to fAt = fA + 1/3 Oct, or downwards, i.e., from fA to fAt = fA - 1/3 Oct
+%                          'fadeUp' - upwards
+%                          'fadeDown' - downwards
+%                           Default: 'fadeDown'
 %
 % Dependencies: SUpDEq toolbox, AKtools, SOFiA toolbox, SFS toolbox, TriangleRayIntersection
 %
@@ -97,25 +114,45 @@
 %             Institute of Communications Engineering
 %             Department of Acoustics and Audio Signal Processing
 
-function [interpHRTFset, HRTF_L_ip, HRTF_R_ip] = supdeq_interpHRTF(HRTFset, ipSamplingGrid, ppMethod, ipMethod, headRadius, tikhEps) 
+function [interpHRTFset, HRTF_L_ip, HRTF_R_ip] = supdeq_interpHRTF(HRTFset, ipSamplingGrid, ppMethod, ipMethod, mc, headRadius, tikhEps, limitMC, mcKnee, mcMinPhase, limFade) 
 
 
 if nargin < 3 || isempty(ppMethod)
-    ppMethod = 'SUpDEq_Lim_AP';
+    ppMethod = 'SUpDEq';
 end
 
 if nargin < 4 || isempty(ipMethod)
     ipMethod = 'SH';
 end
 
-if nargin < 5 || isempty(headRadius)
+if nargin < 5 || isempty(mc)
+    mc = 100;
+end
+
+if nargin < 6 || isempty(headRadius)
     headRadius = 0.0875;
 end
 
-if nargin < 6 || isempty(tikhEps)
+if nargin < 7 || isempty(tikhEps)
     tikhEps = 0;
 end
 
+if nargin < 8 || isempty(limitMC)
+    limitMC = true;
+end
+
+if nargin < 9 || isempty(mcKnee)
+    mcKnee = 0;
+end
+
+if nargin < 10 || isempty(mcMinPhase)
+    mcMinPhase = true;
+end
+
+if nargin < 11 || isempty(limFade)
+    limFade = 'fadeDown';
+end
+   
 %% Get some required variables
 
 fs = HRTFset.f(end)*2;
@@ -126,7 +163,7 @@ HRTF_L = HRTFset.HRTF_L;
 HRTF_R = HRTFset.HRTF_R;
 c = 343;
 
-%Get HRIRs - Required for threshold detection
+%Get HRIRs - Required for threshold detection and mc
 %Get mirror spectrum
 HRIR_L = AKsingle2bothSidedSpectrum(HRTF_L.');
 HRIR_R = AKsingle2bothSidedSpectrum(HRTF_R.');
@@ -549,6 +586,203 @@ switch ppMethod
         HRTF_R_ip = pHRTF_R_ip;
 end
 
+%% Constrain magnitude if mc ~= nan
+
+if ~isnan(mc)
+    
+    disp('MC postprocessing');
+    
+    %Save intermediate result (interpolated HRTFs without mc) in output struct
+    interpHRTFset.p.HRTF_L_ip_noMC = HRTF_L_ip;
+    interpHRTFset.p.HRTF_R_ip_noMC = HRTF_R_ip;
+    
+    %Get input HRTFs in auditory bands (ERB filter)
+    fLowErb = 50;
+    [cl,ferb] = AKerbErrorPersistent(HRIR_L(1:hrirLength,:),AKdirac(hrirLength),[fLowErb fs/2],fs);
+    [cr] = AKerbErrorPersistent(HRIR_R(1:hrirLength,:),AKdirac(hrirLength),[fLowErb fs/2],fs);
+    
+    %Interpolate ERB filters to ipSamplingGrid with respective ipMethod
+    switch ipMethod
+        case 'SH'
+
+            %Transform ERB filters to SH domain
+            %Tikhonov regularization can be applied if weights in sampling grid are erased and tikhEps ~= 0
+            cl_nm = AKsht(cl, false, samplingGrid, HRTFset.Nmax, 'complex', fs, false, 'real',tikhEps);
+            cr_nm = AKsht(cr, false, samplingGrid, HRTFset.Nmax, 'complex', fs, false, 'real',tikhEps);
+
+            %Apply SH interpolation to ipSamplingGrid
+            cl_ip = AKisht(cl_nm, false, ipSamplingGrid(:,1:2), 'complex', false, false, 'real');
+            cr_ip = AKisht(cr_nm, false, ipSamplingGrid(:,1:2), 'complex', false, false, 'real');
+
+        case 'NN'
+            
+            %Transform grids to cartesian coordinates
+            [samplingGrid_cart(:,1), samplingGrid_cart(:,2), samplingGrid_cart(:,3)] = sph2cart(samplingGrid(:,1)/360*2*pi, pi/2-samplingGrid(:,2)/360*2*pi,1);
+            [ipSamplingGrid_cart(:,1), ipSamplingGrid_cart(:,2), ipSamplingGrid_cart(:,3)] = sph2cart(ipSamplingGrid(:,1)/360*2*pi, pi/2-ipSamplingGrid(:,2)/360*2*pi,1);
+
+            %NN interpolate ERB filters to ipSamplingGrid
+            cl_ip = zeros(length(ferb),length(ipSamplingGrid));
+            cr_ip = zeros(length(ferb),length(ipSamplingGrid));
+
+            for nPoint = 1:size(ipSamplingGrid,1)
+
+                [idx_voronoi,w_voronoi] = findvoronoi(samplingGrid_cart,ipSamplingGrid_cart(nPoint,:));
+
+                for n = 1:length(idx_voronoi) 
+                    cl_ip(:,nPoint) = cl_ip(:,nPoint) + w_voronoi(n)*cl(:,idx_voronoi(n));  
+                    cr_ip(:,nPoint) = cr_ip(:,nPoint) + w_voronoi(n)*cr(:,idx_voronoi(n));
+                end
+            end
+
+        case 'Bary'
+            
+            %Transform grids to cartesian coordinates
+            [samplingGrid_cart(:,1), samplingGrid_cart(:,2), samplingGrid_cart(:,3)] = sph2cart(samplingGrid(:,1)/360*2*pi, pi/2-samplingGrid(:,2)/360*2*pi,1);
+            [ipSamplingGrid_cart(:,1), ipSamplingGrid_cart(:,2), ipSamplingGrid_cart(:,3)] = sph2cart(ipSamplingGrid(:,1)/360*2*pi, pi/2-ipSamplingGrid(:,2)/360*2*pi,1);
+
+            %Get simplified convex hull (could also be done after delaunay-triangulation)
+            convHullIdx = convhull(samplingGrid_cart(:,1), samplingGrid_cart(:,2), samplingGrid_cart(:,3), 'simplify', true);
+
+            %Get HRTFs / directions assigned to convex hull triangles
+            convHullHRTF_A = samplingGrid_cart(convHullIdx(:,1),:);
+            convHullHRTF_B = samplingGrid_cart(convHullIdx(:,2),:);
+            convHullHRTF_C = samplingGrid_cart(convHullIdx(:,3),:);
+
+            %Interpolate with barycentric weights
+            %Right triangle of convex hull picked by ray-triangle intersection test (intersectLinePolygon3d from geom3D toolbox should work too)
+            %Function returns barycentric weights / coordinates u and v of the intersection point -> w = 1-u-v
+            %P = w*A + u*B + v*C
+            orig = [0 0 0];
+            cl_ip = zeros(length(ferb),length(ipSamplingGrid));
+            cr_ip = zeros(length(ferb),length(ipSamplingGrid));
+
+            for nPoint = 1:size(ipSamplingGrid,1)
+
+                [intersect, ~, u, v, ~] = TriangleRayIntersection(orig, ipSamplingGrid_cart(nPoint,:), convHullHRTF_A, convHullHRTF_B, convHullHRTF_C, 'border', 'inclusive');
+                intersectIdx = find(intersect, 1, 'first'); %Evaluate first intersection point
+                u = u(intersectIdx); v = v(intersectIdx); w = 1-u-v;
+                bw = [w u v]; %Barycentric weights
+                idx_bw = convHullIdx(intersectIdx,:); %Indizes of HRTFs of convex hull / triangles
+
+                for n = 1:3 %Always 3 because of triangulization
+                    cl_ip(:,nPoint) = cl_ip(:,nPoint) + bw(n)*cl(:,idx_bw(n));  
+                    cr_ip(:,nPoint) = cr_ip(:,nPoint) + bw(n)*cr(:,idx_bw(n));
+                end
+            end
+    end
+    
+    %Save interpolated ERBs in 3D-array for further processing
+    c_ip(:,:,1) = cl_ip;
+    c_ip(:,:,2) = cr_ip;
+    
+    %Get interpolated HRTFs in auditory bands (ERB filter)
+    HRIR_L_ip = AKsingle2bothSidedSpectrum(HRTF_L_ip.');
+    HRIR_R_ip = AKsingle2bothSidedSpectrum(HRTF_R_ip.');
+    HRIR_ip(:,:,1) = real(ifft(HRIR_L_ip));
+    HRIR_ip(:,:,2) = real(ifft(HRIR_R_ip));
+    HRIR_ip = HRIR_ip(1:hrirLength,:,:);
+    %Save in 3D-array for further processing
+    c_hrir_ip = AKerbErrorPersistent(HRIR_ip,AKdirac(size(HRIR_ip,1)),[fLowErb fs/2],fs);
+    
+    %Get compensation filter for all HRTFs
+    compFilt = c_ip-c_hrir_ip;
+    %Spline interpolate compensation filter to 0-fs/2
+    compFilt_l = AKinterpolateSpectrum( squeeze(compFilt(:,:,1)), ferb, NFFT, {'nearest' 'spline' 'nearest'}, fs);
+    compFilt_r = AKinterpolateSpectrum( squeeze(compFilt(:,:,2)), ferb, NFFT, {'nearest' 'spline' 'nearest'}, fs);
+    
+    %Limit to f > fA (set to 0 below fA) if desired
+    if limitMC
+        
+        %Get spatial alasing frequency
+        fA = HRTFset.Nmax*c/2/pi/headRadius;
+        
+        disp(['MC postprocessing limited to f > fA, with fA = ',num2str(round(fA,2)),'Hz']);
+        
+        if strcmp(limFade,'fadeDown')
+            
+            disp('MC fade downwards');
+            
+            %Get third-octave below fA
+            fAt = fA/2^(1/3);
+            
+            %Set to 0 (logarithmic) below fAt and apply linear fade from fAt to fA
+            [~,fA_bin] = min(abs(HRTFset.f-fA));
+            [~,fAt_bin] = min(abs(HRTFset.f-fAt));
+            ramp = linspace(0,1,abs(fA_bin-fAt_bin)+1);
+            compFilt_l(1:fAt_bin-1,:) = 0;
+            compFilt_l(fAt_bin:fA_bin,:) = compFilt_l(fAt_bin:fA_bin,:).*ramp.';
+            compFilt_r(1:fAt_bin-1,:) = 0;
+            compFilt_r(fAt_bin:fA_bin,:) = compFilt_r(fAt_bin:fA_bin,:).*ramp.'; 
+        end
+        
+        if strcmp(limFade,'fadeUp')
+            
+            disp('MC fade upwards');
+            
+            %Get third-octave above fA
+            fAt = fA*2^(1/3);
+            
+            %Set to 0 (logarithmic) below fA and apply linear fade from fA to fAt
+            [~,fA_bin] = min(abs(HRTFset.f-fA));
+            [~,fAt_bin] = min(abs(HRTFset.f-fAt));
+            ramp = linspace(0,1,abs(fAt_bin-fA_bin)+1);
+            compFilt_l(1:fA_bin-1,:) = 0;
+            compFilt_l(fA_bin:fAt_bin,:) = compFilt_l(fA_bin:fAt_bin,:).*ramp.';
+            compFilt_r(1:fA_bin-1,:) = 0;
+            compFilt_r(fA_bin:fAt_bin,:) = compFilt_r(fA_bin:fAt_bin,:).*ramp.'; 
+        end
+        
+    end
+    
+    %Transform to linear values
+    compFilt_l = 10.^(compFilt_l/20);
+    compFilt_r = 10.^(compFilt_r/20);
+    
+    %Apply soft-limiting to compensation filter according to mc
+    disp(['MC maximum boost: ',num2str(mc),'dB'])
+    disp(['MC soft-limiting knee: ',num2str(mcKnee),'dB'])
+
+    compFilt_l_lim = AKsoftLimit(compFilt_l, mc, mcKnee,[0 fs/2], fs, true);
+    compFilt_r_lim = AKsoftLimit(compFilt_r, mc, mcKnee,[0 fs/2], fs, true);
+    
+    %Design minimum phase filter and use for compensation instead of zero
+    %phase filter (if mcMinPhase = false)
+    if mcMinPhase
+        
+        disp('MC phase: minimum');
+        
+        compFilt_l_lim = AKsingle2bothSidedSpectrum(compFilt_l_lim);
+        compFilt_r_lim = AKsingle2bothSidedSpectrum(compFilt_r_lim);
+
+        compFilt_l_lim = real(ifft(compFilt_l_lim));
+        compFilt_r_lim = real(ifft(compFilt_r_lim));
+
+        compFilt_l_lim = AKphaseManipulation(compFilt_l_lim,fs,'min',1,0);
+        compFilt_r_lim = AKphaseManipulation(compFilt_r_lim,fs,'min',1,0);
+
+        %Go back to frequency domain
+        compFilt_l_lim = AKboth2singleSidedSpectrum(fft(compFilt_l_lim));
+        compFilt_r_lim = AKboth2singleSidedSpectrum(fft(compFilt_r_lim));
+        
+    else
+        
+        disp('MC phase: zero');
+        
+    end
+    
+    %Write in 3D array
+    compFilt_lim(:,:,1) = compFilt_l_lim;
+    compFilt_lim(:,:,2) = compFilt_r_lim;
+    
+    %Save intermediate results (compensation filter) in output struct
+    interpHRTFset.p.compFilt_lim = compFilt_lim;    
+        
+    %Apply magnitude compensation filter to HRTFs
+    HRTF_L_ip = HRTF_L_ip.*compFilt_lim(:,:,1).';
+    HRTF_R_ip = HRTF_R_ip.*compFilt_lim(:,:,2).';
+    
+end
+
 %% Write result in struct
 
 %Get final HRIRs
@@ -575,7 +809,17 @@ interpHRTFset.headRadius = headRadius;
 if tikhEps ~= 0
     interpHRTFset.tikhEps = tikhEps;
 end
-
+if ~isnan(mc)
+    interpHRTFset.mc = mc;
+    interpHRTFset.mcKnee = mcKnee;
+    interpHRTFset.mcMinPhase = mcMinPhase;
+    if limitMC
+        interpHRTFset.limitMC = 1;
+        interpHRTFset.limitMC_fA = fA;
+        interpHRTFset.limitMC_fAt = fAt;
+        interpHRTFset.limitMC_fade = limFade;
+    end
+end
 disp('Done...');
 
 end

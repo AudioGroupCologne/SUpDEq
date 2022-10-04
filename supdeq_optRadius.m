@@ -13,7 +13,7 @@
 % headWidth     - Head width in m
 % headHeight    - Head height in m
 % headLength    - Head length/depth in m
-% method        - 'Algazi' (ILD optimized) or 'Bahu' (ITD optimized)  
+% method        - 'Algazi' or 'Bahu'
 %                 'Algazi' is default
 %
 % Dependencies: -

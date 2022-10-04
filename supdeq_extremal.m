@@ -33,7 +33,6 @@ elseif N > 100
     error('Sorry, but we only have extremal grids up to N = 100');
 else
     % Load nodes from materials
-    % Nodes calculated with ITA toolbox (ita_sph_sampling_equiangular)
     load('extremalNodes_1_100.mat');
     
     %Get respective grid data already in correct format

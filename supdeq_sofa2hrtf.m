@@ -108,6 +108,7 @@ if isempty(samplingGrid)
     samplingGrid = SOFAobj.SourcePosition(:,1:2);
 
     %Transform samplingGrid to SH coordinate system
+    samplingGrid(:,1) = mod(samplingGrid(:,1),360);
     samplingGrid(:,2) = 90-samplingGrid(:,2);
 end
 

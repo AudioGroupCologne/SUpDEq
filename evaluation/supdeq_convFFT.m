@@ -8,7 +8,8 @@
 % cr                     - Convolution result
 %
 % Input:        
-% sig                   - Audio signal to be filtered
+% sig                   - Audio signal to be filtered (single- or
+%                         double-channel)
 % filtr                 - Single- or double-channel filter which should be
 %                         applied to signal s
 %
@@ -34,8 +35,8 @@ end
 L = length(sig)+length(filtr)-1;
 NFFT = 2^nextpow2(L);
 
-%For two channel filter
-if size(filtr,2) > 1
+%For two-channel filter and one-channel signal
+if size(filtr,2) == 2 && size(sig,2) == 1
     sig = [sig,sig];
 end
 

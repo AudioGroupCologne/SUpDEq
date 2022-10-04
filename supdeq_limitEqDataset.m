@@ -1,6 +1,6 @@
 %% SUpDEq - Spatial Upsampling by Directional Equalization
 %
-% function eqDataset_limited = supdeq_limitEqDataset(eqDataset, Nmax, radius)
+% function eqDataset_limited = supdeq_limitEqDataset(eqDataset, Nmax, radius, safetyMargin, fade)
 %
 % This function can be used to limit the equalization in frequency domain
 % dependent on Nmax of the sparse HRTF set. Below the specific aliasing 
@@ -32,6 +32,13 @@
 %                         exact same frequency range (see important hints).
 %                         If the radius is not passed, the values specified 
 %                         in the eqDataset struct will be applied.
+% safteyMargin          - Boolean to choose if safety margin (third-octave 
+%                         below fA) is applied or not. 
+%                         Default: true
+% fade                  - Boolean to choose whether to apply a fade from fA
+%                         to fA/(2^1/3) or not
+%                         Default: false (to be compatabile with Arend et al. 2021)
+%                         Only applies if safteyMargin = true
 %
 % Dependencies: -
 %
@@ -41,10 +48,18 @@
 %             Institute of Communications Engineering
 %             Department of Acoustics and Audio Signal Processing
 
-function eqDataset_limited = supdeq_limitEqDataset(eqDataset, Nmax, radius)
+function eqDataset_limited = supdeq_limitEqDataset(eqDataset, Nmax, radius, safetyMargin, fade)
 
 if nargin < 3 || isempty(radius)
     radius = eqDataset.radius;
+end
+
+if nargin < 4 || isempty(safetyMargin)
+    safetyMargin = true;
+end
+
+if nargin < 5 || isempty(fade)
+    fade = false;
 end
 
 if isfield(eqDataset,'limited')
@@ -63,8 +78,12 @@ if fA >= eqDataset.f(end)
     noEq = true;
 end
 
-%Lower by 1/3 octave to ensure distance to aliasing frequency
-fA_shift = fA/2^(1/3);
+if safetyMargin
+    %Lower by 1/3 octave to ensure distance to aliasing frequency
+    fA_shift = fA/2^(1/3);
+else
+    fA_shift = fA;
+end
 %Get corresponding index of frequency bins
 [~,fA_shift_bin] = min(abs(eqDataset.f-fA_shift));
 
@@ -73,9 +92,22 @@ eqDataset_limited = eqDataset;
 
 if ~noEq %If SUpDEq should be partly applied
     
-    %Set all SH coefficients for N > 0 to 0
-    eqDataset_limited.Hl_nm(2:end,1:fA_shift_bin)=0;
-    eqDataset_limited.Hr_nm(2:end,1:fA_shift_bin)=0;
+    if safetyMargin && ~fade %Without fade
+        %Set all SH coefficients for N > 0 to 0
+        eqDataset_limited.Hl_nm(2:end,1:fA_shift_bin)=0;
+        eqDataset_limited.Hr_nm(2:end,1:fA_shift_bin)=0;
+    end
+    
+    if safetyMargin && fade %With fade from fA_shift to fA
+        [~,fA_bin] = min(abs(eqDataset.f-fA));
+        
+        ramp = linspace(0,1,abs(fA_bin-fA_shift_bin)+1);
+        
+        eqDataset_limited.Hl_nm(2:end,1:fA_shift_bin-1)=0;
+        eqDataset_limited.Hl_nm(2:end,fA_shift_bin:fA_bin)=eqDataset_limited.Hl_nm(2:end,fA_shift_bin:fA_bin).*ramp;
+        eqDataset_limited.Hr_nm(2:end,1:fA_shift_bin-1)=0;
+        eqDataset_limited.Hr_nm(2:end,fA_shift_bin:fA_bin)=eqDataset_limited.Hr_nm(2:end,fA_shift_bin:fA_bin).*ramp;
+    end
     
 else %If fA is > fs/2 and SUpDEq does not need to be applied
     %Note: Actually, in this case SH interpolation without any equalization is
@@ -93,8 +125,11 @@ eqDataset_limited.limitInfo.appliedRadius = radius;
 eqDataset_limited.limitInfo.fA = fA;
 if ~noEq
     eqDataset_limited.limitInfo.fA_shift = fA_shift;
+    if safetyMargin && fade
+        eqDataset_limited.limitInfo.fade = true;
+    end
 else
     eqDataset_limited.limitInfo.noEq = noEq;
 end
 
-fprintf('eqDataset limited depending on Nmax = %d.\n',Nmax);
+fprintf('eqDataset limited depending on Nmax = %d\n',Nmax);

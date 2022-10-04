@@ -222,6 +222,7 @@ if tikhEps == 0 %Without Tikhonov Regularization
         samplingGrid = SOFAobj.SourcePosition(:,1:2);
 
         %Transform samplingGrid back to AKsht coordinate system
+        samplingGrid(:,1) = mod(samplingGrid(:,1),360);
         samplingGrid(:,2) = 90-samplingGrid(:,2);
 
         %Get IRs needed for AKsht
@@ -272,6 +273,7 @@ if tikhEps ~= 0
         %Get samplingGrid from SOFA object
         samplingGrid = SOFAobj.SourcePosition(:,1:2);
         %Transform samplingGrid back to SUpDEq coordinate system
+        samplingGrid(:,1) = mod(samplingGrid(:,1),360);
         samplingGrid(:,2) = 90-samplingGrid(:,2);
         %Set weightsPassed
         weightsPassed = false;
