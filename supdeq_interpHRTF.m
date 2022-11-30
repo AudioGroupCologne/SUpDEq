@@ -4,7 +4,9 @@
 %
 % This function performs HRTF interpolation of the input HRTFset according
 % to the passed interpolation sampling grid. Various interpolation and
-% time-alignment (pre-processing) methods can be applied.
+% time-alignment (pre-processing) methods can be applied. Furthermore,
+% post-interpolation magnitude correction for time-aligned interpolation
+% (MCA) can be applied to further improve the interpolation results.
 %
 % Output:
 % interpHRTFset         - Struct with the interpolated HRTF for the 
@@ -32,37 +34,39 @@
 %                         to the HRTFs before/after interpolation. Besides
 %                         'MagPhase', all of the pre-processing methods are
 %                         time-alignment approaches.
-%                         'SUpDEq'          - SUpDEq method
-%                         'SUpDEq_Lim'      - Modified SUpDeq method where the eqDataset is limited to frequencies above the spatial aliasing frequency fA
+%                         'SUpDEq'          - SUpDEq method [3][5] 
+%                         'SUpDEq_Lim'      - Modified SUpDeq method where the eqDataset is limited to frequencies above the spatial aliasing frequency fA [5]
 %                         'SUpDEq_AP'       - Modified SUpDEq method applying rigid sphere allpass filter (only the phase components of the rigid sphere transfer functions)
 %                         'SUpDEq_Lim_AP'   - Modified SUpDeq method where the eqDataset is limited as above (SUpDEq_Lim) and only the phase components are used (SUpDEq_AP)
-%                         'PC'              - Phase-Correction according to BenHur et al., 2019 (open sphere transfer functions)
-%                         'OBTA'            - Onset-Based Time-Alignment according to Brinkmann & Weinzierl, 2018 
+%                         'PC'              - Phase-Correction (open sphere transfer functions) [4][5]
+%                         'OBTA'            - Onset-Based Time-Alignment [1][2][5]
 %                         'MagPhase'        - Split HRTF to magnitude and unwrapped phase - No time-alignment
+%                         'None'            - Perform interpolation without any pre/post-processing 
 %                          Default: 'SUpDEq'
 % ipMethod              - String defining the ipMethod
-%                         'SH'      - Spherical harmonics interpolation
-%                         'NN'      - Natural neighbor interpolation with Voronoi weights
-%                         'Bary'    - Barycentric interpolation
+%                         'SH'      - Spherical harmonics interpolation [1-5]
+%                         'NN'      - Natural neighbor interpolation with Voronoi weights [6]
+%                         'Bary'    - Barycentric interpolation [7]
 %                          Default: 'SH'
-% mc                     - Define maximum boost in dB if magnitude constraint to interpolated HRTFs based on ERB filters should be applied (Arend & Brinkmann, 2022)
-%                          Set to nan if magnitude constraint should not be applied
-%                          Default: 100 (100 dB maximum boost (no limiting), infinity attenuation)
-% headRadius             - Head radius in m. Required for time-alignment methods SUpDEq and PC
+% mc                     - Define maximum boost in dB if magnitude correction according to [8] should be applied to interpolated HRTFs in a further postprocessing step
+%                          Set to nan if magnitude correction should not be applied
+%                          Set to inf if no limiting should be applied, i.e., unlimited boost
+%                          Default: inf
+% headRadius             - Head radius in m. Required for time-alignment methods SUpDEq [3][5] and PC [4][5]
 %                          Default: 0.0875
 % tikhEps                - Define epsilon of Tikhonov regularization if regularization should be applied
 %                          Applying the Tikhonov regularization will always result in a least-square fit 
 %                          solution for the SH transform. Only relevant if ipMethod is 'SH'.
 %                          Default: 0 (no Tikhonov regularization)
-% limitMC                - Boolean to set compensation to 0 dB below spatial aliasing frequency fA, assuming 
-%                          that interpolation below fA works correctly. 
-%                          Default: true (compensation filter works only above fA)
+% limitMC                - Boolean to set magnitude correction filters to 0 dB below spatial aliasing frequency fA, 
+%                          assuming that (SH) interpolation below fA is physically correct. 
+%                          Default: true (correction filter operate only above fA)
 %                          Only applies if 'mc' is not nan
-% mcKnee                 - Knee in dB of the soft-limiting applied to the compensation filter. Soft-limiting is applied according to maximum boost 'mc' 
-%                          Only applies if 'mc' is not nan
+% mcKnee                 - Knee in dB of the soft-limiting applied to the correction filters. Soft-limiting is applied according to maximum boost 'mc' 
+%                          Only applies if 'mc' is not nan or inf
 %                          Default: 0 dB (no knee)
-% mcMinPhase             - Boolean to design compensation filter as minimum-phase filter. If set to false, compensation filter is a zero-phase filter
-%                          Default: true (minimum-phase filter) as this provides a better performance in terms of ITD errors in combination with classical SUpDEq processing. 
+% mcMinPhase             - Boolean to design correction filters as minimum-phase filters. If set to false, correction filters are zero-phase filters
+%                          Default: true (minimum-phase filters) as this provides a better performance in terms of ITD errors in combination with classical SUpDEq processing
 %                          When applying other preprocessing methods, using zero-phase filters can be more appropriate. 
 % limFade                - String to define whether to apply a linear fade upwards from aliasing frequency fA to fAt = fA + 1/3 Oct, or downwards, i.e., from fA to fAt = fA - 1/3 Oct
 %                          'fadeUp' - upwards
@@ -99,20 +103,23 @@
 % Spherical harmonics interpolation
 % [1-5]
 %
-% Natural-neighbor interpolation
+% Natural-Neighbor Interpolation
 % [6] R. Sibson, “A brief description of natural neighbor interpolation,” 
 % in Interpreting Multivariate Data, V. Barnett, Chichester, England: John Wiley & Sons, 1981, pp. 21–36.
 % Good read about NN interpolation: https://github.com/gwlucastrig/Tinfour/wiki/Introduction-to-Natural-Neighbor-Interpolation
 % 
-% Barycentric coordinates / interpolation
+% Barycentric Coordinates / Interpolation
 % [7] P. Shirley and S. Marschner, Fundamentals of Computer Graphics, 3rd ed. Boca Raton, FL: Taylor & Francis, 2009.
 % Good read about Barycentric interpolation: https://www.scratchapixel.com/lessons/3d-basic-rendering/ray-tracing-rendering-a-triangle/barycentric-coordinates
 % 
+% Magnitude-Corrected and Time-Aligned Interpolation (MCA)
+% [8] J. M. Arend, C. Pörschmann, S. Weinzierl, F. Brinkmann, 
+% "Magnitude-Corrected and Time-Aligned Interpolation of Head-Related Transfer Functions," 
+% (Manuscript submitted for publication).
 %
-% (C) 2020 by JMA, Johannes M. Arend
-%             TH Köln - University of Applied Sciences
-%             Institute of Communications Engineering
-%             Department of Acoustics and Audio Signal Processing
+% (C) 2020-2022 by JMA, Johannes M. Arend
+%               TU Berlin, Audio Communication Group
+%               TH Köln, Institute of Communications Engineering
 
 function [interpHRTFset, HRTF_L_ip, HRTF_R_ip] = supdeq_interpHRTF(HRTFset, ipSamplingGrid, ppMethod, ipMethod, mc, headRadius, tikhEps, limitMC, mcKnee, mcMinPhase, limFade) 
 
@@ -126,7 +133,7 @@ if nargin < 4 || isempty(ipMethod)
 end
 
 if nargin < 5 || isempty(mc)
-    mc = 100;
+    mc = inf;
 end
 
 if nargin < 6 || isempty(headRadius)
@@ -586,7 +593,7 @@ switch ppMethod
         HRTF_R_ip = pHRTF_R_ip;
 end
 
-%% Constrain magnitude if mc ~= nan
+%% Correct magnitude if mc ~= nan
 
 if ~isnan(mc)
     
@@ -684,11 +691,11 @@ if ~isnan(mc)
     %Save in 3D-array for further processing
     c_hrir_ip = AKerbErrorPersistent(HRIR_ip,AKdirac(size(HRIR_ip,1)),[fLowErb fs/2],fs);
     
-    %Get compensation filter for all HRTFs
-    compFilt = c_ip-c_hrir_ip;
-    %Spline interpolate compensation filter to 0-fs/2
-    compFilt_l = AKinterpolateSpectrum( squeeze(compFilt(:,:,1)), ferb, NFFT, {'nearest' 'spline' 'nearest'}, fs);
-    compFilt_r = AKinterpolateSpectrum( squeeze(compFilt(:,:,2)), ferb, NFFT, {'nearest' 'spline' 'nearest'}, fs);
+    %Get correction filters for all HRTFs
+    corrFilt = c_ip-c_hrir_ip;
+    %Spline interpolate correction filters to 0-fs/2
+    corrFilt_l = AKinterpolateSpectrum( squeeze(corrFilt(:,:,1)), ferb, NFFT, {'nearest' 'spline' 'nearest'}, fs);
+    corrFilt_r = AKinterpolateSpectrum( squeeze(corrFilt(:,:,2)), ferb, NFFT, {'nearest' 'spline' 'nearest'}, fs);
     
     %Limit to f > fA (set to 0 below fA) if desired
     if limitMC
@@ -709,10 +716,10 @@ if ~isnan(mc)
             [~,fA_bin] = min(abs(HRTFset.f-fA));
             [~,fAt_bin] = min(abs(HRTFset.f-fAt));
             ramp = linspace(0,1,abs(fA_bin-fAt_bin)+1);
-            compFilt_l(1:fAt_bin-1,:) = 0;
-            compFilt_l(fAt_bin:fA_bin,:) = compFilt_l(fAt_bin:fA_bin,:).*ramp.';
-            compFilt_r(1:fAt_bin-1,:) = 0;
-            compFilt_r(fAt_bin:fA_bin,:) = compFilt_r(fAt_bin:fA_bin,:).*ramp.'; 
+            corrFilt_l(1:fAt_bin-1,:) = 0;
+            corrFilt_l(fAt_bin:fA_bin,:) = corrFilt_l(fAt_bin:fA_bin,:).*ramp.';
+            corrFilt_r(1:fAt_bin-1,:) = 0;
+            corrFilt_r(fAt_bin:fA_bin,:) = corrFilt_r(fAt_bin:fA_bin,:).*ramp.'; 
         end
         
         if strcmp(limFade,'fadeUp')
@@ -726,43 +733,53 @@ if ~isnan(mc)
             [~,fA_bin] = min(abs(HRTFset.f-fA));
             [~,fAt_bin] = min(abs(HRTFset.f-fAt));
             ramp = linspace(0,1,abs(fAt_bin-fA_bin)+1);
-            compFilt_l(1:fA_bin-1,:) = 0;
-            compFilt_l(fA_bin:fAt_bin,:) = compFilt_l(fA_bin:fAt_bin,:).*ramp.';
-            compFilt_r(1:fA_bin-1,:) = 0;
-            compFilt_r(fA_bin:fAt_bin,:) = compFilt_r(fA_bin:fAt_bin,:).*ramp.'; 
+            corrFilt_l(1:fA_bin-1,:) = 0;
+            corrFilt_l(fA_bin:fAt_bin,:) = corrFilt_l(fA_bin:fAt_bin,:).*ramp.';
+            corrFilt_r(1:fA_bin-1,:) = 0;
+            corrFilt_r(fA_bin:fAt_bin,:) = corrFilt_r(fA_bin:fAt_bin,:).*ramp.'; 
         end
         
     end
     
     %Transform to linear values
-    compFilt_l = 10.^(compFilt_l/20);
-    compFilt_r = 10.^(compFilt_r/20);
+    corrFilt_l = 10.^(corrFilt_l/20);
+    corrFilt_r = 10.^(corrFilt_r/20);
     
-    %Apply soft-limiting to compensation filter according to mc
-    disp(['MC maximum boost: ',num2str(mc),'dB'])
-    disp(['MC soft-limiting knee: ',num2str(mcKnee),'dB'])
+    if ~isinf(mc)
+        %Apply soft-limiting to correction filters according to mc if not inf
+        disp(['MC maximum boost: ',num2str(mc),'dB'])
+        disp(['MC soft-limiting knee: ',num2str(mcKnee),'dB'])
 
-    compFilt_l_lim = AKsoftLimit(compFilt_l, mc, mcKnee,[0 fs/2], fs, true);
-    compFilt_r_lim = AKsoftLimit(compFilt_r, mc, mcKnee,[0 fs/2], fs, true);
+        corrFilt_l_lim = AKsoftLimit(corrFilt_l, mc, mcKnee,[0 fs/2], fs, true);
+        corrFilt_r_lim = AKsoftLimit(corrFilt_r, mc, mcKnee,[0 fs/2], fs, true);
+        
+    else %No soft-limiting / Unlimited gain
+        
+        disp('MC maximum boost: inf')
+        
+        corrFilt_l_lim = corrFilt_l;
+        corrFilt_r_lim = corrFilt_r;
+        
+    end
     
-    %Design minimum phase filter and use for compensation instead of zero
-    %phase filter (if mcMinPhase = false)
+    %Design minimum phase filters and use for correction instead of zero
+    %phase filters (if mcMinPhase = false)
     if mcMinPhase
         
         disp('MC phase: minimum');
         
-        compFilt_l_lim = AKsingle2bothSidedSpectrum(compFilt_l_lim);
-        compFilt_r_lim = AKsingle2bothSidedSpectrum(compFilt_r_lim);
+        corrFilt_l_lim = AKsingle2bothSidedSpectrum(corrFilt_l_lim);
+        corrFilt_r_lim = AKsingle2bothSidedSpectrum(corrFilt_r_lim);
 
-        compFilt_l_lim = real(ifft(compFilt_l_lim));
-        compFilt_r_lim = real(ifft(compFilt_r_lim));
+        corrFilt_l_lim = real(ifft(corrFilt_l_lim));
+        corrFilt_r_lim = real(ifft(corrFilt_r_lim));
 
-        compFilt_l_lim = AKphaseManipulation(compFilt_l_lim,fs,'min',1,0);
-        compFilt_r_lim = AKphaseManipulation(compFilt_r_lim,fs,'min',1,0);
+        corrFilt_l_lim = AKphaseManipulation(corrFilt_l_lim,fs,'min',1,0);
+        corrFilt_r_lim = AKphaseManipulation(corrFilt_r_lim,fs,'min',1,0);
 
         %Go back to frequency domain
-        compFilt_l_lim = AKboth2singleSidedSpectrum(fft(compFilt_l_lim));
-        compFilt_r_lim = AKboth2singleSidedSpectrum(fft(compFilt_r_lim));
+        corrFilt_l_lim = AKboth2singleSidedSpectrum(fft(corrFilt_l_lim));
+        corrFilt_r_lim = AKboth2singleSidedSpectrum(fft(corrFilt_r_lim));
         
     else
         
@@ -771,15 +788,15 @@ if ~isnan(mc)
     end
     
     %Write in 3D array
-    compFilt_lim(:,:,1) = compFilt_l_lim;
-    compFilt_lim(:,:,2) = compFilt_r_lim;
+    corrFilt_lim(:,:,1) = corrFilt_l_lim;
+    corrFilt_lim(:,:,2) = corrFilt_r_lim;
     
-    %Save intermediate results (compensation filter) in output struct
-    interpHRTFset.p.compFilt_lim = compFilt_lim;    
+    %Save intermediate results (correction filter) in output struct
+    interpHRTFset.p.corrFilt_lim = corrFilt_lim;    
         
-    %Apply magnitude compensation filter to HRTFs
-    HRTF_L_ip = HRTF_L_ip.*compFilt_lim(:,:,1).';
-    HRTF_R_ip = HRTF_R_ip.*compFilt_lim(:,:,2).';
+    %Apply magnitude correction filters to HRTFs
+    HRTF_L_ip = HRTF_L_ip.*corrFilt_lim(:,:,1).';
+    HRTF_R_ip = HRTF_R_ip.*corrFilt_lim(:,:,2).';
     
 end
 
