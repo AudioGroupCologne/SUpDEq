@@ -66,7 +66,7 @@ Thanks to Fabian Brinkmann (Audio Communication Group, TU Berlin) for useful dis
 [7] J. M. Arend, F. Brinkmann, and C. Pörschmann, “Assessing Spherical Harmonics Interpolation of Time-Aligned Head-Related Transfer Functions,” J. Audio Eng. Soc., vol. 69, no. 1/2, pp. 104–117, 2021.  
 [8] C. Pörschmann, J. M. Arend, D. Bau, and T. Lübeck, “Comparison of Spherical Harmonics and Nearest-Neighbor based Interpolation of Head-Related Transfer Functions,” in Proceedings of the AES International Conference on Audio for Virtual and Augmented Reality (AVAR), Redmond, WA, USA, 2020, pp. 1–10.  
 [9] B. Bernschütz, “Microphone Arrays and Sound Field Decomposition for Dynamic Binaural Recording,” TU Berlin, 2016.  
-[10] B. Rafaely, Fundamentals of Spherical Array Processing. Berlin Heidelberg: Springer-Verlag, 2015. 
+[10] B. Rafaely, Fundamentals of Spherical Array Processing. Berlin Heidelberg: Springer-Verlag, 2015.   
 [11] J. M. Arend, C. Pörschmann, S. Weinzierl, F. Brinkmann, "Magnitude-Corrected and Time-Aligned Interpolation of Head-Related Transfer Functions," (Manuscript submitted for publication).   
 [12] B. Bernschütz, C. Pörschmann, S. Spors, and S. Weinzierl, “SOFiA Sound Field Analysis Toolbox,” in Proceedings of the International Conference on Spatial Audio - ICSA 2011, 2011, pp. 8–16.  
 [13] F. Brinkmann and S. Weinzierl, “AKtools - an open software toolbox for signal acquisition, processing, and inspection in acoustics,” in Proceedings of the 142nd AES Convention, Berlin, Germany, 2017, pp. 1–6.  
