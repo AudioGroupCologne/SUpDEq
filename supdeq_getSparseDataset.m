@@ -82,6 +82,7 @@ end
 [sparseHRTFdataset.HRTF_L, sparseHRTFdataset.HRTF_R] = supdeq_getArbHRTF(referenceHRTFdataset,sparseGrid,'DEG',2,'ak');
 %Fill struct with additional info
 sparseHRTFdataset.f = referenceHRTFdataset.f;
+sparseHRTFdataset.fs = referenceHRTFdataset.f(end)*2;
 sparseHRTFdataset.Nmax = NmaxSparse;
 sparseHRTFdataset.FFToversize = referenceHRTFdataset.FFToversize;
 sparseHRTFdataset.samplingGrid = sparseGrid;
@@ -91,6 +92,7 @@ end
 
 %Get HRIRs from referenceHRTFdataset
 [sparseHRIRdataset.HRIR_L, sparseHRIRdataset.HRIR_R] = supdeq_getArbHRIR(referenceHRTFdataset,sparseGrid,'DEG',2,'ak');
+sparseHRIRdataset.fs = referenceHRTFdataset.f(end)*2;
 sparseHRIRdataset.Nmax = NmaxSparse;
 sparseHRIRdataset.samplingGrid = sparseGrid;
 if isfield(referenceHRTFdataset,'sourceDistance')

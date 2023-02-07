@@ -155,6 +155,7 @@ if tikhEps == 0 %Without Tikhonov Regularization
         HRIRs_sfd.Hl_nm             = Hl_nm;
         HRIRs_sfd.Hr_nm             = Hr_nm;
         HRIRs_sfd.f                 = f;
+        HRIRs_sfd.fs                = f(end)*2; 
         HRIRs_sfd.N                 = N;
         HRIRs_sfd.FFToversize       = FFToversize;
         HRIRs_sfd.sourceDistance    = SOFAobj.SourcePosition(1,3);
@@ -200,6 +201,7 @@ if tikhEps == 0 %Without Tikhonov Regularization
         HRIRs_sfd.Hl_nm         = Hl_nm;
         HRIRs_sfd.Hr_nm         = Hr_nm;
         HRIRs_sfd.f             = f';
+        HRIRs_sfd.fs            = f(end)*2;
         HRIRs_sfd.N             = N;
         HRIRs_sfd.FFToversize   = FFToversize;
         HRIRs_sfd.sourceDistance    = SOFAobj.SourcePosition(1,3);
@@ -256,6 +258,7 @@ if tikhEps == 0 %Without Tikhonov Regularization
         HRIRs_sfd.Hl_nm         = Hl_nm;
         HRIRs_sfd.Hr_nm         = Hr_nm;
         HRIRs_sfd.f             = f';
+        HRIRs_sfd.fs            = f(end)*2;
         HRIRs_sfd.N             = N;
         HRIRs_sfd.FFToversize   = FFToversize;
         HRIRs_sfd.sourceDistance    = SOFAobj.SourcePosition(1,3);
@@ -330,6 +333,7 @@ if tikhEps ~= 0
     HRIRs_sfd.Hl_nm         = Hl_nm;
     HRIRs_sfd.Hr_nm         = Hr_nm;
     HRIRs_sfd.f             = f;
+    HRIRs_sfd.fs            = f(end)*2;
     HRIRs_sfd.N             = N;
     HRIRs_sfd.FFToversize   = FFToversize;
     HRIRs_sfd.sourceDistance    = SOFAobj.SourcePosition(1,3);
