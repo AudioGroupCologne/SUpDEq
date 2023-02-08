@@ -39,7 +39,7 @@ sgD = supdeq_lebedev([],Nd);
 %Get sparse KU100 HRTF set based on "HRIR_L2702.sofa" dataset in SH domain
 
 sparseHRTF = supdeq_getSparseDataset(sgS,Ns,44,'ku100');
-fs = sparseHRTF.f(end)*2;
+fs = sparseHRTF.fs;
 
 %% (3) - Perform spatial upsampling to dense grid
 

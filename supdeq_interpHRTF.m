@@ -6,7 +6,8 @@
 % to the passed interpolation sampling grid. Various interpolation and
 % time-alignment (pre-processing) methods can be applied. Furthermore,
 % post-interpolation magnitude correction for time-aligned interpolation
-% (MCA) can be applied to further improve the interpolation results.
+% (MCA) can be applied to further improve the interpolation results. See 
+% also supdeq_demo_MCA for some examples of how to use the function.
 %
 % Output:
 % interpHRTFset         - Struct with the interpolated HRTF for the 
@@ -18,7 +19,8 @@
 % Input:
 % HRTFset               - Struct with (sparse) HRTF dataset in frequency
 %                         domain (single-sided complex spectra). Struct needs to
-%                         provide HRTF_L/HRTF_R, the samplingGrid, and Nmax
+%                         provide HRTF_L/HRTF_R, the samplingGrid, Nmax,
+%                         absolute frequency scale f, and FFToversize
 % ipSamplingGrid        - Spatial sampling grid (Q x 2 or Q x 3 matrix), 
 %                         defining the interpolation points, where the first 
 %                         column holds the azimuth, the second the elevation 
