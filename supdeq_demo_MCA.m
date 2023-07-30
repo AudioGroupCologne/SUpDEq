@@ -18,9 +18,9 @@
 % "Magnitude-Corrected and Time-Aligned Interpolation of 
 % Head-Related Transfer Functions," (Manuscript submitted for publication).
 %
-% (C) 2022 by JMA, Johannes M. Arend
-%             TU Berlin
-%             Audio Communication Group
+% (C) 2022/2023 by JMA, Johannes M. Arend
+%               TU Berlin
+%               Audio Communication Group
 
 %% (1) - Define sparse and dense grid
 
@@ -112,17 +112,18 @@ supdeq_plotIR(interpHRTF_con.HRIR_L(:,idCL),refHRTF.HRIR_L(:,idCL),[],[],8);
 %aliasing errors at the contralateral ear) are reduced
 supdeq_plotIR(interpHRTF_mca.HRIR_L(:,idCL),refHRTF.HRIR_L(:,idCL),[],[],8);
 
-%% (6) - Optional: Calculate spectral difference 
+%% (6) - Optional: Calculate log-spectral difference 
 
-%Calculate left-ear spectral differences in dB by spectral division of upsampled
-%HRTF set with reference HRTF set. Not the same as the magnitude error in
-%auditory bands presented in the paper!
+%Calculate left-ear log-spectral differences in dB.
+%Log-spectral difference is often used as a measure for spectral distance
+%between a reference and an interpolated HRTF set. Not the same as 
+%the magnitude error in auditory filters presented in the paper!
 
-specDiff_sh =  supdeq_calcSpectralDifference_HRIR(interpHRTF_sh.HRIR_L,refHRTF.HRIR_L,fs,16);
-specDiff_con = supdeq_calcSpectralDifference_HRIR(interpHRTF_con.HRIR_L,refHRTF.HRIR_L,fs,16);
-specDiff_mca = supdeq_calcSpectralDifference_HRIR(interpHRTF_mca.HRIR_L,refHRTF.HRIR_L,fs,16);
+lsd_sh =  supdeq_calcLSD_HRIR(interpHRTF_sh.HRIR_L,refHRTF.HRIR_L,fs,16);
+lsd_con = supdeq_calcLSD_HRIR(interpHRTF_con.HRIR_L,refHRTF.HRIR_L,fs,16);
+lsd_mca = supdeq_calcLSD_HRIR(interpHRTF_mca.HRIR_L,refHRTF.HRIR_L,fs,16);
 
-%Quick plot of spectral difference averaged over all directions of the
+%Quick plot of log-spectral difference averaged over all directions of the
 %2702-point Lebedev grid. As shown in the paper, MCA provides the most
 %significant benefit in the critical contralateral region. Thus, when 
 %averaging over all positions, the benefit of MCA seems smaller. The
@@ -130,12 +131,36 @@ specDiff_mca = supdeq_calcSpectralDifference_HRIR(interpHRTF_mca.HRIR_L,refHRTF.
 %in much more detail the considerable improvements that the proposed 
 %magnitude correction provides.
 AKf(18,9);
-semilogx(specDiff_sh.f,specDiff_sh.specDifference,'LineWidth',1.5);
+semilogx(lsd_sh.f,lsd_sh.lsd_freq,'LineWidth',1.5);
 hold on;
-semilogx(specDiff_con.f,specDiff_con.specDifference,'LineWidth',1.5);
-semilogx(specDiff_mca.f,specDiff_mca.specDifference,'LineWidth',1.5);
+semilogx(lsd_con.f,lsd_con.lsd_freq,'LineWidth',1.5);
+semilogx(lsd_mca.f,lsd_mca.lsd_freq,'LineWidth',1.5);
 xlim([500 20000])
-legend('SH','SH SUpDEq W/O MC','SH SUpDEq W/ MC','Location','NorthWest');
+legend('SH W/O MC','SH SUpDEq W/O MC','SH SUpDEq W/ MC','Location','NorthWest');
 xlabel('Frequency in Hz');
-ylabel('Magnitude Error in dB');
+ylabel('Log-Spectral Difference in dB');
 grid on;
+
+%% (7) - Optional: Calculate magnitude error in auditory filters (similar to paper)
+
+[erb_sh,fc_erb] = AKerbError(interpHRTF_sh.HRIR_L,refHRTF.HRIR_L, [50 fs/2], fs);
+erb_con = AKerbError(interpHRTF_con.HRIR_L,refHRTF.HRIR_L, [50 fs/2], fs);
+erb_mca = AKerbError(interpHRTF_mca.HRIR_L,refHRTF.HRIR_L, [50 fs/2], fs);
+
+%Quick plot of absolute magnitude error in auditory filters averaged over all
+%directions of the 2702-point Lebedev grid. 
+AKf(18,9);
+semilogx(fc_erb,mean(abs(erb_sh),2),'LineWidth',1.5);
+hold on;
+semilogx(fc_erb,mean(abs(erb_con),2),'LineWidth',1.5);
+semilogx(fc_erb,mean(abs(erb_mca),2),'LineWidth',1.5);
+xlim([500 20000])
+legend('SH W/O MC','SH SUpDEq W/O MC','SH SUpDEq W/ MC','Location','NorthWest');
+xlabel('Frequency in Hz');
+ylabel('\DeltaG(f_c) in dB');
+grid on;
+
+
+
+
+

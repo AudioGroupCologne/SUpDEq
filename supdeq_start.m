@@ -49,9 +49,9 @@ addpath(genpath(fullfile(pwd,'thirdParty')), '-end')
 
 % add SOFA correctly using the start script (try if the silent option works)
 try
-    run(fullfile(pwd, 'thirdParty', 'SOFA_API', 'API_MO', 'SOFAstart(''silent'')'))
+    run(fullfile(pwd, 'thirdParty', 'SOFA Toolbox 2.1.4', 'SOFAtoolbox', 'SOFAstart(''silent'')'))
 catch %#ok<CTCH>
-    run(fullfile(pwd, 'thirdParty', 'SOFA_API', 'API_MO', 'SOFAstart'))
+    run(fullfile(pwd, 'thirdParty', 'SOFA Toolbox 2.1.4', 'SOFAtoolbox', 'SOFAstart'))
 end
 
 % - remove third party tools if they were already installed outside supdeq
@@ -59,10 +59,10 @@ if installed.AK
     rmpath(genpath(fullfile(pwd, 'thirdParty', 'AKtools')))
 end
 if installed.auditory
-    rmpath(genpath(fullfile(pwd, 'thirdParty', 'amtoolbox-full-0.9.9')))
+    rmpath(genpath(fullfile(pwd, 'thirdParty', 'amtoolbox-full-1.4.0')))
 end
 if installed.SOFA
-    rmpath(genpath(fullfile(pwd, 'thirdParty', 'sofa-api-mo-1.0.2')))
+    rmpath(genpath(fullfile(pwd, 'thirdParty', 'SOFA Toolbox 2.1.4')))
 end
 if installed.SOFiA
     rmpath(genpath(fullfile(pwd, 'thirdParty', 'SOFiA R13_MIT-License')))

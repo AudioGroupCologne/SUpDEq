@@ -1,0 +1,16 @@
+# omit the directory containing the sample points for a sphere
+MinimumEnergyPointsOnASphere
+# Unwanted binary files
+*.wav
+*.mat
+*.nc
+*.sofa
+# octave crashes
+octave-core
+# tmp files
+*.swp
+*.asv
+# pdf files
+*.pdf
+# omit bash scripts
+*.sh

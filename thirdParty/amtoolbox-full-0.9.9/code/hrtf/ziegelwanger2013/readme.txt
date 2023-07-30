@@ -1,1 +1,0 @@
-HRTFs required for ziegelwanger2013 will be saved here. 

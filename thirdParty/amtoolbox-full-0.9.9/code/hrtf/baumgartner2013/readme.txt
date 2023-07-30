@@ -1,1 +1,0 @@
-Store HRTFs required for baumgartner2013 here. 

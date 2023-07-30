@@ -46,11 +46,12 @@
 %                         'None'            - Perform interpolation without any pre/post-processing 
 %                          Default: 'SUpDEq'
 % ipMethod              - String defining the ipMethod
-%                         'SH'      - Spherical harmonics interpolation [1-5]
-%                         'NN'      - Natural neighbor interpolation with Voronoi weights [6]
+%                         'SH'      - Spherical Harmonics interpolation [1-5]
+%                         'NN'      - Natural Neighbor interpolation with Voronoi weights [6]
 %                         'Bary'    - Barycentric interpolation [7]
+%                         'SARITA'  - Spherical Array Interpolation by Time Alignment [8]; employs Natural Neighbor interpolation with Voronoi weights
 %                          Default: 'SH'
-% mc                     - Define maximum boost in dB if magnitude correction according to [8] should be applied to interpolated HRTFs in a further postprocessing step
+% mc                     - Define maximum boost in dB if magnitude correction according to [9] should be applied to interpolated HRTFs in a further postprocessing step
 %                          Set to nan if magnitude correction should not be applied
 %                          Set to inf if no limiting should be applied, i.e., unlimited boost
 %                          Default: inf
@@ -114,12 +115,17 @@
 % [7] P. Shirley and S. Marschner, Fundamentals of Computer Graphics, 3rd ed. Boca Raton, FL: Taylor & Francis, 2009.
 % Good read about Barycentric interpolation: https://www.scratchapixel.com/lessons/3d-basic-rendering/ray-tracing-rendering-a-triangle/barycentric-coordinates
 % 
+% [8] Spherical Array Interpolation by Time Alignment (SARITA)
+% T. Lübeck, J. M. Arend, and C. Pörschmann, “Spatial Upsampling of Sparse Spherical Microphone Array Signals,” 
+% IEEE/ACM Trans. Audio Speech Lang. Proc., vol. 31, pp. 1163–1174, 2023, 
+%
 % Magnitude-Corrected and Time-Aligned Interpolation (MCA)
-% [8] J. M. Arend, C. Pörschmann, S. Weinzierl, F. Brinkmann, 
+% [9] J. M. Arend, C. Pörschmann, S. Weinzierl, F. Brinkmann, 
 % "Magnitude-Corrected and Time-Aligned Interpolation of Head-Related Transfer Functions," 
 % (Manuscript submitted for publication).
 %
-% (C) 2020-2022 by JMA, Johannes M. Arend
+%
+% (C) 2020-2023 by JMA, Johannes M. Arend
 %               TU Berlin, Audio Communication Group
 %               TH Köln, Institute of Communications Engineering
 
@@ -264,25 +270,53 @@ switch ppMethod
         disp('Preprocessing: OBTA')
         %Apply Onset-Based Time-Alignment with fractional delay filters
 
-        %Estimate TOA on low-passed and 10 times upsampled HRIRs according to [2]
-        toa_L = AKonsetDetect(HRIR_L, 10, -20, 'rel', [3e3 fs]);
-        toa_R = AKonsetDetect(HRIR_R, 10, -20, 'rel', [3e3 fs]);
+        %Not compatible with SARITA interpolation. Intercepted here.
+        if strcmp(ipMethod,'SARITA')
+            warning('OBTA not compatible with SARITA interpolation. Set to ''None'' for preprocessing')
+            ppMethod = 'None';
 
-        %Time-Align HRIRs (remove TOAs) with fractional delay
-        pHRIR_L = AKfractionalDelayCyclic(HRIR_L, -toa_L);
-        pHRIR_R = AKfractionalDelayCyclic(HRIR_R, -toa_R);
-
-        %Transform to Fourier domain with same FFToversize as defined in struct
-        pHRTF_L = AKboth2singleSidedSpectrum (fft(pHRIR_L)).';
-        pHRTF_R = AKboth2singleSidedSpectrum (fft(pHRIR_R)).';
+            disp('Preprocessing: None')
+            %Copy HRTF to pHRTF_L as in case 'None'
+            pHRTF_L = HRTF_L;
+            pHRTF_R = HRTF_R;
         
+        else
+
+            %Estimate TOA on low-passed and 10 times upsampled HRIRs according to [2]
+            toa_L = AKonsetDetect(HRIR_L, 10, -20, 'rel', [3e3 fs]);
+            toa_R = AKonsetDetect(HRIR_R, 10, -20, 'rel', [3e3 fs]);
+    
+            %Time-Align HRIRs (remove TOAs) with fractional delay
+            pHRIR_L = AKfractionalDelayCyclic(HRIR_L, -toa_L);
+            pHRIR_R = AKfractionalDelayCyclic(HRIR_R, -toa_R);
+    
+            %Transform to Fourier domain with same FFToversize as defined in struct
+            pHRTF_L = AKboth2singleSidedSpectrum (fft(pHRIR_L)).';
+            pHRTF_R = AKboth2singleSidedSpectrum (fft(pHRIR_R)).';
+        
+        end
+
     case 'MagPhase'
         disp('Preprocessing: MagPhase')
+
+        %Not compatible with SARITA interpolation. Intercepted here.
+        if strcmp(ipMethod,'SARITA')
+            warning('MagPhase not compatible with SARITA interpolation. Set to ''None'' for preprocessing')
+            ppMethod = 'None';
+
+            disp('Preprocessing: None')
+            %Copy HRTF to pHRTF_L as in case 'None'
+            pHRTF_L = HRTF_L;
+            pHRTF_R = HRTF_R;
+
+        else
         
-        pHRTF_L = abs(HRTF_L);
-        pHRTF_R = abs(HRTF_R);
-        pHRTF_L_ph = unwrap(angle(HRTF_L).').';
-        pHRTF_R_ph = unwrap(angle(HRTF_R).').';
+            pHRTF_L = abs(HRTF_L);
+            pHRTF_R = abs(HRTF_R);
+            pHRTF_L_ph = unwrap(angle(HRTF_L).').';
+            pHRTF_R_ph = unwrap(angle(HRTF_R).').';
+
+        end
         
     case 'None' 
         disp('Preprocessing: None')
@@ -402,7 +436,6 @@ switch ipMethod
             end 
         end
 
-            
     case 'Bary'
         disp('HRTF Interpolation: Bary')
         
@@ -481,7 +514,37 @@ switch ipMethod
                 end
             end
         end
-             
+
+    case 'SARITA'
+        disp('HRTF Interpolation: SARITA')     
+        %SARITA works in time domain - Get pHRIRs from pHRTFs
+        %Get mirror spectrum
+        pHRIR_L = AKsingle2bothSidedSpectrum(pHRTF_L.');
+        pHRIR_R = AKsingle2bothSidedSpectrum(pHRTF_R.');
+        %Transform to time domain
+        pHRIR_L = real(ifft(pHRIR_L));
+        pHRIR_R = real(ifft(pHRIR_R));
+    
+        %Zero padding so that the output of SARITA is for sure containing all relevant samples
+        pHRIR_L_tmp=[pHRIR_L.', zeros(size(pHRIR_L.'))]; 
+        pHRIR_R_tmp=[pHRIR_R.', zeros(size(pHRIR_R.'))];
+        
+        %Perform interpolation using SARITA function
+        [pHRIR_L_ip_tmp, ~] = Sarita_upsampling(pHRIR_L_tmp, samplingGrid(:,1:2)/(360/2/pi), ipSamplingGrid(:,1:2)/(360/2/pi), headRadius*1.2, 'frame_length', floor(size(pHRIR_L,1)/2), 'frame_overlap', 1);
+        [pHRIR_R_ip_tmp, ~] = Sarita_upsampling(pHRIR_R_tmp, samplingGrid(:,1:2)/(360/2/pi), ipSamplingGrid(:,1:2)/(360/2/pi), headRadius*1.2, 'frame_length', floor(size(pHRIR_R,1)/2), 'frame_overlap', 1);
+        
+        %Remove zeros again
+        pHRIR_L_ip=pHRIR_L_ip_tmp(:,1:size(pHRIR_L,1)).';  
+        pHRIR_R_ip=pHRIR_R_ip_tmp(:,1:size(pHRIR_L,1)).';
+
+        %Transform to frequency domain
+        pHRTF_L_ip=fft(pHRIR_L_ip, [], 1);
+        pHRTF_L_ip=pHRTF_L_ip(1:round(end/2)+1,:).';
+        pHRTF_R_ip=fft(pHRIR_R_ip, [], 1);
+        pHRTF_R_ip=pHRTF_R_ip(1:round(end/2)+1,:).';  
+
+        clear pHRIR_L_tmp pHRIR_R_tmp pHRIR_L_ip_tmp pHRIR_R_ip_tmp
+            
 end
 
 %Save intermediate result (interpolated pre-processed HRTFs) in output struct
@@ -623,7 +686,7 @@ if ~isnan(mc)
             cl_ip = AKisht(cl_nm, false, ipSamplingGrid(:,1:2), 'complex', false, false, 'real');
             cr_ip = AKisht(cr_nm, false, ipSamplingGrid(:,1:2), 'complex', false, false, 'real');
 
-        case 'NN'
+        case {'NN','SARITA'} %NN and SARITA handled the same, as SARITA uses NN interpolation
             
             %Transform grids to cartesian coordinates
             [samplingGrid_cart(:,1), samplingGrid_cart(:,2), samplingGrid_cart(:,3)] = sph2cart(samplingGrid(:,1)/360*2*pi, pi/2-samplingGrid(:,2)/360*2*pi,1);
