@@ -82,7 +82,8 @@
 % Onset-Based Time-Alignment (OBTA)
 % [1] M. J. Evans, J. A. S. Angus, and A. I. Tew, "Analyzing head-related transfer function measurements 
 % using surface spherical harmonics,"
-% J. Acoust. Soc. Am., vol. 104, no. 4, pp. 2400-2411, 1998.
+% J. Acoust. Soc. Am., vol. 104, no. 4, pp. 2400-2411, 1998,
+% doi: https://doi.org/10.1121/1.423749.
 % [2] F. Brinkmann and S. Weinzierl, "Comparison of head-related transfer functions pre-processing 
 % techniques for spherical harmonics decomposition,"
 % in Proceedings of the AES Conference on Audio for Virtual and Augmented Reality, 2018, pp. 1-10.
@@ -90,18 +91,21 @@
 % Spatial Upsampling by Directional Equalization (SUpDEq)
 % [3] C. Pörschmann, J. M. Arend, and F. Brinkmann, 
 % "Directional Equalization of Sparse Head-Related Transfer Function Sets for Spatial Upsampling," 
-% IEEE/ACM Trans. Audio, Speech, Lang. Process., vol. 27, no. 6, pp. 1060-1071, 2019.
+% IEEE/ACM Trans. Audio, Speech, Lang. Process., vol. 27, no. 6, pp. 1060-1071, 2019,
+% doi: https://doi.org/10.1109/TASLP.2019.2908057.
 %
 % Phase-Correction (PC)
 % [4] Z. Ben-Hur, D. Lou Alon, R. Mehra, and B. Rafaely, 
 % "Efficient Representation and Sparse Sampling of Head-Related Transfer Functions 
 % Using Phase-Correction Based on Ear Alignment," 
-% IEEE/ACM Trans. Audio, Speech, Lang. Process., vol. 27, no. 12, pp. 2249-2262, 2019.
+% IEEE/ACM Trans. Audio, Speech, Lang. Process., vol. 27, no. 12, pp. 2249-2262, 2019,
+% doi: https://doi.org/10.1109/TASLP.2019.2945479.
 %
 % Comparison of time-alignment methods & perceptual evaluation
 % [5] J. M. Arend, F. Brinkmann, and C. Pörschmann, “Assessing Spherical 
 % Harmonics Interpolation of Time-Aligned Head-Related Transfer Functions,” 
-% J. Audio Eng. Soc., vol. 69, no. 1/2, pp. 104–117, 2021.
+% J. Audio Eng. Soc., vol. 69, no. 1/2, pp. 104–117, 2021, 
+% doi: https://doi.org/10.17743/jaes.2020.0070.
 % 
 % Spherical harmonics interpolation
 % [1-5]
@@ -117,12 +121,14 @@
 % 
 % [8] Spherical Array Interpolation by Time Alignment (SARITA)
 % T. Lübeck, J. M. Arend, and C. Pörschmann, “Spatial Upsampling of Sparse Spherical Microphone Array Signals,” 
-% IEEE/ACM Trans. Audio Speech Lang. Proc., vol. 31, pp. 1163–1174, 2023, 
+% IEEE/ACM Trans. Audio Speech Lang. Proc., vol. 31, pp. 1163–1174, 2023,
+% doi: https://doi.org/10.1109/TASLP.2023.3250841.
 %
 % Magnitude-Corrected and Time-Aligned Interpolation (MCA)
-% [9] J. M. Arend, C. Pörschmann, S. Weinzierl, F. Brinkmann, 
-% "Magnitude-Corrected and Time-Aligned Interpolation of Head-Related Transfer Functions," 
-% (Manuscript submitted for publication).
+% [9] J. M. Arend, C. Pörschmann, S. Weinzierl, and F. Brinkmann, 
+% "Magnitude-Corrected and Time-Aligned Interpolation of Head-Related Transfer Functions,” 
+% IEEE/ACM Trans. Audio Speech Lang. Proc., vol. 31, pp. 3783–3799, 2023,
+% doi: https://doi.org/10.1109/TASLP.2023.3313908.
 %
 %
 % (C) 2020-2023 by JMA, Johannes M. Arend
