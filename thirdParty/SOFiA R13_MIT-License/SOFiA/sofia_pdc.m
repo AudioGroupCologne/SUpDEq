@@ -11,14 +11,12 @@
 % 
 % P/D/C Fast pwd|beamfoming core R13-0306
 % 
-% 
-% Copyright 2011-2017 Benjamin Bernschütz, rockzentrale 'AT' me.com  
-%              
+% Copyright 2011-2017 Benjamin Bernschütz, rockzentrale 'AT' me.com                        
 % 
 % This file is part of the SOFiA toolbox under MIT-License
-%
-%
-% Y = sofia_pdc(N, OmegaL, Pnm, dn, [cn]) 
+% 
+%  
+% Y = ASAR_PDC(N, OmegaL, Pnm, dn, [cn]) 
 % ------------------------------------------------------------------------     
 % Y      MxN Matrix of the decomposed wavefield 
 %        Col - Look Direction as specified in OmegaL
@@ -43,7 +41,8 @@
 %        Row - kr bins   
 %        If cn is not specified a PWD will be done
 % 
-
+ 
+%
 % CONTACT AND LICENSE INFORMATION:
 % 
 % /// ASAR/MARA Research Group 
@@ -96,4 +95,4 @@
 % (§) Christoph Pörschmann [1]     christoph.poerschmann 'at' th-koeln.de
 %     Sascha Spors         [2,3,4] sascha.spors 'at' uni-rostock.de  
 %     Stefan Weinzierl     [2]     stefan.weinzierl 'at' tu-berlin.de
-
+% 

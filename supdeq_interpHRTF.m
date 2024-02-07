@@ -74,7 +74,10 @@
 % limFade                - String to define whether to apply a linear fade upwards from aliasing frequency fA to fAt = fA + 1/3 Oct, or downwards, i.e., from fA to fAt = fA - 1/3 Oct
 %                          'fadeUp' - upwards
 %                          'fadeDown' - downwards
-%                           Default: 'fadeDown'
+%                          Default: 'fadeDown'
+% ILDComp                - Enable/disable the ILD error compensation for the magnitude correction. 
+%                          Only applies if 'mc' is not nan.
+%                          Default: true
 %
 % Dependencies: SUpDEq toolbox, AKtools, SOFiA toolbox, SFS toolbox, TriangleRayIntersection
 %
@@ -135,7 +138,7 @@
 %               TU Berlin, Audio Communication Group
 %               TH Köln, Institute of Communications Engineering
 
-function [interpHRTFset, HRTF_L_ip, HRTF_R_ip] = supdeq_interpHRTF(HRTFset, ipSamplingGrid, ppMethod, ipMethod, mc, headRadius, tikhEps, limitMC, mcKnee, mcMinPhase, limFade) 
+function [interpHRTFset, HRTF_L_ip, HRTF_R_ip] = supdeq_interpHRTF(HRTFset, ipSamplingGrid, ppMethod, ipMethod, mc, headRadius, tikhEps, limitMC, mcKnee, mcMinPhase, limFade, ILDComp) 
 
 
 if nargin < 3 || isempty(ppMethod)
@@ -172,6 +175,10 @@ end
 
 if nargin < 11 || isempty(limFade)
     limFade = 'fadeDown';
+end
+
+if nargin < 12 || isempty(ILDComp)
+    ILDComp = true;
 end
    
 %% Get some required variables
@@ -759,8 +766,92 @@ if ~isnan(mc)
     HRIR_ip(:,:,1) = real(ifft(HRIR_L_ip));
     HRIR_ip(:,:,2) = real(ifft(HRIR_R_ip));
     HRIR_ip = HRIR_ip(1:hrirLength,:,:);
-    %Save in 3D-array for further processing
+    %Save in 3D-array for further processing (Spectrum c(hrir) interpolated)
     c_hrir_ip = AKerbErrorPersistent(HRIR_ip,AKdirac(size(HRIR_ip,1)),[fLowErb fs/2],fs);
+
+    
+    %ILD compensation <--- VAR Project code
+    if ILDComp
+
+        %Calculate ILDs post auditory smoothings from the conventional time aligned interpolation (CTAI)
+        ILDs_hrir_ip = c_hrir_ip(:, :, 1) - c_hrir_ip(:, :, 2);
+
+        %Calculate ILDs post auditory smoothings from the original sparse HRIRs
+        ILDs_pre_ip = cl - cr;
+
+        %Interpolation of the sparse ILDs to the ipSamplingGrid with respect to the chosen ipMethod
+        % ILDs_ip = ...
+        switch ipMethod
+            case 'SH'
+
+                %Transform ILDs to SH domain
+                %Tikhonov regularization can be applied if weights in sampling grid are erased and tikhEps ~= 0
+                ILDs_nm = AKsht(ILDs_pre_ip, false, samplingGrid, HRTFset.Nmax, 'complex', fs, false, 'real',tikhEps);
+
+                %Apply SH interpolation to ipSamplingGrid
+                ILDs_ip = AKisht(ILDs_nm, false, ipSamplingGrid(:,1:2), 'complex', false, false, 'real');
+
+            case {'NN','SARITA'} %NN and SARITA handled the same, as SARITA uses NN interpolation
+
+                %Transform grids to cartesian coordinates
+                % --> already done previously
+
+                %NN interpolate ERB filters to ipSamplingGrid
+                ILDs_ip = zeros(length(ferb),length(ipSamplingGrid));
+
+                for nPoint = 1:size(ipSamplingGrid,1)
+
+                    [idx_voronoi,w_voronoi] = findvoronoi(samplingGrid_cart,ipSamplingGrid_cart(nPoint,:));
+
+                    for n = 1:length(idx_voronoi)
+                        ILDs_ip(:,nPoint) = ILDs_ip(:,nPoint) + w_voronoi(n)*ILDs_pre_ip(:,idx_voronoi(n));
+                    end
+                end
+
+            case 'Bary'
+
+                %Transform grids to cartesian coordinates
+                % --> already done previously
+
+                %Get simplified convex hull (could also be done after delaunay-triangulation)
+                % --> already done previously
+
+                %Get HRTFs / directions assigned to convex hull triangles
+                % --> already done previously
+
+                %Interpolate with barycentric weights
+                %Right triangle of convex hull picked by ray-triangle intersection test (intersectLinePolygon3d from geom3D toolbox should work too)
+                %Function returns barycentric weights / coordinates u and v of the intersection point -> w = 1-u-v
+                %P = w*A + u*B + v*C
+                orig = [0 0 0];
+                ILDs_ip = zeros(length(ferb),length(ipSamplingGrid));
+
+                for nPoint = 1:size(ipSamplingGrid,1)
+
+                    [intersect, ~, u, v, ~] = TriangleRayIntersection(orig, ipSamplingGrid_cart(nPoint,:), convHullHRTF_A, convHullHRTF_B, convHullHRTF_C, 'border', 'inclusive');
+                    intersectIdx = find(intersect, 1, 'first'); %Evaluate first intersection point
+                    u = u(intersectIdx); v = v(intersectIdx); w = 1-u-v;
+                    bw = [w u v]; %Barycentric weights
+                    idx_bw = convHullIdx(intersectIdx,:); %Indizes of HRTFs of convex hull / triangles
+
+                    for n = 1:3 %Always 3 because of triangulization
+                        ILDs_ip(:,nPoint) = ILDs_ip(:,nPoint) + bw(n)*ILDs_pre_ip(:,idx_bw(n));
+                    end
+                end
+        end
+
+        %Division of the CTAI ILDs with the interpolated ILDs from the original sparse HRIRs
+        ILDs = ILDs_hrir_ip - ILDs_ip;
+
+        %Left or right ear ILDs selection
+
+        %Generate filter...
+
+        %Apply filter...
+
+
+
+    end
     
     %Get correction filters for all HRTFs
     corrFilt = c_ip-c_hrir_ip;

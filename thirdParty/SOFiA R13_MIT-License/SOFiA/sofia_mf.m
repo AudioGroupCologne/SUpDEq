@@ -14,13 +14,12 @@
 %     On-axis powerloss compensation with
 %     N0plc to N0 interpolation.
 % 
-% Copyright 2011-2017 Benjamin Bernschütz and Nils Peters, 
-%                     rockzentrale 'AT' me.com  
-%              
+% Copyright 2011-2017 Benjamin Bernschütz, rockzentrale 'AT' me.com  
+%                        and Nils Peters, nils 'AT' icsi.berkeley.edu 
 % 
 % This file is part of the SOFiA toolbox under MIT-License
-%
-%
+% 
+% 
 % [dn, beam] = SOFIA_MF(N, kr, ac, [a_max], [plc], [fadeover])
 % ------------------------------------------------------------------------   
 % dn          Vector of modal 0-N frequency domain filters
@@ -47,8 +46,9 @@
 % fadeover    Number of kr values to fade over +/- around min-distance 
 %             gap of powerloss compensated filter and normal N0 filters.
 %             0 = auto fadeover
+% 
+ 
 %
-
 % CONTACT AND LICENSE INFORMATION:
 % 
 % /// ASAR/MARA Research Group 
@@ -101,4 +101,5 @@
 % (§) Christoph Pörschmann [1]     christoph.poerschmann 'at' th-koeln.de
 %     Sascha Spors         [2,3,4] sascha.spors 'at' uni-rostock.de  
 %     Stefan Weinzierl     [2]     stefan.weinzierl 'at' tu-berlin.de
-
+%     Nils Peters                  nils 'at' icsi.berkeley.edu
+% 

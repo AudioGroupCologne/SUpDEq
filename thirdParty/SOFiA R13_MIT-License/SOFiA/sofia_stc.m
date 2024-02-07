@@ -11,9 +11,7 @@
 % 
 % S/T/C Fast Spatial Fourier Transform Core R13-0306
 % 
-% 
-% Copyright 2011-2017 Benjamin Bernschütz, rockzentrale 'AT' me.com  
-%              
+% Copyright 2011-2017 Benjamin Bernschütz, rockzentrale 'AT' me.com                        
 % 
 % This file is part of the SOFiA toolbox under MIT-License
 %
@@ -37,8 +35,9 @@
 %          Columns : s=1...S spatial positions
 %          Rows    : [AZ_s EL_s GridWeight_s]
 %          AZ in [0...2pi] and EL [0...pi] in RAD
+% 
+ 
 %
-
 % CONTACT AND LICENSE INFORMATION:
 % 
 % /// ASAR/MARA Research Group 
@@ -91,3 +90,4 @@
 % (§) Christoph Pörschmann [1]     christoph.poerschmann 'at' th-koeln.de
 %     Sascha Spors         [2,3,4] sascha.spors 'at' uni-rostock.de  
 %     Stefan Weinzierl     [2]     stefan.weinzierl 'at' tu-berlin.de
+% 

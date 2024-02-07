@@ -114,8 +114,8 @@ cHeaderPath = [pwd(),filesep(),'HEADER'];
 for k = 1:length(sources);
     eval(sprintf('disp(''building %s'');',char(sources(k))));
     % mex compiling
-    sprintf('mex %s %s -I%s -D%s -outdir ../;',char(sources(k)),char(cHeaders), char(cHeaderPath),char(configuration))
-    eval(sprintf('mex %s %s -I%s -D%s -outdir ../;',char(sources(k)),char(cHeaders), char(cHeaderPath),char(configuration)));  
+    sprintf('mex %s %s -I''%s'' -D%s -outdir ../;',char(sources(k)),char(cHeaders), char(cHeaderPath),char(configuration))
+    eval(sprintf('mex %s %s -I''%s'' -D%s -outdir ../;',char(sources(k)),char(cHeaders), char(cHeaderPath),char(configuration)));  
         
     % header file generation: writing the header into an extra .m file 
     eval(sprintf('fir=fopen(''%s'' ,''r'',''n'',''ISO-8859-1'');',char(sources(k)))); 

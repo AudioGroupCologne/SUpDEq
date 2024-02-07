@@ -11,13 +11,11 @@
 % 
 % W/G/C Wave Generator Core R13-0306
 % 
-% 
-% Copyright 2011-2017 Benjamin Bernschütz, rockzentrale 'AT' me.com  
-%              
+% Copyright 2011-2017 Benjamin Bernschütz, rockzentrale 'AT' me.com                        
 % 
 % This file is part of the SOFiA toolbox under MIT-License
-%
-%
+% 
+%  
 % [Pnm, kr] = sofia_wgc(N, r, ac, FS, NFFT, AZ, EL, 
 %                             t, c, wavetype, ds, lSegLim, uSegLim, SeqN)
 % ------------------------------------------------------------------------
@@ -38,11 +36,11 @@
 %          ! If only one radius (rm) is given using a Rigid/Dual Sphere  
 %            Configuration: rs = rm and only one kr-vector is returned!
 % ac       Array Configuration 
-%          0  Open Sphere with p Transducers (NO plc!)
-%          1  Open Sphere with pGrad Transducers
-%          2  Rigid Sphere with p Transducers
-%          3  Rigid Sphere with pGrad Transducers (Thx to Nils Peters!)
-%          4  Dual Open Sphere with p Transducers (Thx to Nils Peters!)
+%          0  Open Sphere with pressure Transducers (NO plc!)
+%          1  Open Sphere with cardioid Transducers
+%          2  Rigid Sphere with pressure Transducers
+%          3  Rigid Sphere with cardioid Transducers (Thx to Nils Peters!)
+%          4  Dual Open Sphere with pressure Transducers (Thx to Nils Peters!)
 % FS       Sampling Frequency
 % NFFT     FFT Order (Number of bins) should be 2^x, x=1,2,3,... 
 % AZ       Azimuth   angle in [DEG] 0-2pi            
@@ -59,7 +57,8 @@
 % uSegLim  (Upper Segment Limit) Used by the S/W/G wrapper
 % SegN     (Sement Order)        Used by the S/W/G wrapper
 %
-
+ 
+%
 % CONTACT AND LICENSE INFORMATION:
 % 
 % /// ASAR/MARA Research Group 
@@ -112,4 +111,4 @@
 % (§) Christoph Pörschmann [1]     christoph.poerschmann 'at' th-koeln.de
 %     Sascha Spors         [2,3,4] sascha.spors 'at' uni-rostock.de  
 %     Stefan Weinzierl     [2]     stefan.weinzierl 'at' tu-berlin.de
-
+% 
