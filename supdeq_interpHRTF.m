@@ -774,10 +774,13 @@ if ~isnan(mc)
     if ILDComp
 
         %Calculate ILDs post auditory smoothings from the conventional time aligned interpolation (CTAI)
-        ILDs_hrir_ip = c_hrir_ip(:, :, 1) - c_hrir_ip(:, :, 2);
+        ILDs_hrir_ip = c_hrir_ip(:, :, 1) - c_hrir_ip(:, :, 2); 
 
-        %Calculate ILDs post auditory smoothings from the original sparse HRIRs
-        ILDs_pre_ip = cl - cr;
+        %ild = supdeq_calcILD(hrir)
+
+        %Calculate ILDs post auditory smoothings from the original sparse
+        %HRIRs (MCA)
+        ILDs_pre_mc_ip = cl - cr;
 
         %Interpolation of the sparse ILDs to the ipSamplingGrid with respect to the chosen ipMethod
         % ILDs_ip = ...
@@ -786,10 +789,10 @@ if ~isnan(mc)
 
                 %Transform ILDs to SH domain
                 %Tikhonov regularization can be applied if weights in sampling grid are erased and tikhEps ~= 0
-                ILDs_nm = AKsht(ILDs_pre_ip, false, samplingGrid, HRTFset.Nmax, 'complex', fs, false, 'real',tikhEps);
+                ILDs_mc_nm = AKsht(ILDs_pre_mc_ip, false, samplingGrid, HRTFset.Nmax, 'complex', fs, false, 'real',tikhEps);
 
                 %Apply SH interpolation to ipSamplingGrid
-                ILDs_ip = AKisht(ILDs_nm, false, ipSamplingGrid(:,1:2), 'complex', false, false, 'real');
+                ILDs_mc_ip = AKisht(ILDs_mc_nm, false, ipSamplingGrid(:,1:2), 'complex', false, false, 'real');
 
             case {'NN','SARITA'} %NN and SARITA handled the same, as SARITA uses NN interpolation
 
@@ -797,14 +800,14 @@ if ~isnan(mc)
                 % --> already done previously
 
                 %NN interpolate ERB filters to ipSamplingGrid
-                ILDs_ip = zeros(length(ferb),length(ipSamplingGrid));
+                ILDs_mc_ip = zeros(length(ferb),length(ipSamplingGrid));
 
                 for nPoint = 1:size(ipSamplingGrid,1)
 
                     [idx_voronoi,w_voronoi] = findvoronoi(samplingGrid_cart,ipSamplingGrid_cart(nPoint,:));
 
                     for n = 1:length(idx_voronoi)
-                        ILDs_ip(:,nPoint) = ILDs_ip(:,nPoint) + w_voronoi(n)*ILDs_pre_ip(:,idx_voronoi(n));
+                        ILDs_mc_ip(:,nPoint) = ILDs_mc_ip(:,nPoint) + w_voronoi(n)*ILDs_pre_mc_ip(:,idx_voronoi(n));
                     end
                 end
 
@@ -824,7 +827,7 @@ if ~isnan(mc)
                 %Function returns barycentric weights / coordinates u and v of the intersection point -> w = 1-u-v
                 %P = w*A + u*B + v*C
                 orig = [0 0 0];
-                ILDs_ip = zeros(length(ferb),length(ipSamplingGrid));
+                ILDs_mc_ip = zeros(length(ferb),length(ipSamplingGrid));
 
                 for nPoint = 1:size(ipSamplingGrid,1)
 
@@ -835,26 +838,94 @@ if ~isnan(mc)
                     idx_bw = convHullIdx(intersectIdx,:); %Indizes of HRTFs of convex hull / triangles
 
                     for n = 1:3 %Always 3 because of triangulization
-                        ILDs_ip(:,nPoint) = ILDs_ip(:,nPoint) + bw(n)*ILDs_pre_ip(:,idx_bw(n));
+                        ILDs_mc_ip(:,nPoint) = ILDs_mc_ip(:,nPoint) + bw(n)*ILDs_pre_mc_ip(:,idx_bw(n));
                     end
                 end
         end
-
+      
         %Division of the CTAI ILDs with the interpolated ILDs from the original sparse HRIRs
-        ILDs = ILDs_hrir_ip - ILDs_ip;
 
-        %Left or right ear ILDs selection
+        %ILDs = ILDs_hrir_ip - ILDs_ip;
+        ILD_corrFilt = ILDs_mc_ip - ILDs_hrir_ip;
 
+        %Transform to linear value
+        %ILD_corrFilt_lin = 10.^(ILD_corrFilt/20);
+
+        %Left or right ear --> apply ILD-Filter only on averted ear,
+        %because of coloration porposes
+        HRTF_L_ILD = abs(HRTFset.HRTF_L); % get the absolute values of the left channel
+        HRTF_R_ILD = abs(HRTFset.HRTF_R); % get the absolute values of the right channel 
+
+        % calculate the energetic sum of the entire spectrum of every
+        % sample point and above the sample points
+        L_sum_HRTF_L_ILD = 10 * log10(sum(sum(10.^(HRTF_L_ILD / 10),2))); 
+        L_sum_HRTF_R_ILD = 10 * log10(sum(sum(10.^(HRTF_R_ILD / 10),2)));
+
+        % determine the channel with less energy
+        if L_sum_HRTF_L_ILD > L_sum_HRTF_R_ILD
+            ILD_Filt_flag = true;
+        elseif L_sum_HRTF_L_ILD <  L_sum_HRTF_R_ILD
+           ILD_Filt_flag = false;
+        else
+            % if the energtic sum of both channels are equal, take
+            % the left_ear side channel
+            ILD_Filt_flag = true;
+            disp('The energetic sum of both channels are equal')
+        end
+        
+        % Test with ip channels
+        %Left or right ear --> apply ILD-Filter on averted ear)
+        %HRTF_L_ILD_ip = abs(interpHRTFset.p.HRTF_L_ip_noMC); % get the absolute values of the left channel
+        %HRTF_R_ILD_ip = abs(interpHRTFset.p.HRTF_R_ip_noMC); % get the absolute values of the right channel 
+
+        % calculate the energetic sum of the entire spectrum of every
+        % sample point and above the sample points
+        %L_sum_HRTF_L_ILD_ip = 10 * log10(sum(sum(10.^(HRTF_L_ILD_ip / 10),2))); 
+        %L_sum_HRTF_R_ILD_ip = 10 * log10(sum(sum(10.^(HRTF_R_ILD_ip / 10),2)));
+
+        % maybe can be removed %%%%
+
+        %azimuthVector_ip = ipSamplingGrid(:,1,1);
+        %iEarsideOrientation_ip = zeros(length(ipSamplingGrid),1);
+        %iEarsideOrientation_ip(azimuthVector_ip == 0 | azimuthVector_ip == 180) = 0; 
+        %iEarsideOrientation_ip(azimuthVector_ip > 0 & azimuthVector < 180) = -1; % right ear
+        %iEarsideOrientation_ip(azimuthVector_ip > 180 & azimuthVector < 360) = 1; % left ear
+        % get idx left/right side
+        %num_ones = sum(iEarsideOrientation == 1);
+        %num_minus_ones = sum(iEarsideOrientation == -1);
+        %idx_right_ear_ip = find(iEarsideOrientation == -1);
+        %idx_left_ear_ip = find(iEarsideOrientation == 1);
+        
+        % determine averted side with the sparse uninterpolated Sparse
+        % HRTF_set there are less calculation necessary
+        %azimuthVector = samplingGrid(:,1,1); 
+        %iEarsideOrientation = zeros(length(SamplingGrid),1);
+        %iEarsideOrientation(azimuthVector == 0 | azimuthVector_ip == 180) = 0; 
+        %iEarsideOrientation(azimuthVector > 0 & azimuthVector < 180) = -1; % right ear
+        %iEarsideOrientation(azimuthVector > 180 & azimuthVector < 360) = 1; % left ear
+        %idx_right_ear = find(iEarsideOrientation == -1);
+        %idx_left_ear = find(iEarsideOrientation == 1);
+        
+        %%%%%
+       
         %Generate filter...
-
+        
         %Apply filter...
-
-
 
     end
     
     %Get correction filters for all HRTFs
     corrFilt = c_ip-c_hrir_ip;
+    
+    if ILDComp
+        % apply the ILD_Filter on the averted channel
+        if ILD_Filt_flag
+            corrFilt(:,:,1) = corrFilt(:,:,1) + ILD_corrFilt;
+        else
+            corrFilt(:,:,2) = corrFilt(:,:,2) + ILD_corrFilt;
+        end
+    end
+
     %Spline interpolate correction filters to 0-fs/2
     corrFilt_l = AKinterpolateSpectrum( squeeze(corrFilt(:,:,1)), ferb, NFFT, {'nearest' 'spline' 'nearest'}, fs);
     corrFilt_r = AKinterpolateSpectrum( squeeze(corrFilt(:,:,2)), ferb, NFFT, {'nearest' 'spline' 'nearest'}, fs);

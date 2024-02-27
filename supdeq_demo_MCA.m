@@ -82,7 +82,7 @@ refHRTF.HRIR_R = refHRTF.HRIR_R(1:end/refHRTF.FFToversize,:);
 
 %% (5) - Optional: Plot HRIRs
 
-%Plot frontal left-ear HRIR (Az = 0, Col = 90) of conventional and MCA
+%Plot frontal left-ear HRIR (Az = 0, Col = 90) of conventional, MCA and ILD-Filter
 %interpolated dataset. Differences are small.
 idFL = 16; %ID in sgD
 supdeq_plotIR(interpHRTF_con.HRIR_L(:,idFL),interpHRTF_mca.HRIR_L(:,idFL),[],[],8);
@@ -143,9 +143,15 @@ grid on;
 
 %% (7) - Optional: Calculate magnitude error in auditory filters (similar to paper)
 
-[erb_sh,fc_erb] = AKerbError(interpHRTF_sh.HRIR_L,refHRTF.HRIR_L, [50 fs/2], fs);
-erb_con = AKerbError(interpHRTF_con.HRIR_L,refHRTF.HRIR_L, [50 fs/2], fs);
-erb_mca = AKerbError(interpHRTF_mca.HRIR_L,refHRTF.HRIR_L, [50 fs/2], fs);
+% Left ear
+%[erb_sh,fc_erb] = AKerbError(interpHRTF_sh.HRIR_L,refHRTF.HRIR_L, [50 fs/2], fs);
+%erb_con = AKerbError(interpHRTF_con.HRIR_L,refHRTF.HRIR_L, [50 fs/2], fs);
+%erb_mca = AKerbError(interpHRTF_mca.HRIR_L,refHRTF.HRIR_L, [50 fs/2], fs);
+
+% Right ear
+[erb_sh,fc_erb] = AKerbError(interpHRTF_sh.HRIR_R,refHRTF.HRIR_R, [50 fs/2], fs);
+erb_con = AKerbError(interpHRTF_con.HRIR_R,refHRTF.HRIR_R, [50 fs/2], fs);
+erb_mca = AKerbError(interpHRTF_mca.HRIR_R,refHRTF.HRIR_R, [50 fs/2], fs);
 
 %Quick plot of absolute magnitude error in auditory filters averaged over all
 %directions of the 2702-point Lebedev grid. 
