@@ -22,6 +22,7 @@
 %               TU Berlin
 %               Audio Communication Group
 
+clear variables;
 %% (1) - Define sparse and dense grid
 
 %Sparse Lebedev Grid
@@ -81,7 +82,7 @@ refHRTF.HRIR_R = ifft(AKsingle2bothSidedSpectrum(refHRTF.HRTF_R.'));
 refHRTF.HRIR_R = refHRTF.HRIR_R(1:end/refHRTF.FFToversize,:);
 
 %% (5) - Optional: Plot HRIRs
-
+% 
 %Plot frontal left-ear HRIR (Az = 0, Col = 90) of conventional, MCA and ILD-Filter
 %interpolated dataset. Differences are small.
 idFL = 16; %ID in sgD
@@ -167,6 +168,107 @@ ylabel('\DeltaG(f_c) in dB');
 grid on;
 
 
+%% (8) Compare HRTF of Reference set with the interpolated HRTF of ^H and the magnitude-corrected interpolated HRTF of ^H_C with the applied ILD-Filter
 
 
+%find(refHRTF.samplingGrid(:,1) == 90 & refHRTF.samplingGrid(:,2) == 0 )  
+
+% find the nearest coordinates next to the target values
+target = [60, 60]; % target values azimuth; elevation
+
+refHRTF_sampgrid = refHRTF.samplingGrid(:,1:2);
+intpHRTF_con_sampgrid = interpHRTF_con.samplingGrid(:,1:2);
+intpHRTF_mca_sampgrid = interpHRTF_mca.samplingGrid(:,1:2);
+
+diff_refHRTF = abs(refHRTF_sampgrid - target);
+diff_intpHRTF_con = abs(intpHRTF_con_sampgrid - target);
+diff_intpHRTF_mca = abs(intpHRTF_mca_sampgrid - target);
+
+sum_diff_refHRTF = sum(diff_refHRTF,2);
+sum_diff_intpHRTF_con = sum(diff_intpHRTF_con,2);
+sum_diff_intpHRTF_mca = sum(diff_intpHRTF_mca,2);
+
+[~, idx_refHRTF] = min(sum_diff_refHRTF);
+[~, idx_intpHRTF_con] = min(sum_diff_intpHRTF_con);
+[~, idx_intpHRTF_mca] = min(sum_diff_intpHRTF_mca);
+
+% recognize the facing side (channel) to the source (check with reference)
+%ref_HRTF_L = 20*log10(abs(refHRTF.HRTF_L(idx_refHRTF,:)));
+%ref_HRTF_R = 20*log10(abs(refHRTF.HRTF_R(idx_refHRTF,:)));
+con_HRTF_L = 20*log10(abs(interpHRTF_con.HRTF_L(idx_refHRTF,:)));
+con_HRTF_R = 20*log10(abs(interpHRTF_con.HRTF_R(idx_refHRTF,:)));
+
+% sample point and above the sample points
+%L_sum_HRTF_L = 10 * log10(sum(sum(10.^(con_HRTF_L / 10),2))); 
+%L_sum_HRTF_R = 10 * log10(sum(sum(10.^(con_HRTF_R / 10),2)));
+L_sum_HRTF_L = 10 * log10(sum(10.^(con_HRTF_L / 10))); 
+L_sum_HRTF_R = 10 * log10(sum(10.^(con_HRTF_R / 10)));
+
+% set R and L textlabel can be expanded ...
+if L_sum_HRTF_L > L_sum_HRTF_R
+    [max_ref,idx_refHRT] = max(20*log10(abs(refHRTF.HRTF_L(idx_refHRTF,:))));
+    [max_con,idx_max_con] = max(20*log10(abs(interpHRTF_con.HRTF_L(idx_refHRTF,:))));
+    [max_mc,idx_max_mc] = max(20*log10(abs(interpHRTF_mca.HRTF_L(idx_refHRTF,:))));
+
+    upper_lab = 'L';
+    if max_ref > max_con && max_ref > max_mc
+        idx_max = max_ref;
+    elseif max_con > max_ref && max_con > max_mc
+        idx_max = max_con;
+    elseif max_mc > max_ref && max_mc > max_con
+        idx_max = max_mc;
+    end
+elseif L_sum_HRTF_L < L_sum_HRTF_R
+
+   upper_lab = 'R';
+   [max_ref,idx_refHRT] = max(20*log10(abs(refHRTF.HRTF_R(idx_refHRTF,:))));
+   [max_con,idx_max_con] = max(20*log10(abs(interpHRTF_con.HRTF_R(idx_refHRTF,:))));
+   [max_mc,idx_max_mc] = max(20*log10(abs(interpHRTF_mca.HRTF_R(idx_refHRTF,:))));
+
+    if max_ref > max_con && max_ref > max_mc
+        idx_max = max_ref;
+    elseif max_con > max_ref && max_con > max_mc
+        idx_max = max_con;
+    elseif max_mc > max_ref && max_mc > max_con
+        idx_max = max_mc;
+    end
+end
+
+% Reference HRTF
+p1 = semilogx(refHRTF.f,20*log10(abs(refHRTF.HRTF_L(idx_refHRTF,:))) ...
+    ,'LineWidth',2.0,'Color',[0,0,66]/255); %,'alpha', 0.8);
+hold on;
+p2 = semilogx(refHRTF.f,20*log10(abs(refHRTF.HRTF_R(idx_refHRTF,:))) ...
+    ,'LineWidth',2.0,'Color',[0,0,66]/255);  %,'alpha', 0.8);
+
+% conventional HRTF 
+p3 = semilogx(interpHRTF_con.f,20*log10(abs(interpHRTF_con.HRTF_L(idx_intpHRTF_con,:))), ... 
+    'LineWidth',2.0,'Color',[160,160,160]/255);
+p4 = semilogx(interpHRTF_con.f,20*log10(abs(interpHRTF_con.HRTF_R(idx_intpHRTF_con,:))), ... 
+    'LineWidth',2.0,'Color',[160,160,160]/255);
+
+% mca and ILD corrected HRTF
+p5 = semilogx(interpHRTF_mca.f,20*log10(abs(interpHRTF_mca.HRTF_L(idx_intpHRTF_mca,:))) ... 
+    ,'LineWidth',2.0,'Color',[255,102,102]/255);
+p6 = semilogx(interpHRTF_mca.f,20*log10(abs(interpHRTF_mca.HRTF_R(idx_intpHRTF_mca,:))) ... 
+    ,'LineWidth',2.0,'Color',[255,102,102]/255);
+
+xlabel('Frequency in Hz','LineWidth',14);
+ylabel('Magnitude in dB','LineWidth',14);
+grid on;
+xlim([100 20000])
+
+legend([p1,p3,p5],'$H_{\mathrm{R}}$','$\widehat{H}$','$\widehat{H}_{\mathrm{C}}$', ...
+    'Interpreter','latex','FontSize',20,'Location','southwest');
+
+xlim = get(gca, 'XLim');
+ylim = get(gca, 'YLim');
+
+str = sprintf(' = (%.2f, %.2f)',[intpHRTF_mca_sampgrid(idx_intpHRTF_mca,1),intpHRTF_mca_sampgrid(idx_intpHRTF_mca,2)]);
+combinedStr = strcat('$\Omega$ ',str);
+text(xlim(1)+10, ylim(2)-3,combinedStr ,'Interpreter','latex','FontSize',20,'FontWeight','bold')
+
+% set R and L text
+
+%upper_lab
 

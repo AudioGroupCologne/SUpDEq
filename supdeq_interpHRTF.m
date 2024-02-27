@@ -853,8 +853,8 @@ if ~isnan(mc)
 
         %Left or right ear --> apply ILD-Filter only on averted ear,
         %because of coloration porposes
-        HRTF_L_ILD = abs(HRTFset.HRTF_L); % get the absolute values of the left channel
-        HRTF_R_ILD = abs(HRTFset.HRTF_R); % get the absolute values of the right channel 
+        HRTF_L_ILD =  20*log10(abs(HRTFset.HRTF_L)); % get the absolute values of the left channel
+        HRTF_R_ILD = 20*log10(abs(HRTFset.HRTF_R)); % get the absolute values of the right channel 
 
         % calculate the energetic sum of the entire spectrum of every
         % sample point and above the sample points
