@@ -178,8 +178,9 @@ if nargin < 11 || isempty(limFade)
 end
 
 if nargin < 12 || isempty(ILDComp)
-    ILDComp = true;
+     ILDComp = true;
 end
+
    
 %% Get some required variables
 
@@ -776,8 +777,6 @@ if ~isnan(mc)
         %Calculate ILDs post auditory smoothings from the conventional time aligned interpolation (CTAI)
         ILDs_hrir_ip = c_hrir_ip(:, :, 1) - c_hrir_ip(:, :, 2); 
 
-        %ild = supdeq_calcILD(hrir)
-
         %Calculate ILDs post auditory smoothings from the original sparse
         %HRIRs (MCA)
         ILDs_pre_mc_ip = cl - cr;
@@ -844,7 +843,8 @@ if ~isnan(mc)
         end
       
         %Division of the CTAI ILDs with the interpolated ILDs from the original sparse HRIRs
-
+        
+        %Generate filter ILD-Filter
         %ILDs = ILDs_hrir_ip - ILDs_ip;
         ILD_corrFilt = ILDs_mc_ip - ILDs_hrir_ip;
 
@@ -853,15 +853,15 @@ if ~isnan(mc)
 
         %Left or right ear --> apply ILD-Filter only on averted ear,
         %because of coloration porposes
-        HRTF_L_ILD =  20*log10(abs(HRTFset.HRTF_L)); % get the absolute values of the left channel
-        HRTF_R_ILD = 20*log10(abs(HRTFset.HRTF_R)); % get the absolute values of the right channel 
+        HRTF_L_ILD =  20*log10(abs(HRTFset.HRTF_L)); % get the log. absolute values of the left channel
+        HRTF_R_ILD = 20*log10(abs(HRTFset.HRTF_R)); % get the log. absolute values of the right channel 
 
         % calculate the energetic sum of the entire spectrum of every
         % sample point and above the sample points
         L_sum_HRTF_L_ILD = 10 * log10(sum(sum(10.^(HRTF_L_ILD / 10),2))); 
         L_sum_HRTF_R_ILD = 10 * log10(sum(sum(10.^(HRTF_R_ILD / 10),2)));
 
-        % determine the channel with less energy
+        % determine the channel which contains less energy
         if L_sum_HRTF_L_ILD > L_sum_HRTF_R_ILD
             ILD_Filt_flag = true;
         elseif L_sum_HRTF_L_ILD <  L_sum_HRTF_R_ILD
@@ -873,7 +873,7 @@ if ~isnan(mc)
             disp('The energetic sum of both channels are equal')
         end
         
-        % Test with ip channels
+        % Test with ip channels -->  % maybe can be removed %%%%
         %Left or right ear --> apply ILD-Filter on averted ear)
         %HRTF_L_ILD_ip = abs(interpHRTFset.p.HRTF_L_ip_noMC); % get the absolute values of the left channel
         %HRTF_R_ILD_ip = abs(interpHRTFset.p.HRTF_R_ip_noMC); % get the absolute values of the right channel 
@@ -882,8 +882,6 @@ if ~isnan(mc)
         % sample point and above the sample points
         %L_sum_HRTF_L_ILD_ip = 10 * log10(sum(sum(10.^(HRTF_L_ILD_ip / 10),2))); 
         %L_sum_HRTF_R_ILD_ip = 10 * log10(sum(sum(10.^(HRTF_R_ILD_ip / 10),2)));
-
-        % maybe can be removed %%%%
 
         %azimuthVector_ip = ipSamplingGrid(:,1,1);
         %iEarsideOrientation_ip = zeros(length(ipSamplingGrid),1);
@@ -905,13 +903,7 @@ if ~isnan(mc)
         %iEarsideOrientation(azimuthVector > 180 & azimuthVector < 360) = 1; % left ear
         %idx_right_ear = find(iEarsideOrientation == -1);
         %idx_left_ear = find(iEarsideOrientation == 1);
-        
-        %%%%%
-       
-        %Generate filter...
-        
-        %Apply filter...
-
+                   
     end
     
     %Get correction filters for all HRTFs

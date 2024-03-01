@@ -168,18 +168,15 @@ ylabel('\DeltaG(f_c) in dB');
 grid on;
 
 
-%% (8) Compare HRTF of Reference set with the interpolated HRTF of ^H and the magnitude-corrected interpolated HRTF of ^H_C with the applied ILD-Filter
+%% (8) Compare HRTF of the Reference set with the interpolated HRTF of ^H and the magnitude-corrected interpolated HRTF of ^H_C with the applied ILD-Filter
 
-
-%find(refHRTF.samplingGrid(:,1) == 90 & refHRTF.samplingGrid(:,2) == 0 )  
-
-% find the nearest coordinates next to the target values
-target = [60, 60]; % target values azimuth; elevation
+target = [60, 60]; % target values azimuth; elevation angle
 
 refHRTF_sampgrid = refHRTF.samplingGrid(:,1:2);
 intpHRTF_con_sampgrid = interpHRTF_con.samplingGrid(:,1:2);
 intpHRTF_mca_sampgrid = interpHRTF_mca.samplingGrid(:,1:2);
 
+% find the nearest coordinates next to the target values
 diff_refHRTF = abs(refHRTF_sampgrid - target);
 diff_intpHRTF_con = abs(intpHRTF_con_sampgrid - target);
 diff_intpHRTF_mca = abs(intpHRTF_mca_sampgrid - target);
@@ -192,48 +189,41 @@ sum_diff_intpHRTF_mca = sum(diff_intpHRTF_mca,2);
 [~, idx_intpHRTF_con] = min(sum_diff_intpHRTF_con);
 [~, idx_intpHRTF_mca] = min(sum_diff_intpHRTF_mca);
 
-% recognize the facing side (channel) to the source (check with reference)
-%ref_HRTF_L = 20*log10(abs(refHRTF.HRTF_L(idx_refHRTF,:)));
-%ref_HRTF_R = 20*log10(abs(refHRTF.HRTF_R(idx_refHRTF,:)));
-con_HRTF_L = 20*log10(abs(interpHRTF_con.HRTF_L(idx_refHRTF,:)));
-con_HRTF_R = 20*log10(abs(interpHRTF_con.HRTF_R(idx_refHRTF,:)));
+% recognize the facing side (channel) to the source
+con_HRTF_L = 20*log10(abs(interpHRTF_con.HRTF_L(idx_intpHRTF_con,:)));
+con_HRTF_R = 20*log10(abs(interpHRTF_con.HRTF_R(idx_intpHRTF_con,:)));
 
-% sample point and above the sample points
-%L_sum_HRTF_L = 10 * log10(sum(sum(10.^(con_HRTF_L / 10),2))); 
-%L_sum_HRTF_R = 10 * log10(sum(sum(10.^(con_HRTF_R / 10),2)));
+% determine the energetic sum
 L_sum_HRTF_L = 10 * log10(sum(10.^(con_HRTF_L / 10))); 
 L_sum_HRTF_R = 10 * log10(sum(10.^(con_HRTF_R / 10)));
 
-% set R and L textlabel can be expanded ...
 if L_sum_HRTF_L > L_sum_HRTF_R
-    [max_ref,idx_refHRT] = max(20*log10(abs(refHRTF.HRTF_L(idx_refHRTF,:))));
-    [max_con,idx_max_con] = max(20*log10(abs(interpHRTF_con.HRTF_L(idx_refHRTF,:))));
-    [max_mc,idx_max_mc] = max(20*log10(abs(interpHRTF_mca.HRTF_L(idx_refHRTF,:))));
 
+    %[max_ref,idx_refHRT] = max(20*log10(abs(refHRTF.HRTF_L(idx_refHRTF,:))));
+    %[max_con,idx_max_con] = max(20*log10(abs(interpHRTF_con.HRTF_L(idx_refHRTF,:))));
+    [max_mc,idx_max_mc] = max(20*log10(abs(interpHRTF_mca.HRTF_L(idx_intpHRTF_mca,:))));
+    
+    max_interpHRTF_mca = 20*log10(abs(interpHRTF_mca.HRTF_L(idx_intpHRTF_mca,idx_max_mc)));
+    value_other_channel = 20*log10(abs(interpHRTF_mca.HRTF_R(idx_intpHRTF_mca,idx_max_mc)));
     upper_lab = 'L';
-    if max_ref > max_con && max_ref > max_mc
-        idx_max = max_ref;
-    elseif max_con > max_ref && max_con > max_mc
-        idx_max = max_con;
-    elseif max_mc > max_ref && max_mc > max_con
-        idx_max = max_mc;
-    end
+    lower_lab = 'R';
+
 elseif L_sum_HRTF_L < L_sum_HRTF_R
 
+   %[max_ref,idx_refHRT] = max(20*log10(abs(refHRTF.HRTF_R(idx_refHRTF,:))));
+   %[max_con,idx_max_con] = max(20*log10(abs(interpHRTF_con.HRTF_R(idx_refHRTF,:))));
+   [max_mc,idx_max_mc] = max(20*log10(abs(interpHRTF_mca.HRTF_R(idx_intpHRTF_mca,:))));
+   
+   max_interpHRTF_mca = 20*log10(abs(interpHRTF_mca.HRTF_R(idx_intpHRTF_mca,idx_max_mc)));
+   value_other_channel = 20*log10(abs(interpHRTF_mca.HRTF_L(idx_intpHRTF_mca,idx_max_mc)));
    upper_lab = 'R';
-   [max_ref,idx_refHRT] = max(20*log10(abs(refHRTF.HRTF_R(idx_refHRTF,:))));
-   [max_con,idx_max_con] = max(20*log10(abs(interpHRTF_con.HRTF_R(idx_refHRTF,:))));
-   [max_mc,idx_max_mc] = max(20*log10(abs(interpHRTF_mca.HRTF_R(idx_refHRTF,:))));
+   lower_lab = 'L';
 
-    if max_ref > max_con && max_ref > max_mc
-        idx_max = max_ref;
-    elseif max_con > max_ref && max_con > max_mc
-        idx_max = max_con;
-    elseif max_mc > max_ref && max_mc > max_con
-        idx_max = max_mc;
-    end
 end
+% Plot the reference, conv. time aligned and mca + ILD-Filter HRTF's at
+% desired coordinates to compare
 
+AKf(18,9);
 % Reference HRTF
 p1 = semilogx(refHRTF.f,20*log10(abs(refHRTF.HRTF_L(idx_refHRTF,:))) ...
     ,'LineWidth',2.0,'Color',[0,0,66]/255); %,'alpha', 0.8);
@@ -269,6 +259,8 @@ combinedStr = strcat('$\Omega$ ',str);
 text(xlim(1)+10, ylim(2)-3,combinedStr ,'Interpreter','latex','FontSize',20,'FontWeight','bold')
 
 % set R and L text
+text(interpHRTF_mca.f(idx_max_mc), max_interpHRTF_mca + 1.5,upper_lab,'FontSize',24,'FontWeight','bold')
+text(interpHRTF_mca.f(idx_max_mc), value_other_channel - 1.5,lower_lab,'FontSize',24,'FontWeight','bold')
 
-%upper_lab
+
 
