@@ -178,10 +178,9 @@ if nargin < 11 || isempty(limFade)
 end
 
 if nargin < 12 || isempty(ILDComp)
-     ILDComp = true;
+      ILDComp = true;
 end
 
-   
 %% Get some required variables
 
 fs = HRTFset.f(end)*2;
@@ -769,12 +768,16 @@ if ~isnan(mc)
     HRIR_ip = HRIR_ip(1:hrirLength,:,:);
     %Save in 3D-array for further processing (Spectrum c(hrir) interpolated)
     c_hrir_ip = AKerbErrorPersistent(HRIR_ip,AKdirac(size(HRIR_ip,1)),[fLowErb fs/2],fs);
+    
+    %Get correction filters for all HRTFs
+    corrFilt = c_ip-c_hrir_ip;
 
     
     %ILD compensation <--- VAR Project code
     if ILDComp
 
         %Calculate ILDs post auditory smoothings from the conventional time aligned interpolation (CTAI)
+        % ILD = L - R --> LTI-System +/- 
         ILDs_hrir_ip = c_hrir_ip(:, :, 1) - c_hrir_ip(:, :, 2); 
 
         %Calculate ILDs post auditory smoothings from the original sparse
@@ -783,6 +786,7 @@ if ~isnan(mc)
 
         %Interpolation of the sparse ILDs to the ipSamplingGrid with respect to the chosen ipMethod
         % ILDs_ip = ...
+
         switch ipMethod
             case 'SH'
 
@@ -842,86 +846,34 @@ if ~isnan(mc)
                 end
         end
       
-        %Division of the CTAI ILDs with the interpolated ILDs from the original sparse HRIRs
-        
-        %Generate filter ILD-Filter
-        %ILDs = ILDs_hrir_ip - ILDs_ip;
+        %Division of the CTAI ILDs with the interpolated ILDs from the original sparse HRIRs        
+        %Generate filter ILD-Filter    
         ILD_corrFilt = ILDs_mc_ip - ILDs_hrir_ip;
 
-        %Transform to linear value
-        %ILD_corrFilt_lin = 10.^(ILD_corrFilt/20);
-
-        %Left or right ear --> apply ILD-Filter only on averted ear,
-        %because of coloration porposes
-        HRTF_L_ILD =  20*log10(abs(HRTFset.HRTF_L)); % get the log. absolute values of the left channel
-        HRTF_R_ILD = 20*log10(abs(HRTFset.HRTF_R)); % get the log. absolute values of the right channel 
-
-        % calculate the energetic sum of the entire spectrum of every
-        % sample point and above the sample points
-        L_sum_HRTF_L_ILD = 10 * log10(sum(sum(10.^(HRTF_L_ILD / 10),2))); 
-        L_sum_HRTF_R_ILD = 10 * log10(sum(sum(10.^(HRTF_R_ILD / 10),2)));
-
-        % determine the channel which contains less energy
-        if L_sum_HRTF_L_ILD > L_sum_HRTF_R_ILD
-            ILD_Filt_flag = true;
-        elseif L_sum_HRTF_L_ILD <  L_sum_HRTF_R_ILD
-           ILD_Filt_flag = false;
-        else
-            % if the energtic sum of both channels are equal, take
-            % the left_ear side channel
-            ILD_Filt_flag = true;
-            disp('The energetic sum of both channels are equal')
+        % get angle
+        azimuthVector_ip = ipSamplingGrid(:,1,1);
+        iEarsideOrientation_ip = zeros(length(ipSamplingGrid),1);
+        iEarsideOrientation_ip(azimuthVector_ip == 0 | azimuthVector_ip == 180) = 0; 
+        iEarsideOrientation_ip(azimuthVector_ip > 0 & azimuthVector_ip < 180) = -1; % right ear
+        iEarsideOrientation_ip(azimuthVector_ip > 180 & azimuthVector_ip < 360) = 1; % left ear
+        
+        for i=1:length(iEarsideOrientation_ip)
+            if iEarsideOrientation_ip(i) == 1 % left ear
+               corrFilt(:,i,1) = corrFilt(:,i,1) + ILD_corrFilt(:,i); % left channel
+            elseif iEarsideOrientation_ip(i) == -1 % right ear
+               corrFilt(:,i,2) = corrFilt(:,i,2) + ILD_corrFilt(:,i); % right channel
+            end
         end
-        
-        % Test with ip channels -->  % maybe can be removed %%%%
-        %Left or right ear --> apply ILD-Filter on averted ear)
-        %HRTF_L_ILD_ip = abs(interpHRTFset.p.HRTF_L_ip_noMC); % get the absolute values of the left channel
-        %HRTF_R_ILD_ip = abs(interpHRTFset.p.HRTF_R_ip_noMC); % get the absolute values of the right channel 
 
-        % calculate the energetic sum of the entire spectrum of every
-        % sample point and above the sample points
-        %L_sum_HRTF_L_ILD_ip = 10 * log10(sum(sum(10.^(HRTF_L_ILD_ip / 10),2))); 
-        %L_sum_HRTF_R_ILD_ip = 10 * log10(sum(sum(10.^(HRTF_R_ILD_ip / 10),2)));
-
-        %azimuthVector_ip = ipSamplingGrid(:,1,1);
-        %iEarsideOrientation_ip = zeros(length(ipSamplingGrid),1);
-        %iEarsideOrientation_ip(azimuthVector_ip == 0 | azimuthVector_ip == 180) = 0; 
-        %iEarsideOrientation_ip(azimuthVector_ip > 0 & azimuthVector < 180) = -1; % right ear
-        %iEarsideOrientation_ip(azimuthVector_ip > 180 & azimuthVector < 360) = 1; % left ear
-        % get idx left/right side
-        %num_ones = sum(iEarsideOrientation == 1);
-        %num_minus_ones = sum(iEarsideOrientation == -1);
-        %idx_right_ear_ip = find(iEarsideOrientation == -1);
-        %idx_left_ear_ip = find(iEarsideOrientation == 1);
-        
-        % determine averted side with the sparse uninterpolated Sparse
-        % HRTF_set there are less calculation necessary
-        %azimuthVector = samplingGrid(:,1,1); 
-        %iEarsideOrientation = zeros(length(SamplingGrid),1);
-        %iEarsideOrientation(azimuthVector == 0 | azimuthVector_ip == 180) = 0; 
-        %iEarsideOrientation(azimuthVector > 0 & azimuthVector < 180) = -1; % right ear
-        %iEarsideOrientation(azimuthVector > 180 & azimuthVector < 360) = 1; % left ear
-        %idx_right_ear = find(iEarsideOrientation == -1);
-        %idx_left_ear = find(iEarsideOrientation == 1);
-                   
+                     
     end
     
-    %Get correction filters for all HRTFs
-    corrFilt = c_ip-c_hrir_ip;
-    
-    if ILDComp
-        % apply the ILD_Filter on the averted channel
-        if ILD_Filt_flag
-            corrFilt(:,:,1) = corrFilt(:,:,1) + ILD_corrFilt;
-        else
-            corrFilt(:,:,2) = corrFilt(:,:,2) + ILD_corrFilt;
-        end
-    end
-
+     
     %Spline interpolate correction filters to 0-fs/2
     corrFilt_l = AKinterpolateSpectrum( squeeze(corrFilt(:,:,1)), ferb, NFFT, {'nearest' 'spline' 'nearest'}, fs);
     corrFilt_r = AKinterpolateSpectrum( squeeze(corrFilt(:,:,2)), ferb, NFFT, {'nearest' 'spline' 'nearest'}, fs);
     
+   
     %Limit to f > fA (set to 0 below fA) if desired
     if limitMC
         
