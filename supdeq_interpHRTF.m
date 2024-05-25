@@ -846,29 +846,27 @@ if ~isnan(mc)
                 end
         end
       
-        %Division of the CTAI ILDs with the interpolated ILDs from the original sparse HRIRs        
-        %Generate filter ILD-Filter    
+        %Division of the magnitude correction ILDs with the interpolated ILDs from CTAI ILDs of the original sparse HRIRs        
         ILD_corrFilt = ILDs_mc_ip - ILDs_hrir_ip;
 
-        % get angle
+        %Ear selection depending on angle
         azimuthVector_ip = ipSamplingGrid(:,1,1);
         iEarsideOrientation_ip = zeros(length(ipSamplingGrid),1);
         iEarsideOrientation_ip(azimuthVector_ip == 0 | azimuthVector_ip == 180) = 0; 
-        iEarsideOrientation_ip(azimuthVector_ip > 0 & azimuthVector_ip < 180) = -1; % right ear
-        iEarsideOrientation_ip(azimuthVector_ip > 180 & azimuthVector_ip < 360) = 1; % left ear
+        iEarsideOrientation_ip(azimuthVector_ip > 0 & azimuthVector_ip < 180) = 1; %Left ear
+        iEarsideOrientation_ip(azimuthVector_ip > 180 & azimuthVector_ip < 360) = -1; %Right ear
         
+        %Apply filter
         for i=1:length(iEarsideOrientation_ip)
-            if iEarsideOrientation_ip(i) == 1 % left ear
-               corrFilt(:,i,1) = corrFilt(:,i,1) + ILD_corrFilt(:,i); % left channel
-            elseif iEarsideOrientation_ip(i) == -1 % right ear
-               corrFilt(:,i,2) = corrFilt(:,i,2) + ILD_corrFilt(:,i); % right channel
+            if iEarsideOrientation_ip(i) == -1 %    
+               corrFilt(:,i,1) = corrFilt(:,i,1) + ILD_corrFilt(:,i); %Apply correction ild filter to left channel
+            elseif iEarsideOrientation_ip(i) == 1 
+               corrFilt(:,i,2) = corrFilt(:,i,2) + ILD_corrFilt(:,i); %Apply correction ild filter to right channel
             end
         end
-
-                     
+                  
     end
     
-     
     %Spline interpolate correction filters to 0-fs/2
     corrFilt_l = AKinterpolateSpectrum( squeeze(corrFilt(:,:,1)), ferb, NFFT, {'nearest' 'spline' 'nearest'}, fs);
     corrFilt_r = AKinterpolateSpectrum( squeeze(corrFilt(:,:,2)), ferb, NFFT, {'nearest' 'spline' 'nearest'}, fs);

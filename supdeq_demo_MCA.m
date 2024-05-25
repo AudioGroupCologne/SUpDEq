@@ -22,7 +22,7 @@
 %               TU Berlin
 %               Audio Communication Group
 
-clear variables;
+%clear variables;
 %% (1) - Define sparse and dense grid
 
 %Sparse Lebedev Grid
@@ -40,6 +40,7 @@ sgD = supdeq_lebedev([],Nd);
 %Get sparse KU100 HRTF set based on "HRIR_L2702.sofa" dataset in SH domain
 
 sparseHRTF = supdeq_getSparseDataset(sgS,Ns,44,'ku100');
+
 fs = sparseHRTF.fs;
 
 %% (3) - Perform spatial upsampling to dense grid
@@ -84,127 +85,137 @@ refHRTF.HRIR_L = refHRTF.HRIR_L(1:end/refHRTF.FFToversize,:);
 refHRTF.HRIR_R = ifft(AKsingle2bothSidedSpectrum(refHRTF.HRTF_R.'));
 refHRTF.HRIR_R = refHRTF.HRIR_R(1:end/refHRTF.FFToversize,:);
 
-% %% (5) - Optional: Plot HRIRs
-% % 
-% %Plot frontal left-ear HRIR (Az = 0, Col = 90) of conventional, MCA and ILD-Filter
-% %interpolated dataset. Differences are small.
-% idFL = 16; %ID in sgD
-% supdeq_plotIR(interpHRTF_con.HRIR_L(:,idFL),interpHRTF_mca.HRIR_L(:,idFL),[],[],8);
+%% (5) - Optional: Plot HRIRs
 % 
-% %Plot contralateral left-ear HRIR (Az = 270, Col = 90) of SH-only and MCA
-% %interpolated dataset. Differences are strong
-% idCL = 2042; %ID in sgD
-% supdeq_plotIR(interpHRTF_sh.HRIR_L(:,idCL),interpHRTF_mca.HRIR_L(:,idCL),[],[],8);
-% 
-% %Plot contralateral left-ear HRIR (Az = 270, Col = 90) of conventional and MCA
-% %interpolated dataset. Differences are still significant.
-% supdeq_plotIR(interpHRTF_con.HRIR_L(:,idCL),interpHRTF_mca.HRIR_L(:,idCL),[],[],8);
-% 
-% %Plot contralateral left-ear HRIR (Az = 270, Col = 90) of SH-only 
-% %interpolated dataset and reference.
-% supdeq_plotIR(interpHRTF_sh.HRIR_L(:,idCL),refHRTF.HRIR_L(:,idCL),[],[],8);
-% 
-% %Plot contralateral left-ear HRIR (Az = 270, Col = 90) of conventional 
-% %interpolated dataset and reference.
-% supdeq_plotIR(interpHRTF_con.HRIR_L(:,idCL),refHRTF.HRIR_L(:,idCL),[],[],8);
-% 
-% %Plot contralateral left-ear HRIR (Az = 270, Col = 90) of MCA 
-% %interpolated dataset and reference.
-% %MCA interpolated HRTF is much closer to the reference than HRTF from
-% %conventional interpolation. The "bump" above 10 kHz is corrected through
-% %the magnitude correction. Interpolation errors (in this case spatial
-% %aliasing errors at the contralateral ear) are reduced
-% supdeq_plotIR(interpHRTF_mca.HRIR_L(:,idCL),refHRTF.HRIR_L(:,idCL),[],[],8);
-% 
-% %% (6) - Optional: Calculate log-spectral difference 
-% 
-% %Calculate left-ear log-spectral differences in dB.
-% %Log-spectral difference is often used as a measure for spectral distance
-% %between a reference and an interpolated HRTF set. Not the same as 
-% %the magnitude error in auditory filters presented in the paper!
-% 
-% lsd_sh =  supdeq_calcLSD_HRIR(interpHRTF_sh.HRIR_L,refHRTF.HRIR_L,fs,16);
-% lsd_con = supdeq_calcLSD_HRIR(interpHRTF_con.HRIR_L,refHRTF.HRIR_L,fs,16);
-% lsd_mca = supdeq_calcLSD_HRIR(interpHRTF_mca.HRIR_L,refHRTF.HRIR_L,fs,16);
-% 
-% %Quick plot of log-spectral difference averaged over all directions of the
-% %2702-point Lebedev grid. As shown in the paper, MCA provides the most
-% %significant benefit in the critical contralateral region. Thus, when 
-% %averaging over all positions, the benefit of MCA seems smaller. The
-% %analysis in the paper as well as the provided audio examples reveal
-% %in much more detail the considerable improvements that the proposed 
-% %magnitude correction provides.
-% AKf(18,9);
-% semilogx(lsd_sh.f,lsd_sh.lsd_freq,'LineWidth',1.5);
-% hold on;
-% semilogx(lsd_con.f,lsd_con.lsd_freq,'LineWidth',1.5);
-% semilogx(lsd_mca.f,lsd_mca.lsd_freq,'LineWidth',1.5);
-% xlim([500 20000])
-% legend('SH W/O MC','SH SUpDEq W/O MC','SH SUpDEq W/ MC','Location','NorthWest');
-% xlabel('Frequency in Hz');
-% ylabel('Log-Spectral Difference in dB');
-% grid on;
-% 
-% %% (7) - Optional: Calculate magnitude error in auditory filters (similar to paper)
-% 
-% % Left ear
-% %[erb_sh,fc_erb] = AKerbError(interpHRTF_sh.HRIR_L,refHRTF.HRIR_L, [50 fs/2], fs);
-% %erb_con = AKerbError(interpHRTF_con.HRIR_L,refHRTF.HRIR_L, [50 fs/2], fs);
-% %erb_mca = AKerbError(interpHRTF_mca.HRIR_L,refHRTF.HRIR_L, [50 fs/2], fs);
-% 
-% % Right ear
-% [erb_sh,fc_erb] = AKerbError(interpHRTF_sh.HRIR_R,refHRTF.HRIR_R, [50 fs/2], fs);
-% erb_con = AKerbError(interpHRTF_con.HRIR_R,refHRTF.HRIR_R, [50 fs/2], fs);
-% erb_mca = AKerbError(interpHRTF_mca.HRIR_R,refHRTF.HRIR_R, [50 fs/2], fs);
-% 
-% %Quick plot of absolute magnitude error in auditory filters averaged over all
-% %directions of the 2702-point Lebedev grid. 
-% AKf(18,9);
-% semilogx(fc_erb,mean(abs(erb_sh),2),'LineWidth',1.5);
-% hold on;
-% semilogx(fc_erb,mean(abs(erb_con),2),'LineWidth',1.5);
-% semilogx(fc_erb,mean(abs(erb_mca),2),'LineWidth',1.5);
-% xlim([500 20000])
-% legend('SH W/O MC','SH SUpDEq W/O MC','SH SUpDEq W/ MC','Location','NorthWest');
-% xlabel('Frequency in Hz');
-% ylabel('\DeltaG(f_c) in dB');
-% grid on;
+%Plot frontal left-ear HRIR (Az = 0, Col = 90) of conventional, MCA and ILD-Filter
+%interpolated dataset. Differences are small.
+idFL = 16; %ID in sgD
+supdeq_plotIR(interpHRTF_con.HRIR_L(:,idFL),interpHRTF_mca.HRIR_L(:,idFL),[],[],8);
+
+%Plot contralateral left-ear HRIR (Az = 270, Col = 90) of SH-only and MCA
+%interpolated dataset. Differences are strong
+idCL = 2042; %ID in sgD
+supdeq_plotIR(interpHRTF_sh.HRIR_L(:,idCL),interpHRTF_mca.HRIR_L(:,idCL),[],[],8);
+
+%Plot contralateral left-ear HRIR (Az = 270, Col = 90) of conventional and MCA
+%interpolated dataset. Differences are still significant.
+supdeq_plotIR(interpHRTF_con.HRIR_L(:,idCL),interpHRTF_mca.HRIR_L(:,idCL),[],[],8);
+
+%Plot contralateral left-ear HRIR (Az = 270, Col = 90) of SH-only 
+%interpolated dataset and reference.
+supdeq_plotIR(interpHRTF_sh.HRIR_L(:,idCL),refHRTF.HRIR_L(:,idCL),[],[],8);
+
+%Plot contralateral left-ear HRIR (Az = 270, Col = 90) of conventional 
+%interpolated dataset and reference.
+supdeq_plotIR(interpHRTF_con.HRIR_L(:,idCL),refHRTF.HRIR_L(:,idCL),[],[],8);
+
+%Plot contralateral left-ear HRIR (Az = 270, Col = 90) of MCA 
+%interpolated dataset and reference.
+%MCA interpolated HRTF is much closer to the reference than HRTF from
+%conventional interpolation. The "bump" above 10 kHz is corrected through
+%the magnitude correction. Interpolation errors (in this case spatial
+%aliasing errors at the contralateral ear) are reduced
+supdeq_plotIR(interpHRTF_mca.HRIR_L(:,idCL),refHRTF.HRIR_L(:,idCL),[],[],8);
+
+%% (6) - Optional: Calculate log-spectral difference 
+
+%Calculate left-ear log-spectral differences in dB.
+%Log-spectral difference is often used as a measure for spectral distance
+%between a reference and an interpolated HRTF set. Not the same as 
+%the magnitude error in auditory filters presented in the paper!
+
+lsd_sh =  supdeq_calcLSD_HRIR(interpHRTF_sh.HRIR_L,refHRTF.HRIR_L,fs,16);
+lsd_con = supdeq_calcLSD_HRIR(interpHRTF_con.HRIR_L,refHRTF.HRIR_L,fs,16);
+lsd_mca = supdeq_calcLSD_HRIR(interpHRTF_mca.HRIR_L,refHRTF.HRIR_L,fs,16);
+
+%Quick plot of log-spectral difference averaged over all directions of the
+%2702-point Lebedev grid. As shown in the paper, MCA provides the most
+%significant benefit in the critical contralateral region. Thus, when 
+%averaging over all positions, the benefit of MCA seems smaller. The
+%analysis in the paper as well as the provided audio examples reveal
+%in much more detail the considerable improvements that the proposed 
+%magnitude correction provides.
+AKf(18,9);
+semilogx(lsd_sh.f,lsd_sh.lsd_freq,'LineWidth',1.5);
+hold on;
+semilogx(lsd_con.f,lsd_con.lsd_freq,'LineWidth',1.5);
+semilogx(lsd_mca.f,lsd_mca.lsd_freq,'LineWidth',1.5);
+xlim([500 20000])
+legend('SH W/O MC','SH SUpDEq W/O MC','SH SUpDEq W/ MC','Location','NorthWest');
+xlabel('Frequency in Hz');
+ylabel('Log-Spectral Difference in dB');
+grid on;
+
+%% (7) - Optional: Calculate magnitude error in auditory filters (similar to paper)
+
+% Left ear
+%[erb_sh,fc_erb] = AKerbError(interpHRTF_sh.HRIR_L,refHRTF.HRIR_L, [50 fs/2], fs);
+%erb_con = AKerbError(interpHRTF_con.HRIR_L,refHRTF.HRIR_L, [50 fs/2], fs);
+%erb_mca = AKerbError(interpHRTF_mca.HRIR_L,refHRTF.HRIR_L, [50 fs/2], fs);
+
+% Right ear
+[erb_sh,fc_erb] = AKerbError(interpHRTF_sh.HRIR_R,refHRTF.HRIR_R, [50 fs/2], fs);
+erb_con = AKerbError(interpHRTF_con.HRIR_R,refHRTF.HRIR_R, [50 fs/2], fs);
+erb_mca = AKerbError(interpHRTF_mca.HRIR_R,refHRTF.HRIR_R, [50 fs/2], fs);
+
+%Quick plot of absolute magnitude error in auditory filters averaged over all
+%directions of the 2702-point Lebedev grid. 
+AKf(18,9);
+semilogx(fc_erb,mean(abs(erb_sh),2),'LineWidth',1.5);
+hold on;
+semilogx(fc_erb,mean(abs(erb_con),2),'LineWidth',1.5);
+semilogx(fc_erb,mean(abs(erb_mca),2),'LineWidth',1.5);
+xlim([500 20000])
+legend('SH W/O MC','SH SUpDEq W/O MC','SH SUpDEq W/ MC','Location','NorthWest');
+xlabel('Frequency in Hz');
+ylabel('\DeltaG(f_c) in dB');
+grid on;
 
 %% (8) Compare HRTF of the Reference set with the interpolated HRTF of ^H and the magnitude-corrected interpolated HRTF of ^H_C with the applied ILD-Filter
-% 
-target = [90, 60]; % target values azimuth; elevation angle
-%  90° azimuth and 0° elevation angle / 270° 0° obviously leads to equal Magnitude
-%  Spectrum R and L
-% maybe switch the sides L & R see Var_23_2.pdf page_33
 
-% found target --> azimuth + elevation angle
-refHRTF_sampgrid = refHRTF.samplingGrid(:,1:2);
+%Get reference data
+sparseHRIRdataset_SOFA = SOFAload('HRIR_L2702.sofa');
+N = 44; %Set SH Order
+FFToversize = 4; %Set FFT-Blocksize
+
+%Convert reference  hrir to hrtf
+ref_HRTF = supdeq_sofa2hrtf(sparseHRIRdataset_SOFA, N,[],FFToversize);
+
+%Set azimuth and elevation angle
+azimuth = 90;
+elevation = 0;
+
+%Set Target angle [azimuth elevation]
+target = [azimuth, elevation];
+
+%Get SampelingGrid of the ref and interpolated data
+refHRTF_sampgrid = ref_HRTF.samplingGrid(:,1:2);
 intpHRTF_con_sampgrid = interpHRTF_con.samplingGrid(:,1:2);
 intpHRTF_mca_sampgrid = interpHRTF_mca.samplingGrid(:,1:2);
 intpHRTF_ild_sampgrid = interpHRTF_ild.samplingGrid(:,1:2);
 
-% get angle # ---> front
-azimuthVector_ip = refHRTF.samplingGrid(:,1,1);
-iEarsideOrientation_ip = zeros(length(refHRTF.samplingGrid),1);
-iEarsideOrientation_ip(azimuthVector_ip == 0 | azimuthVector_ip == 180) = 0; % center
-iEarsideOrientation_ip(azimuthVector_ip > 0 & azimuthVector_ip < 180) = -1; % right ear
-iEarsideOrientation_ip(azimuthVector_ip > 180 & azimuthVector_ip < 360) = 1; % left ear
+%Get angle for the facing side of the source
+azimuthVector_ip = ref_HRTF.samplingGrid(:,1,1);
+iEarsideOrientation_ip = zeros(length(ref_HRTF.samplingGrid),1);
+iEarsideOrientation_ip(azimuthVector_ip == 0 | azimuthVector_ip == 180) = 0; %Center
+iEarsideOrientation_ip(azimuthVector_ip > 0 & azimuthVector_ip < 180) = 1; %Left ear
+iEarsideOrientation_ip(azimuthVector_ip > 180 & azimuthVector_ip < 360) = -1; %Right ear
 
-% % find the nearest coordinates next to the target values
-% Should always be the same idx only for test purposes
+%Find the nearest coordinates next to the target values
+%(Should always be the same idx only for test purposes)
 diff_refHRTF = sum(abs(refHRTF_sampgrid - target),2);
 diff_intpHRTF_con = sum(abs(intpHRTF_con_sampgrid - target),2);
 diff_intpHRTF_mca = sum(abs(intpHRTF_mca_sampgrid - target),2);
 diff_intpHRTF_ild = sum(abs(intpHRTF_ild_sampgrid - target),2);
 
-% get index
+%Get index of the target angle
 [~, idx_refHRTF] = min(diff_refHRTF);
 [~, idx_intpHRTF_con] = min(diff_intpHRTF_con);
 [~, idx_intpHRTF_mca] = min(diff_intpHRTF_mca);
 [~, idx_intpHRTF_ild] = min(diff_intpHRTF_ild);
 
-
-if iEarsideOrientation_ip(idx_refHRTF) == -1 % right ear
+%Set L & R marker 
+if iEarsideOrientation_ip(idx_refHRTF) == 1 %Left ear
 
     [max_mc,idx_max_mc] = max(20*log10(abs(interpHRTF_mca.HRTF_L(idx_intpHRTF_mca,:))));
     max_interpHRTF_mca = 20*log10(abs(interpHRTF_mca.HRTF_L(idx_intpHRTF_mca,idx_max_mc)));
@@ -212,7 +223,7 @@ if iEarsideOrientation_ip(idx_refHRTF) == -1 % right ear
     upper_lab = 'L';
     lower_lab = 'R';
 
-elseif iEarsideOrientation_ip(idx_refHRTF) == 1 % left ear
+elseif iEarsideOrientation_ip(idx_refHRTF) == -1 %Right ear
 
    [max_mc,idx_max_mc] = max(20*log10(abs(interpHRTF_mca.HRTF_R(idx_intpHRTF_mca,:))));
    max_interpHRTF_mca = 20*log10(abs(interpHRTF_mca.HRTF_R(idx_intpHRTF_mca,idx_max_mc)));
@@ -220,7 +231,7 @@ elseif iEarsideOrientation_ip(idx_refHRTF) == 1 % left ear
    upper_lab = 'R';
    lower_lab = 'L';
 
-elseif iEarsideOrientation_ip(idx_refHRTF) == 0 % center  % testwith center == L 
+elseif iEarsideOrientation_ip(idx_refHRTF) == 0 %Center --> test with center == L 
    [max_mc,idx_max_mc] = max(20*log10(abs(interpHRTF_mca.HRTF_R(idx_intpHRTF_mca,:))));
    max_interpHRTF_mca = 20*log10(abs(interpHRTF_mca.HRTF_R(idx_intpHRTF_mca,idx_max_mc)));
    value_other_channel = 20*log10(abs(interpHRTF_mca.HRTF_L(idx_intpHRTF_mca,idx_max_mc)));
@@ -229,30 +240,30 @@ elseif iEarsideOrientation_ip(idx_refHRTF) == 0 % center  % testwith center == L
 
 end
 
-% Plot the reference, conv. time aligned and mca + ILD-Filter HRTF's at
+%Plot the reference, conv. time aligned and mca + ILD-Filter HRTF's at
 % desired coordinates to compare
 
 AKf(18,9);
-% Reference HRTF
+%Reference HRTF
 p1 = semilogx(refHRTF.f,20*log10(abs(refHRTF.HRTF_L(idx_refHRTF,:))) ...
     ,'LineWidth',2.0,'Color',[0,0,66]/255); %,'alpha', 0.8);
 hold on;
 p2 = semilogx(refHRTF.f,20*log10(abs(refHRTF.HRTF_R(idx_refHRTF,:))) ...  
     ,'LineWidth',2.0,'Color',[0,0,66]/255);  %,'alpha', 0.8);
 
-% conventional HRTF 
+%Conventional HRTF 
 p3 = semilogx(interpHRTF_con.f,20*log10(abs(interpHRTF_con.HRTF_L(idx_intpHRTF_con,:))), ... 
     'LineWidth',2.0,'Color',[160,160,160]/255);
 p4 = semilogx(interpHRTF_con.f,20*log10(abs(interpHRTF_con.HRTF_R(idx_intpHRTF_con,:))), ... 
     'LineWidth',2.0,'Color',[160,160,160]/255);
 
-% % mca HRTFT + ILD-filter on the averted side
+%Mca HRTFT + ILD-filter on the averted side
 p5 = semilogx(interpHRTF_ild.f,20*log10(abs(interpHRTF_ild.HRTF_L(idx_intpHRTF_ild,:))) ... 
     ,'LineWidth',2.0,'Color',[0,255,0]/255);
 p6 = semilogx(interpHRTF_ild.f,20*log10(abs(interpHRTF_ild.HRTF_R(idx_intpHRTF_ild,:))) ... 
     ,'LineWidth',2.0,'Color',[0,255,0]/255);
 
-% mca HRTFT
+%Mca HRTFT
 p7 = semilogx(interpHRTF_mca.f,20*log10(abs(interpHRTF_mca.HRTF_L(idx_intpHRTF_mca,:))) ... 
     ,'LineWidth',2.0,'Color',[255,102,102]/255);
 p8 = semilogx(interpHRTF_mca.f,20*log10(abs(interpHRTF_mca.HRTF_R(idx_intpHRTF_mca,:))) ... 
@@ -273,22 +284,22 @@ str = sprintf(' = (%.2f, %.2f)',[intpHRTF_mca_sampgrid(idx_intpHRTF_mca,1),intpH
 combinedStr = strcat('$\Omega$ ',str);
 text(xlim(1)+10, ylim(2)-3,combinedStr ,'Interpreter','latex','FontSize',20,'FontWeight','bold')
 
-% set R and L text
+%Set R and L text
 text(interpHRTF_mca.f(idx_max_mc), max_interpHRTF_mca + 1.5,upper_lab,'FontSize',24,'FontWeight','bold')
 text(interpHRTF_mca.f(idx_max_mc), value_other_channel - 1.5,lower_lab,'FontSize',24,'FontWeight','bold')
 
 
-%% plot only mca-filter vs mca + ild filter to compare
+%% Plot only mca-filter vs mca + ild filter to compare
 AKf(18,9);
 
-% % mca HRTFT + ILD-filter on the averted side
+%Mca HRTFT + ILD-filter on the averted side
 p_ild1 = semilogx(interpHRTF_ild.f,20*log10(abs(interpHRTF_ild.HRTF_L(idx_intpHRTF_ild,:))) ... 
     ,'LineWidth',2.0,'Color',[0,255,0]/255);
 hold on
 p_ild2 = semilogx(interpHRTF_ild.f,20*log10(abs(interpHRTF_ild.HRTF_R(idx_intpHRTF_ild,:))) ... 
     ,'LineWidth',2.0,'Color',[0,255,0]/255);
 
-% mca HRTFT
+%Mca HRTFT
 p_mca1 = semilogx(interpHRTF_mca.f,20*log10(abs(interpHRTF_mca.HRTF_L(idx_intpHRTF_mca,:))) ... 
     ,'LineWidth',2.0,'Color',[255,102,102]/255);
 p_mca2 = semilogx(interpHRTF_mca.f,20*log10(abs(interpHRTF_mca.HRTF_R(idx_intpHRTF_mca,:))) ... 
@@ -309,41 +320,6 @@ str = sprintf(' = (%.2f, %.2f)',[intpHRTF_mca_sampgrid(idx_intpHRTF_mca,1),intpH
 combinedStr = strcat('$\Omega$ ',str);
 text(xlim(1)+10, ylim(2)-3,combinedStr ,'Interpreter','latex','FontSize',20,'FontWeight','bold')
 
-% set R and L 
+%Set R and L 
 text(interpHRTF_mca.f(idx_max_mc), max_interpHRTF_mca + 1.5,upper_lab,'FontSize',24,'FontWeight','bold')
 text(interpHRTF_mca.f(idx_max_mc), value_other_channel - 1.5,lower_lab,'FontSize',24,'FontWeight','bold')
-
-
-% %% plot correct filter
-% AKf(18,9);
-% 
-% % % mca HRTFT + ILD-filter on the averted side
-% p_ild_c1 = semilogx(interpHRTF_ild.f,20*log10(abs(interpHRTF_ild.p.corrFilt_lim(:,idx_intpHRTF_ild,1))) ... 
-%     ,'LineWidth',2.0,'Color',[0,255,0]/255);
-% hold on
-% p_ild_c2 = semilogx(interpHRTF_ild.f,20*log10(abs(interpHRTF_ild.p.corrFilt_lim(:,idx_intpHRTF_ild,2))) ... 
-%     ,'LineWidth',2.0,'Color',[0,255,0]/255);
-% 
-% % mca HRTFT
-% p_mca_c1 = semilogx(interpHRTF_mca.f,20*log10(abs(interpHRTF_mca.p.corrFilt_lim(:,idx_intpHRTF_mca,1))) ... 
-%     ,'LineWidth',2.0,'Color',[255,102,102]/255);
-% p_mca_c2 = semilogx(interpHRTF_mca.f,20*log10(abs(interpHRTF_mca.p.corrFilt_lim(:,idx_intpHRTF_mca,2))) ... 
-%     ,'LineWidth',2.0,'Color',[255,102,102]/255);
-% 
-% xlabel('Frequency in Hz','LineWidth',14);
-% ylabel('Magnitude in dB','LineWidth',14);
-% grid on;
-% 
-% legend([p_ild_c1,p_mca_c1],'$\mathrm{ILD}$','$\mathrm{C}$', ...
-%     'Interpreter','latex','FontSize',20,'Location','southwest');
-% xlim = get(gca, 'XLim');
-% ylim = get(gca, 'YLim');
-% 
-% str = sprintf(' = (%.2f, %.2f)',[intpHRTF_mca_sampgrid(idx_intpHRTF_mca,1),intpHRTF_mca_sampgrid(idx_intpHRTF_mca,2)]);
-% combinedStr = strcat('$\Omega$ ',str);
-% text(xlim(1)+10, ylim(2)-3,combinedStr ,'Interpreter','latex','FontSize',20,'FontWeight','bold')
-% 
-% % set R and L 
-% text(interpHRTF_mca.f(idx_max_mc), max_interpHRTF_mca + 1.5,upper_lab,'FontSize',24,'FontWeight','bold')
-% text(interpHRTF_mca.f(idx_max_mc), value_other_channel - 1.5,lower_lab,'FontSize',24,'FontWeight','bold')
-
