@@ -848,29 +848,17 @@ if ~isnan(mc)
       
         %Division of the magnitude correction ILDs with the interpolated ILDs from CTAI ILDs of the original sparse HRIRs        
         ILD_corrFilt = ILDs_mc_ip - ILDs_hrir_ip;
-
-        %Ear selection depending on angle
-        azimuthVector_ip = ipSamplingGrid(:,1,1);
-        iEarsideOrientation_ip = zeros(length(ipSamplingGrid),1);
-        iEarsideOrientation_ip(azimuthVector_ip == 0 | azimuthVector_ip == 180) = 0; 
-        iEarsideOrientation_ip(azimuthVector_ip > 0 & azimuthVector_ip < 180) = 1; %Left ear
-        iEarsideOrientation_ip(azimuthVector_ip > 180 & azimuthVector_ip < 360) = -1; %Right ear
-        
-        %Apply filter
-        for i=1:length(iEarsideOrientation_ip)
-            if iEarsideOrientation_ip(i) == -1 %    
-               corrFilt(:,i,1) = corrFilt(:,i,1) + ILD_corrFilt(:,i); %Apply correction ild filter to left channel
-            elseif iEarsideOrientation_ip(i) == 1 
-               corrFilt(:,i,2) = corrFilt(:,i,2) + ILD_corrFilt(:,i); %Apply correction ild filter to right channel
-            end
-        end
-                  
     end
+
     
     %Spline interpolate correction filters to 0-fs/2
     corrFilt_l = AKinterpolateSpectrum( squeeze(corrFilt(:,:,1)), ferb, NFFT, {'nearest' 'spline' 'nearest'}, fs);
     corrFilt_r = AKinterpolateSpectrum( squeeze(corrFilt(:,:,2)), ferb, NFFT, {'nearest' 'spline' 'nearest'}, fs);
-    
+
+    if ILDComp
+        ILD_corrFilt_ak = AKinterpolateSpectrum( squeeze(ILD_corrFilt), ferb, NFFT, {'nearest' 'spline' 'nearest'}, fs);
+    end
+
    
     %Limit to f > fA (set to 0 below fA) if desired
     if limitMC
@@ -894,7 +882,12 @@ if ~isnan(mc)
             corrFilt_l(1:fAt_bin-1,:) = 0;
             corrFilt_l(fAt_bin:fA_bin,:) = corrFilt_l(fAt_bin:fA_bin,:).*ramp.';
             corrFilt_r(1:fAt_bin-1,:) = 0;
-            corrFilt_r(fAt_bin:fA_bin,:) = corrFilt_r(fAt_bin:fA_bin,:).*ramp.'; 
+            corrFilt_r(fAt_bin:fA_bin,:) = corrFilt_r(fAt_bin:fA_bin,:).*ramp.';
+
+            if ILDComp
+                ILD_corrFilt_ak(1:fAt_bin-1,:) = 0;
+                ILD_corrFilt_ak(fAt_bin:fA_bin,:) = ILD_corrFilt_ak(fAt_bin:fA_bin,:).*ramp.';
+            end
         end
         
         if strcmp(limFade,'fadeUp')
@@ -911,7 +904,12 @@ if ~isnan(mc)
             corrFilt_l(1:fA_bin-1,:) = 0;
             corrFilt_l(fA_bin:fAt_bin,:) = corrFilt_l(fA_bin:fAt_bin,:).*ramp.';
             corrFilt_r(1:fA_bin-1,:) = 0;
-            corrFilt_r(fA_bin:fAt_bin,:) = corrFilt_r(fA_bin:fAt_bin,:).*ramp.'; 
+            corrFilt_r(fA_bin:fAt_bin,:) = corrFilt_r(fA_bin:fAt_bin,:).*ramp.';
+
+            if ILDComp
+                ILD_corrFilt_ak(1:fA_bin-1,:) = 0;
+                ILD_corrFilt_ak(fA_bin:fAt_bin,:) = ILD_corrFilt_ak(fA_bin:fAt_bin,:).*ramp.';
+            end
         end
         
     end
@@ -919,6 +917,10 @@ if ~isnan(mc)
     %Transform to linear values
     corrFilt_l = 10.^(corrFilt_l/20);
     corrFilt_r = 10.^(corrFilt_r/20);
+
+    if ILDComp
+        ILD_corrFilt_ak = 10.^(ILD_corrFilt_ak/20);
+    end
     
     if ~isinf(mc)
         %Apply soft-limiting to correction filters according to mc if not inf
@@ -928,12 +930,21 @@ if ~isnan(mc)
         corrFilt_l_lim = AKsoftLimit(corrFilt_l, mc, mcKnee,[0 fs/2], fs, true);
         corrFilt_r_lim = AKsoftLimit(corrFilt_r, mc, mcKnee,[0 fs/2], fs, true);
         
+        if ILDComp
+            ILD_corrFilt_lim = AKsoftLimit(ILD_corrFilt_ak, mc, mcKnee,[0 fs/2], fs, true);
+        end
+
+        
     else %No soft-limiting / Unlimited gain
         
         disp('MC maximum boost: inf')
         
         corrFilt_l_lim = corrFilt_l;
         corrFilt_r_lim = corrFilt_r;
+
+        if ILDComp
+            ILD_corrFilt_lim = ILD_corrFilt_ak;
+        end
         
     end
     
@@ -955,6 +966,16 @@ if ~isnan(mc)
         %Go back to frequency domain
         corrFilt_l_lim = AKboth2singleSidedSpectrum(fft(corrFilt_l_lim));
         corrFilt_r_lim = AKboth2singleSidedSpectrum(fft(corrFilt_r_lim));
+
+        if ILDComp
+           ILD_corrFilt_lim  = AKsingle2bothSidedSpectrum(ILD_corrFilt_lim );
+           ILD_corrFilt_lim  = real(ifft(ILD_corrFilt_lim ));
+           ILD_corrFilt_lim  = AKphaseManipulation(ILD_corrFilt_lim ,fs,'min',1,0);
+           %Go back to frequency domain
+           ILD_corrFilt_lim  = AKboth2singleSidedSpectrum(fft(ILD_corrFilt_lim));
+
+        end
+
         
     else
         
@@ -968,10 +989,35 @@ if ~isnan(mc)
     
     %Save intermediate results (correction filter) in output struct
     interpHRTFset.p.corrFilt_lim = corrFilt_lim;    
+    
+    if ~ILDComp
+        %Apply magnitude correction filters to HRTFs
+        HRTF_L_ip = HRTF_L_ip.*corrFilt_lim(:,:,1).';
+        HRTF_R_ip = HRTF_R_ip.*corrFilt_lim(:,:,2).';
+    end
+
+    if ILDComp
+        %Save intermediate results (correction filter) in output struct
+        interpHRTFset.p.ILD_corrFilt_lim = ILD_corrFilt_lim;
         
-    %Apply magnitude correction filters to HRTFs
-    HRTF_L_ip = HRTF_L_ip.*corrFilt_lim(:,:,1).';
-    HRTF_R_ip = HRTF_R_ip.*corrFilt_lim(:,:,2).';
+        %Apply ILD-filters to HRTFs
+        %Ear selection depending on angle
+        azimuthVector_ip = ipSamplingGrid(:,1,1);
+        iEarsideOrientation_ip = zeros(length(ipSamplingGrid),1);
+        iEarsideOrientation_ip(azimuthVector_ip == 0 | azimuthVector_ip == 180) = 0; 
+        iEarsideOrientation_ip(azimuthVector_ip > 0 & azimuthVector_ip < 180) = 1; %Left ear
+        iEarsideOrientation_ip(azimuthVector_ip > 180 & azimuthVector_ip < 360) = -1; %Right ear
+
+        %Apply filter
+        for i=1:length(iEarsideOrientation_ip)
+            if iEarsideOrientation_ip(i) == -1 % 
+               HRTF_L_ip = HRTF_L_ip.*corrFilt_lim(:,:,1).'.*ILD_corrFilt_lim.'; %Apply correction ild filter to left channel             
+            elseif iEarsideOrientation_ip(i) == 1
+               HRTF_R_ip = HRTF_R_ip.*corrFilt_lim(:,:,2).'.*ILD_corrFilt_lim.'; %Apply correction ild filter to right channel             
+            end
+        end
+        
+    end
     
 end
 
