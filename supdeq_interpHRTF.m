@@ -274,7 +274,7 @@ switch ppMethod
         phaseCorL = exp(-1j*headRadius * k .* cosThetaL);
         cosThetaR = cos(sg(:,2)')*cos(pi/2) + sin(sg(:,2)')*sin(pi/2) .* cos(sg(:,1)'+pi/2); %Right ear with +pi/2
         phaseCorR = exp(-1j*headRadius * k .* cosThetaR);
-
+        
         %Apply to HRTFs
         pHRTF_L = HRTF_L .* phaseCorL.'; %Just transpose, no conjugate complex
         pHRTF_R = HRTF_R .* phaseCorR.';
@@ -854,12 +854,12 @@ if ~isnan(mc)
     %Spline interpolate correction filters to 0-fs/2
     corrFilt_l = AKinterpolateSpectrum( squeeze(corrFilt(:,:,1)), ferb, NFFT, {'nearest' 'spline' 'nearest'}, fs);
     corrFilt_r = AKinterpolateSpectrum( squeeze(corrFilt(:,:,2)), ferb, NFFT, {'nearest' 'spline' 'nearest'}, fs);
-
+    
     if ILDComp
-        ILD_corrFilt_ak = AKinterpolateSpectrum( squeeze(ILD_corrFilt), ferb, NFFT, {'nearest' 'spline' 'nearest'}, fs);
+        ILD_corrFilt = AKinterpolateSpectrum( squeeze(ILD_corrFilt), ferb, NFFT, {'nearest' 'spline' 'nearest'}, fs);
     end
 
-   
+  
     %Limit to f > fA (set to 0 below fA) if desired
     if limitMC
         
@@ -885,9 +885,10 @@ if ~isnan(mc)
             corrFilt_r(fAt_bin:fA_bin,:) = corrFilt_r(fAt_bin:fA_bin,:).*ramp.';
 
             if ILDComp
-                ILD_corrFilt_ak(1:fAt_bin-1,:) = 0;
-                ILD_corrFilt_ak(fAt_bin:fA_bin,:) = ILD_corrFilt_ak(fAt_bin:fA_bin,:).*ramp.';
+                ILD_corrFilt(1:fAt_bin-1,:) = 0;
+                ILD_corrFilt(fAt_bin:fA_bin,:) = ILD_corrFilt(fAt_bin:fA_bin,:).*ramp.';
             end
+
         end
         
         if strcmp(limFade,'fadeUp')
@@ -907,19 +908,20 @@ if ~isnan(mc)
             corrFilt_r(fA_bin:fAt_bin,:) = corrFilt_r(fA_bin:fAt_bin,:).*ramp.';
 
             if ILDComp
-                ILD_corrFilt_ak(1:fA_bin-1,:) = 0;
-                ILD_corrFilt_ak(fA_bin:fAt_bin,:) = ILD_corrFilt_ak(fA_bin:fAt_bin,:).*ramp.';
+                ILD_corrFilt(1:fA_bin-1,:) = 0;
+                ILD_corrFilt(fA_bin:fAt_bin,:) = ILD_corrFilt(fA_bin:fAt_bin,:).*ramp.';
             end
         end
         
     end
     
+
     %Transform to linear values
     corrFilt_l = 10.^(corrFilt_l/20);
     corrFilt_r = 10.^(corrFilt_r/20);
 
     if ILDComp
-        ILD_corrFilt_ak = 10.^(ILD_corrFilt_ak/20);
+        ILD_corrFilt = 10.^(ILD_corrFilt/20);
     end
     
     if ~isinf(mc)
@@ -931,7 +933,9 @@ if ~isnan(mc)
         corrFilt_r_lim = AKsoftLimit(corrFilt_r, mc, mcKnee,[0 fs/2], fs, true);
         
         if ILDComp
-            ILD_corrFilt_lim = AKsoftLimit(ILD_corrFilt_ak, mc, mcKnee,[0 fs/2], fs, true);
+
+            ILD_corrFilt_lim = AKsoftLimit(ILD_corrFilt, mc, mcKnee,[0 fs/2], fs, true);
+
         end
 
         
@@ -943,7 +947,9 @@ if ~isnan(mc)
         corrFilt_r_lim = corrFilt_r;
 
         if ILDComp
-            ILD_corrFilt_lim = ILD_corrFilt_ak;
+
+        ILD_corrFilt_lim = ILD_corrFilt;
+
         end
         
     end
@@ -968,15 +974,15 @@ if ~isnan(mc)
         corrFilt_r_lim = AKboth2singleSidedSpectrum(fft(corrFilt_r_lim));
 
         if ILDComp
-           ILD_corrFilt_lim  = AKsingle2bothSidedSpectrum(ILD_corrFilt_lim );
-           ILD_corrFilt_lim  = real(ifft(ILD_corrFilt_lim ));
+           ILD_corrFilt_lim  = AKsingle2bothSidedSpectrum(ILD_corrFilt_lim);
+           ILD_corrFilt_lim  = real(ifft(ILD_corrFilt_lim));
            ILD_corrFilt_lim  = AKphaseManipulation(ILD_corrFilt_lim ,fs,'min',1,0);
+
            %Go back to frequency domain
            ILD_corrFilt_lim  = AKboth2singleSidedSpectrum(fft(ILD_corrFilt_lim));
 
         end
-
-        
+      
     else
         
         disp('MC phase: zero');
@@ -986,19 +992,22 @@ if ~isnan(mc)
     %Write in 3D array
     corrFilt_lim(:,:,1) = corrFilt_l_lim;
     corrFilt_lim(:,:,2) = corrFilt_r_lim;
+
+
     
     %Save intermediate results (correction filter) in output struct
     interpHRTFset.p.corrFilt_lim = corrFilt_lim;    
     
-    if ~ILDComp
-        %Apply magnitude correction filters to HRTFs
-        HRTF_L_ip = HRTF_L_ip.*corrFilt_lim(:,:,1).';
-        HRTF_R_ip = HRTF_R_ip.*corrFilt_lim(:,:,2).';
-    end
+    %if ~ILDComp
+    %Apply magnitude correction filters to HRTFs
+    HRTF_L_ip = HRTF_L_ip.*corrFilt_lim(:,:,1).';
+    HRTF_R_ip = HRTF_R_ip.*corrFilt_lim(:,:,2).';
+    %end
+
 
     if ILDComp
         %Save intermediate results (correction filter) in output struct
-        interpHRTFset.p.ILD_corrFilt_lim = ILD_corrFilt_lim;
+        interpHRTFset.p.ILD_corrFilt = ILD_corrFilt_lim;
         
         %Apply ILD-filters to HRTFs
         %Ear selection depending on angle
@@ -1007,16 +1016,26 @@ if ~isnan(mc)
         iEarsideOrientation_ip(azimuthVector_ip == 0 | azimuthVector_ip == 180) = 0; 
         iEarsideOrientation_ip(azimuthVector_ip > 0 & azimuthVector_ip < 180) = 1; %Left ear
         iEarsideOrientation_ip(azimuthVector_ip > 180 & azimuthVector_ip < 360) = -1; %Right ear
+        
+        % transpose ILD_corrFilt for further calculations
+        ILD_corrFilt_lim_t = ILD_corrFilt_lim.';
 
         %Apply filter
         for i=1:length(iEarsideOrientation_ip)
             if iEarsideOrientation_ip(i) == -1 % 
-               HRTF_L_ip = HRTF_L_ip.*corrFilt_lim(:,:,1).'.*ILD_corrFilt_lim.'; %Apply correction ild filter to left channel             
+
+               HRTF_L_ip(i,:,1) = HRTF_L_ip(i,:,1).*ILD_corrFilt_lim_t(i,:,1); %Apply correction ild filter to left channel
+
+               %HRTF_R_ip = HRTF_R_ip.*corrFilt_lim(:,:,2).'; %Apply correction mca filter to right channel
             elseif iEarsideOrientation_ip(i) == 1
-               HRTF_R_ip = HRTF_R_ip.*corrFilt_lim(:,:,2).'.*ILD_corrFilt_lim.'; %Apply correction ild filter to right channel             
+               HRTF_R_ip(i,:,1) = HRTF_R_ip(i,:,1).*ILD_corrFilt_lim_t(i,:,1); %Apply correction ild filter to right channel
+
+               %HRTF_L_ip = HRTF_L_ip.*corrFilt_lim(:,:,1).'; %Apply correction mca filter to left channel
+            %elseif iEarsideOrientation_ip(i) == 0
+                %HRTF_L_ip = HRTF_L_ip.*corrFilt_lim(:,:,1).'; %Apply correction mca filter to left channel
+                %HRTF_R_ip = HRTF_R_ip.*corrFilt_lim(:,:,2).'; %Apply correction mca filter to right channel
             end
-        end
-        
+        end       
     end
     
 end

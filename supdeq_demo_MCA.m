@@ -226,7 +226,7 @@ iEarsideOrientation_ip(azimuthVector_ip > 180 & azimuthVector_ip < 360) = -1; %R
 
 %Find the nearest coordinates next to the target values
 %(Should always be the same idx only for test purposes)
-diff_refHRTF = sum(abs(refHRTF_sampgrid - target),2);
+diff_refHRTF = sum(abs(ref_HRTF_sampgrid - target),2);
 diff_intpHRTF_con = sum(abs(intpHRTF_con_sampgrid - target),2);
 diff_intpHRTF_mca = sum(abs(intpHRTF_mca_sampgrid - target),2);
 diff_intpHRTF_ild = sum(abs(intpHRTF_ild_sampgrid - target),2);
@@ -295,7 +295,7 @@ p8 = semilogx(interpHRTF_mca.f,20*log10(abs(interpHRTF_mca.HRTF_R(idx_intpHRTF_m
 xlabel('Frequency in Hz','LineWidth',14);
 ylabel('Magnitude in dB','LineWidth',14);
 grid on;
-xlim([100 20000])
+%xlim([100 20000])
 
 legend([p1,p3,p5,p7],'$H_{\mathrm{R}}$','$\widehat{H}$','$\widehat{H}_{\mathrm{ILD}}$','$\widehat{H}_{\mathrm{C}}$', ...
     'Interpreter','latex','FontSize',20,'Location','southwest');
