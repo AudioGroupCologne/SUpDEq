@@ -998,11 +998,11 @@ if ~isnan(mc)
     %Save intermediate results (correction filter) in output struct
     interpHRTFset.p.corrFilt_lim = corrFilt_lim;    
     
-    %if ~ILDComp
-    %Apply magnitude correction filters to HRTFs
-    HRTF_L_ip = HRTF_L_ip.*corrFilt_lim(:,:,1).';
-    HRTF_R_ip = HRTF_R_ip.*corrFilt_lim(:,:,2).';
-    %end
+    if ~ILDComp % Test with only ILD only mca
+        %Apply magnitude correction filters to HRTFs
+        HRTF_L_ip = HRTF_L_ip.*corrFilt_lim(:,:,1).';
+        HRTF_R_ip = HRTF_R_ip.*corrFilt_lim(:,:,2).';
+    end
 
 
     if ILDComp
@@ -1019,21 +1019,32 @@ if ~isnan(mc)
         
         % transpose ILD_corrFilt for further calculations
         ILD_corrFilt_lim_t = ILD_corrFilt_lim.';
+        
+        %for test purposes
+        corrFilt_lim_t1 = corrFilt_lim(:,:,1).';
+        corrFilt_lim_t2 = corrFilt_lim(:,:,2).';
+        corrFilt_lim_t = zeros(size(HRTF_L_ip,1),size(HRTF_L_ip,2),2);
+        corrFilt_lim_t(:,:,1) = corrFilt_lim_t1;
+        corrFilt_lim_t(:,:,2) = corrFilt_lim_t2;
+
 
         %Apply filter
         for i=1:length(iEarsideOrientation_ip)
             if iEarsideOrientation_ip(i) == -1 % 
 
                HRTF_L_ip(i,:,1) = HRTF_L_ip(i,:,1).*ILD_corrFilt_lim_t(i,:,1); %Apply correction ild filter to left channel
+               
+               % Test with only ILD-Filter and only mca
+               HRTF_R_ip(i,:,1) = HRTF_R_ip(i,:,1).*corrFilt_lim_t(i,:,2); %Apply correction mca filter to right channel
 
-               %HRTF_R_ip = HRTF_R_ip.*corrFilt_lim(:,:,2).'; %Apply correction mca filter to right channel
             elseif iEarsideOrientation_ip(i) == 1
                HRTF_R_ip(i,:,1) = HRTF_R_ip(i,:,1).*ILD_corrFilt_lim_t(i,:,1); %Apply correction ild filter to right channel
 
-               %HRTF_L_ip = HRTF_L_ip.*corrFilt_lim(:,:,1).'; %Apply correction mca filter to left channel
-            %elseif iEarsideOrientation_ip(i) == 0
-                %HRTF_L_ip = HRTF_L_ip.*corrFilt_lim(:,:,1).'; %Apply correction mca filter to left channel
-                %HRTF_R_ip = HRTF_R_ip.*corrFilt_lim(:,:,2).'; %Apply correction mca filter to right channel
+               HRTF_L_ip(i,:,1) = HRTF_L_ip(i,:,1).*corrFilt_lim_t(i,:,1); %Apply correction mca filter to left channel
+             % Test with only ILD-Filter
+            elseif iEarsideOrientation_ip(i) == 0
+                HRTF_L_ip(i,:,1) = HRTF_L_ip(i,:,1).*corrFilt_lim_t(i,:,1); %Apply correction mca filter to left channel
+                HRTF_R_ip(i,:,1) = HRTF_R_ip(i,:,1).*corrFilt_lim_t(i,:,2); %Apply correction mca filter to right channel
             end
         end       
     end
