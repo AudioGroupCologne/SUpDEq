@@ -784,9 +784,7 @@ if ~isnan(mc)
         %HRIRs (MCA)
         ILDs_pre_mc_ip = cl - cr;
 
-        %Interpolation of the sparse ILDs to the ipSamplingGrid with respect to the chosen ipMethod
-        % ILDs_ip = ...
-
+    
         switch ipMethod
             case 'SH'
 
@@ -915,14 +913,13 @@ if ~isnan(mc)
         
     end
     
-
     %Transform to linear values
     corrFilt_l = 10.^(corrFilt_l/20);
     corrFilt_r = 10.^(corrFilt_r/20);
 
-    if ILDComp
-        ILD_corrFilt = 10.^(ILD_corrFilt/20);
-    end
+     if ILDComp
+         ILD_corrFilt = 10.^(ILD_corrFilt/20);
+     end
     
     if ~isinf(mc)
         %Apply soft-limiting to correction filters according to mc if not inf
@@ -933,9 +930,7 @@ if ~isnan(mc)
         corrFilt_r_lim = AKsoftLimit(corrFilt_r, mc, mcKnee,[0 fs/2], fs, true);
         
         if ILDComp
-
             ILD_corrFilt_lim = AKsoftLimit(ILD_corrFilt, mc, mcKnee,[0 fs/2], fs, true);
-
         end
 
         
@@ -947,9 +942,7 @@ if ~isnan(mc)
         corrFilt_r_lim = corrFilt_r;
 
         if ILDComp
-
-        ILD_corrFilt_lim = ILD_corrFilt;
-
+            ILD_corrFilt_lim = ILD_corrFilt;
         end
         
     end
@@ -980,7 +973,6 @@ if ~isnan(mc)
 
            %Go back to frequency domain
            ILD_corrFilt_lim  = AKboth2singleSidedSpectrum(fft(ILD_corrFilt_lim));
-
         end
       
     else
@@ -993,16 +985,12 @@ if ~isnan(mc)
     corrFilt_lim(:,:,1) = corrFilt_l_lim;
     corrFilt_lim(:,:,2) = corrFilt_r_lim;
 
-
-    
     %Save intermediate results (correction filter) in output struct
     interpHRTFset.p.corrFilt_lim = corrFilt_lim;    
     
-    if ~ILDComp % Test with only ILD only mca
         %Apply magnitude correction filters to HRTFs
         HRTF_L_ip = HRTF_L_ip.*corrFilt_lim(:,:,1).';
         HRTF_R_ip = HRTF_R_ip.*corrFilt_lim(:,:,2).';
-    end
 
 
     if ILDComp
@@ -1013,42 +1001,22 @@ if ~isnan(mc)
         %Ear selection depending on angle
         azimuthVector_ip = ipSamplingGrid(:,1,1);
         iEarsideOrientation_ip = zeros(length(ipSamplingGrid),1);
-        iEarsideOrientation_ip(azimuthVector_ip == 0 | azimuthVector_ip == 180) = 0; 
-        iEarsideOrientation_ip(azimuthVector_ip > 0 & azimuthVector_ip < 180) = 1; %Left ear
-        iEarsideOrientation_ip(azimuthVector_ip > 180 & azimuthVector_ip < 360) = -1; %Right ear
+        iEarsideOrientation_ip(azimuthVector_ip == 0 | azimuthVector_ip == 180) = 0; %center 0 
+        iEarsideOrientation_ip(azimuthVector_ip > 0 & azimuthVector_ip < 180) = 1; %Left ear 1
+        iEarsideOrientation_ip(azimuthVector_ip > 180 & azimuthVector_ip < 360) = -1; %Right ear -1
         
         % transpose ILD_corrFilt for further calculations
         ILD_corrFilt_lim_t = ILD_corrFilt_lim.';
         
-        %for test purposes
-        corrFilt_lim_t1 = corrFilt_lim(:,:,1).';
-        corrFilt_lim_t2 = corrFilt_lim(:,:,2).';
-        corrFilt_lim_t = zeros(size(HRTF_L_ip,1),size(HRTF_L_ip,2),2);
-        corrFilt_lim_t(:,:,1) = corrFilt_lim_t1;
-        corrFilt_lim_t(:,:,2) = corrFilt_lim_t2;
-
-
         %Apply filter
         for i=1:length(iEarsideOrientation_ip)
             if iEarsideOrientation_ip(i) == -1 % 
-
-               HRTF_L_ip(i,:,1) = HRTF_L_ip(i,:,1).*ILD_corrFilt_lim_t(i,:,1); %Apply correction ild filter to left channel
-               
-               % Test with only ILD-Filter and only mca
-               HRTF_R_ip(i,:,1) = HRTF_R_ip(i,:,1).*corrFilt_lim_t(i,:,2); %Apply correction mca filter to right channel
-
+               HRTF_L_ip(i,:,1) = HRTF_L_ip(i,:,1).*ILD_corrFilt_lim_t(i,:,1); %Apply correction ild filter to left channel                
             elseif iEarsideOrientation_ip(i) == 1
-               HRTF_R_ip(i,:,1) = HRTF_R_ip(i,:,1).*ILD_corrFilt_lim_t(i,:,1); %Apply correction ild filter to right channel
-
-               HRTF_L_ip(i,:,1) = HRTF_L_ip(i,:,1).*corrFilt_lim_t(i,:,1); %Apply correction mca filter to left channel
-             % Test with only ILD-Filter
-            elseif iEarsideOrientation_ip(i) == 0
-                HRTF_L_ip(i,:,1) = HRTF_L_ip(i,:,1).*corrFilt_lim_t(i,:,1); %Apply correction mca filter to left channel
-                HRTF_R_ip(i,:,1) = HRTF_R_ip(i,:,1).*corrFilt_lim_t(i,:,2); %Apply correction mca filter to right channel
+               HRTF_R_ip(i,:,1) = HRTF_R_ip(i,:,1).*ILD_corrFilt_lim_t(i,:,1); %Apply correction ild filter to right channel         
             end
         end       
     end
-    
 end
 
 %% Write result in struct

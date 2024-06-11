@@ -23,7 +23,10 @@
 %               Audio Communication Group
 
 %clear variables;
+%clear all;
 %% (1) - Define sparse and dense grid
+
+clear all; 
 
 %Sparse Lebedev Grid
 %Azimuth, Colatitude, Weight
@@ -39,7 +42,9 @@ sgD = supdeq_lebedev([],Nd);
 
 %Get sparse KU100 HRTF set based on "HRIR_L2702.sofa" dataset in SH domain
 
-sparseHRTF = supdeq_getSparseDataset(sgS,Ns,44,'ku100');
+N = 44; % either 35 or 44 ----> ku100dataset SH Order
+
+sparseHRTF = supdeq_getSparseDataset(sgS,Ns,N,'ku100');
 
 fs = sparseHRTF.fs;
 
@@ -174,17 +179,19 @@ interpHRTF_ild = supdeq_interpHRTF(sparseHRTF,sgD,'SUpDEq','SH',inf,headRadius);
 %% (8) Compare HRTF of the Reference set with the interpolated HRTF of ^H and the magnitude-corrected interpolated HRTF of ^H_C with the applied ILD-Filter
 
 %Get reference data
+% see also (4) - Optional: Get reference HRTF set
 sparseHRIRdataset_SOFA = SOFAload('HRIR_L2702.sofa');
-N = 44; %Set SH Order
 FFToversize = 4; %Set FFT-Blocksize
 
 %Convert reference  hrir to hrtf
 ref_HRTF = supdeq_sofa2hrtf(sparseHRIRdataset_SOFA, N,[],FFToversize);
+ref_HRTF.fs = sparseHRIRdataset_SOFA.Data.SamplingRate;
+ref_HRTF.HRIR_L = squeeze(sparseHRIRdataset_SOFA.Data.IR(:,1,:));
+ref_HRTF.HRIR_R = squeeze(sparseHRIRdataset_SOFA.Data.IR(:,2,:));
 
 %default angle:
     % azimuth: [0, 90, 180, 270]
     % elevation: [90, 0 -90]
-
 
 %Get SampelingGrid of the ref and interpolated data
 ref_HRTF_sampgrid = ref_HRTF.samplingGrid(:,1:2);
@@ -192,30 +199,36 @@ intpHRTF_con_sampgrid = interpHRTF_con.samplingGrid(:,1:2);
 intpHRTF_mca_sampgrid = interpHRTF_mca.samplingGrid(:,1:2);
 intpHRTF_ild_sampgrid = interpHRTF_ild.samplingGrid(:,1:2);
 
-% 0 for default angle and 1 for N=0 s=180
-coordinate_system = input('Enter 0 for default angle and 1 for other case: ');
+% --generate grid with supdeq_lebedev() or supdeq_fliege() -> always [180°90°0°]--
 
-if coordinate_system
+% --> enter 1 to adapt the angles to [90° 0° -90°]
+%coordinate_system = input('Enter 0 for elevation: [90° 0° -90°] 
+% and enter 1 for elevation: [180° 90° 0°]: '); % N:180° S:0°
+
+%if coordinate_system
     %Adjust Elevation angle according to Magnitude-Corrected and Time-Aligned
     %Interpolation of Head-Related Transfer Functions Paper if
     %Dataset-coordinates are differ
-    ref_HRTF_sampgrid(:,2) = -ref_HRTF.samplingGrid(:,2)+90;
-    intpHRTF_con_sampgrid(:,2) = -interpHRTF_con.samplingGrid(:,2)+90;
-    intpHRTF_mca_sampgrid(:,2) = -interpHRTF_mca.samplingGrid(:,2)+90;
-    intpHRTF_ild_sampgrid(:,2) = -interpHRTF_ild.samplingGrid(:,2)+90;    
-end
 
+    ref_HRTF_sampgrid(:,2) = ref_HRTF.samplingGrid(:,2)-90;
+    intpHRTF_con_sampgrid(:,2) = interpHRTF_con.samplingGrid(:,2)-90;
+    intpHRTF_mca_sampgrid(:,2) = interpHRTF_mca.samplingGrid(:,2)-90;
+    intpHRTF_ild_sampgrid(:,2) = interpHRTF_ild.samplingGrid(:,2)-90;
+    
+    %set angle to default and save them in struct [90 0 -90]
+    ref_HRTF.samplingGrid(:,2) = ref_HRTF.samplingGrid(:,2)-90;
+    interpHRTF_con.samplingGrid(:,2) = interpHRTF_con.samplingGrid(:,2)-90;
+    interpHRTF_mca.samplingGrid(:,2) = interpHRTF_mca.samplingGrid(:,2)-90;
+    interpHRTF_ild.samplingGrid(:,2) = interpHRTF_ild.samplingGrid(:,2)-90;
+
+%end
 
 %Set azimuth and elevation angle
-%azimuth = 90;
-%elevation = 0;
 azimuth = input('Enter azimuth angle: ');
 elevation = input('Enter elevation angle: ');
 
-
 %Set Target angle [azimuth elevation]
 target = [azimuth, elevation];
-
 
 %Get angle for the facing side of the source
 azimuthVector_ip = ref_HRTF.samplingGrid(:,1,1);
@@ -294,8 +307,8 @@ p8 = semilogx(interpHRTF_mca.f,20*log10(abs(interpHRTF_mca.HRTF_R(idx_intpHRTF_m
 
 xlabel('Frequency in Hz','LineWidth',14);
 ylabel('Magnitude in dB','LineWidth',14);
+title('KU100 HRTF')
 grid on;
-%xlim([100 20000])
 
 legend([p1,p3,p5,p7],'$H_{\mathrm{R}}$','$\widehat{H}$','$\widehat{H}_{\mathrm{ILD}}$','$\widehat{H}_{\mathrm{C}}$', ...
     'Interpreter','latex','FontSize',20,'Location','southwest');
@@ -305,44 +318,13 @@ ylim = get(gca, 'YLim');
 
 str = sprintf(' = (%.2f, %.2f)',[intpHRTF_mca_sampgrid(idx_intpHRTF_mca,1),intpHRTF_mca_sampgrid(idx_intpHRTF_mca,2)]);
 combinedStr = strcat('$\Omega$ ',str);
-text(xlim(1)+10, ylim(2)-3,combinedStr ,'Interpreter','latex','FontSize',20,'FontWeight','bold')
+text(xlim(1)+30, ylim(2)-3,combinedStr ,'Interpreter','latex','FontSize',20,'FontWeight','bold')
 
 %Set R and L text
 text(interpHRTF_mca.f(idx_max_mc), max_interpHRTF_mca + 1.5,upper_lab,'FontSize',24,'FontWeight','bold')
 text(interpHRTF_mca.f(idx_max_mc), value_other_channel - 1.5,lower_lab,'FontSize',24,'FontWeight','bold')
 
 
-%% Plot only mca-filter vs mca + ild filter to compare
-AKf(18,9);
+%% (9) Save Dataset in mat. data to for further processing/calculations
 
-%Mca HRTFT + ILD-filter on the averted side
-p_ild1 = semilogx(interpHRTF_ild.f,20*log10(abs(interpHRTF_ild.HRTF_L(idx_intpHRTF_ild,:))) ... 
-    ,'LineWidth',2.0,'Color',[0,255,0]/255);
-hold on
-p_ild2 = semilogx(interpHRTF_ild.f,20*log10(abs(interpHRTF_ild.HRTF_R(idx_intpHRTF_ild,:))) ... 
-    ,'LineWidth',2.0,'Color',[0,255,0]/255);
-
-%Mca HRTFT
-p_mca1 = semilogx(interpHRTF_mca.f,20*log10(abs(interpHRTF_mca.HRTF_L(idx_intpHRTF_mca,:))) ... 
-    ,'LineWidth',2.0,'Color',[255,102,102]/255);
-p_mca2 = semilogx(interpHRTF_mca.f,20*log10(abs(interpHRTF_mca.HRTF_R(idx_intpHRTF_mca,:))) ... 
-    ,'LineWidth',2.0,'Color',[255,102,102]/255);
-
-xlabel('Frequency in Hz','LineWidth',14);
-ylabel('Magnitude in dB','LineWidth',14);
-grid on;
-
-legend([p_ild1,p_mca1],'$\widehat{H}_{\mathrm{ILD}}$','$\widehat{H}_{\mathrm{C}}$', ...
-    'Interpreter','latex','FontSize',20,'Location','southwest');
-
-%xlim([100 20000])
-xlim = get(gca, 'XLim');
-ylim = get(gca, 'YLim');
-
-str = sprintf(' = (%.2f, %.2f)',[intpHRTF_mca_sampgrid(idx_intpHRTF_mca,1),intpHRTF_mca_sampgrid(idx_intpHRTF_mca,2)]);
-combinedStr = strcat('$\Omega$ ',str);
-text(xlim(1)+10, ylim(2)-3,combinedStr ,'Interpreter','latex','FontSize',20,'FontWeight','bold')
-
-%Set R and L 
-text(interpHRTF_mca.f(idx_max_mc), max_interpHRTF_mca + 1.5,upper_lab,'FontSize',24,'FontWeight','bold')
-text(interpHRTF_mca.f(idx_max_mc), value_other_channel - 1.5,lower_lab,'FontSize',24,'FontWeight','bold')
+%save('ref_HRTF','interpHRTF_mca','interpHRTF_con','interpHRTF_ild')
