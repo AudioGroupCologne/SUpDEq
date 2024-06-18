@@ -3,7 +3,8 @@ clear all;
 
 %Sparse Lebedev Grid
 %Azimuth, Colatitude, Weight
-Ns = 3;
+Ns = input('Enter SH-Order for Sparse Grid: ');
+%Ns = 3;
 sgS = supdeq_lebedev([],Ns); %according to paper Ns=3 --> 26 sampling points
 
 %Dense Fliege Grid (Target grid for upsampling) according to paper

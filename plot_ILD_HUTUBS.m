@@ -150,20 +150,20 @@ ylabel('Magnitude in dB','LineWidth',14);
 title('HUTUBS Subject 91')
 grid on;
 
-
-%xlim([interpHRTF_mca.f(1) interpHRTF_mca.f(end)])
-%xlim([interpHRTF_ild.f(1) interpHRTF_ild.f(end)])
+clear xlim;
+%xlim([interpHRTF_mca.f(int64(1)) interpHRTF_mca.f(end)])
+xlim([interpHRTF_ild.f(1) interpHRTF_ild.f(end)])
 
 legend([p1,p3,p5,p7],'$H_{\mathrm{R}}$','$\widehat{H}$','$\widehat{H}_{\mathrm{ILD}}$','$\widehat{H}_{\mathrm{C}}$', ...
     'Interpreter','latex','FontSize',20,'Location','southwest');
 
-xlim = get(gca, 'XLim');
+%xlim = get(gca, 'XLim');
 ylim = get(gca, 'YLim');
-
+%clear xlim;
 str = sprintf(' = (%.2f, %.2f)',[intpHRTF_mca_sampgrid(idx_intpHRTF_mca,1),intpHRTF_mca_sampgrid(idx_intpHRTF_mca,2)]);
 combinedStr = strcat('$\Omega$ ',str);
-text(xlim(1)+250, ylim(2)-3,combinedStr ,'Interpreter','latex','FontSize',20,'FontWeight','bold')
-
+text(10+250, ylim(2)-3,combinedStr ,'Interpreter','latex','FontSize',20,'FontWeight','bold')
+%xlim(1)
 %combinedStr = ['N = ',num2str(Nd)];
 %text(xlim(1)+250, ylim(2)-3,combinedStr ,'Interpreter','latex','FontSize',20,'FontWeight','bold')
 
