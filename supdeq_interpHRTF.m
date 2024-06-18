@@ -776,7 +776,7 @@ if ~isnan(mc)
     %ILD compensation <--- VAR Project code
     if ILDComp
         %Calculate ILDs post auditory smoothings from the original sparse
-        %HRIRs (MCA)
+        %HRTF's (MCA)
         ILD_c_pre_mc_ip = cl - cr;
 
         switch ipMethod
@@ -840,10 +840,14 @@ if ~isnan(mc)
 
     end
 
-
+    %%%%%
     %Spline interpolate correction filters to 0-fs/2
     corrFilt_l = AKinterpolateSpectrum( squeeze(corrFilt(:,:,1)), ferb, NFFT, {'nearest' 'spline' 'nearest'}, fs);
     corrFilt_r = AKinterpolateSpectrum( squeeze(corrFilt(:,:,2)), ferb, NFFT, {'nearest' 'spline' 'nearest'}, fs);
+
+    if ILDComp
+        ILD_c_mc_ip = AKinterpolateSpectrum( squeeze(ILD_c_mc_ip), ferb, NFFT, {'nearest' 'spline' 'nearest'}, fs);
+    end
 
 
     %Limit to f > fA (set to 0 below fA) if desired
@@ -869,7 +873,7 @@ if ~isnan(mc)
             corrFilt_l(fAt_bin:fA_bin,:) = corrFilt_l(fAt_bin:fA_bin,:).*ramp.';
             corrFilt_r(1:fAt_bin-1,:) = 0;
             corrFilt_r(fAt_bin:fA_bin,:) = corrFilt_r(fAt_bin:fA_bin,:).*ramp.';
-
+      
         end
 
         if strcmp(limFade,'fadeUp')
@@ -886,7 +890,7 @@ if ~isnan(mc)
             corrFilt_l(1:fA_bin-1,:) = 0;
             corrFilt_l(fA_bin:fAt_bin,:) = corrFilt_l(fA_bin:fAt_bin,:).*ramp.';
             corrFilt_r(1:fA_bin-1,:) = 0;
-            corrFilt_r(fA_bin:fAt_bin,:) = corrFilt_r(fA_bin:fAt_bin,:).*ramp.';
+            corrFilt_r(fA_bin:fAt_bin,:) = corrFilt_r(fA_bin:fAt_bin,:).*ramp.';      
 
         end
 
@@ -896,6 +900,10 @@ if ~isnan(mc)
     corrFilt_l = 10.^(corrFilt_l/20);
     corrFilt_r = 10.^(corrFilt_r/20);
 
+    if ILDComp
+        ILD_c_mc_ip  = 10.^(ILD_c_mc_ip/20);
+    end
+
     if ~isinf(mc)
         %Apply soft-limiting to correction filters according to mc if not inf
         disp(['MC maximum boost: ',num2str(mc),'dB'])
@@ -903,6 +911,7 @@ if ~isnan(mc)
 
         corrFilt_l_lim = AKsoftLimit(corrFilt_l, mc, mcKnee,[0 fs/2], fs, true);
         corrFilt_r_lim = AKsoftLimit(corrFilt_r, mc, mcKnee,[0 fs/2], fs, true);
+        
 
     else %No soft-limiting / Unlimited gain
 
@@ -950,112 +959,22 @@ if ~isnan(mc)
     HRTF_R_ip = HRTF_R_ip.*corrFilt_lim(:,:,2).';
 
     if ILDComp
-        %convert back to HRIR to calculate the Ref-ILD CTA-branch
-        HRIR_L_ip = AKsingle2bothSidedSpectrum(HRTF_L_ip.');
-        HRIR_R_ip = AKsingle2bothSidedSpectrum(HRTF_R_ip.');
-        HRIR_L_ip = real(ifft(HRIR_L_ip));
-        HRIR_R_ip = real(ifft(HRIR_R_ip));
+     
+        % %calculate ILD with MCA-HRTF's linear
+        % ILD_mc_ap = HRTF_L_ip ./ HRTF_R_ip;
+        
+        % %calculate ILD-Filter
+        % ILD_corrFilt = ILD_mc_ap ./ ILD_c_mc_ip.';
 
-        %Cut zeros depending on FFToversize
-        HRIR_L_ip = HRIR_L_ip(1:hrirLength,:);
-        HRIR_R_ip = HRIR_R_ip(1:hrirLength,:);
-
-        ILD_hrir_ip = HRIR_L_ip - HRIR_R_ip;
-
-        %Get input HRTFs in auditory bands (ERB filter)
-        fLowErb = 50;
-        [ILD_c_hrir_ref_ip,ferb] = AKerbErrorPersistent(ILD_hrir_ip(1:hrirLength,:),AKdirac(hrirLength),[fLowErb fs/2],fs);
-        ILD_corrFilt = ILD_c_mc_ip - ILD_c_hrir_ref_ip;
-
-        %interpolate spectrum from audiory bands to ...
-        ILD_corrFilt = AKinterpolateSpectrum( squeeze(ILD_corrFilt), ferb, NFFT, {'nearest' 'spline' 'nearest'}, fs);
-
-        % WITH OR WITHOUT MC-PO  STPROCESSING ???? ------
-
-        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        %%%% USE the POSTPROCESSING ON ILD-FILTER IN THE SAME WAY LIKE THE MC-FILTER, IF APPLIED ON MC-FILTER
-        %
-        % %Limit to f > fA (set to 0 below fA) if desired
-        % if limitMC
-
-        %Get spatial alasing frequency
-        fA = HRTFset.Nmax*c/2/pi/headRadius;
-
-        disp(['ILD postprocessing limited to f > fA, with fA = ',num2str(round(fA,2)),'Hz']);
-
-        if strcmp(limFade,'fadeDown')
-
-            disp('ILD fade downwards');
-
-            %Get third-octave below fA
-            fAt = fA/2^(1/3);
-
-            %Set to 0 (logarithmic) below fAt and apply linear fade from fAt to fA
-            [~,fA_bin] = min(abs(HRTFset.f-fA));
-            [~,fAt_bin] = min(abs(HRTFset.f-fAt));
-            ramp = linspace(0,1,abs(fA_bin-fAt_bin)+1);
-            ILD_corrFilt(1:fAt_bin-1,:) = 0;
-            ILD_corrFilt(fAt_bin:fA_bin,:) = ILD_corrFilt(fAt_bin:fA_bin,:).*ramp.';
-
-        end
-
-        if strcmp(limFade,'fadeUp')
-
-            disp('ILD fade upwards');
-
-            %Get third-octave above fA
-            fAt = fA*2^(1/3);
-
-            %Set to 0 (logarithmic) below fA and apply linear fade from fA to fAt
-            [~,fA_bin] = min(abs(HRTFset.f-fA));
-            [~,fAt_bin] = min(abs(HRTFset.f-fAt));
-            ramp = linspace(0,1,abs(fAt_bin-fA_bin)+1);
-            ILD_corrFilt(1:fA_bin-1,:) = 0;
-            ILD_corrFilt(fA_bin:fAt_bin,:) = ILD_corrFilt(fA_bin:fAt_bin,:).*ramp.';
-
-        end
-
-
-
+        % calculate log in dB
+        ILD_mc_ap = 20*log10(abs(HRTF_L_ip)) - 20*log10(abs(HRTF_R_ip));
+        %calculate ILD-Filter
+        ILD_corrFilt = ILD_mc_ap - 20*log10(abs(ILD_c_mc_ip.'));
         %Transform to linear values
-        ILD_corrFilt = 10.^(ILD_corrFilt/20);
+        ILD_corrFilt =  10.^(ILD_corrFilt /20);
 
-        if ~isinf(mc)
-            %Apply soft-limiting to correction filters according to mc if not inf
-            disp(['ILD maximum boost: ',num2str(mc),'dB'])
-            disp(['ILD soft-limiting knee: ',num2str(mcKnee),'dB'])
-            ILD_corrFilt_lim = AKsoftLimit(ILD_corrFilt, mc, mcKnee,[0 fs/2], fs, true);
-
-        else %No soft-limiting / Unlimited gain
-
-            disp('ILD maximum boost: inf')
-            ILD_corrFilt_lim = ILD_corrFilt;
-
-        end
-
-        %Design minimum phase filters and use for correction instead of zero
-        %phase filters (if mcMinPhase = false)
-        if mcMinPhase
-
-            disp('ILD phase: minimum');
-
-            ILD_corrFilt_lim  = AKsingle2bothSidedSpectrum(ILD_corrFilt_lim);
-            ILD_corrFilt_lim  = real(ifft(ILD_corrFilt_lim));
-            ILD_corrFilt_lim  = AKphaseManipulation(ILD_corrFilt_lim ,fs,'min',1,0);
-
-            %Go back to frequency domain
-            ILD_corrFilt_lim  = AKboth2singleSidedSpectrum(fft(ILD_corrFilt_lim));
-
-        else
-
-            disp('ILD phase: zero');
-
-        end
-
-        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-        %Save intermediate results (correction filter) in output struct
-        interpHRTFset.p.ILD_corrFilt = ILD_corrFilt_lim;
+        %Save intermediate results (ild correction filter) in output struct
+        interpHRTFset.p.ILD_corrFilt = ILD_corrFilt;
 
         %Apply ILD-filters to HRTFs
         %Ear selection depending on angle
@@ -1065,16 +984,12 @@ if ~isnan(mc)
         iEarsideOrientation_ip(azimuthVector_ip > 0 & azimuthVector_ip < 180) = 1; %Left ear 1
         iEarsideOrientation_ip(azimuthVector_ip > 180 & azimuthVector_ip < 360) = -1; %Right ear -1
 
-
-        %transpose ILD_corrFilt for further calculations
-        ILD_corrFilt_lim_t = ILD_corrFilt_lim.';
-
         %Apply ILD - filter to HRTF's
         for i=1:length(iEarsideOrientation_ip)
             if iEarsideOrientation_ip(i) == -1 %
-                HRTF_L_ip(i,:,1) = HRTF_L_ip(i,:,1).*ILD_corrFilt_lim_t(i,:,1); %Apply correction ild filter to left channel
+                HRTF_L_ip(i,:,1) = HRTF_L_ip(i,:,1).*ILD_corrFilt(i,:,1); %Apply correction ild filter to left channel
             elseif iEarsideOrientation_ip(i) == 1
-                HRTF_R_ip(i,:,1) = HRTF_R_ip(i,:,1).*ILD_corrFilt_lim_t(i,:,1); %Apply correction ild filter to right channel
+                HRTF_R_ip(i,:,1) = HRTF_R_ip(i,:,1).*ILD_corrFilt(i,:,1); %Apply correction ild filter to right channel
             end
         end
     end

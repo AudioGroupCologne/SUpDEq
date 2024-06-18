@@ -240,11 +240,6 @@ intpHRTF_ild_sampgrid = interpHRTF_ild.samplingGrid(:,1:2);
     intpHRTF_mca_sampgrid(:,2) = interpHRTF_mca.samplingGrid(:,2)-90;
     intpHRTF_ild_sampgrid(:,2) = interpHRTF_ild.samplingGrid(:,2)-90;
 
-    %set angle to default and save them in struct [90 0 -90]
-    ref_HRTF.samplingGrid(:,2) = ref_HRTF.samplingGrid(:,2)-90;
-    interpHRTF_con.samplingGrid(:,2) = interpHRTF_con.samplingGrid(:,2)-90;
-    interpHRTF_mca.samplingGrid(:,2) = interpHRTF_mca.samplingGrid(:,2)-90;
-    interpHRTF_ild.samplingGrid(:,2) = interpHRTF_ild.samplingGrid(:,2)-90;
 %end
 
 %Set azimuth and elevation angle
