@@ -395,8 +395,8 @@ switch ipMethod
         [ipSamplingGrid_cart(:,1), ipSamplingGrid_cart(:,2), ipSamplingGrid_cart(:,3)] = sph2cart(ipSamplingGrid(:,1)/360*2*pi, pi/2-ipSamplingGrid(:,2)/360*2*pi,1);
         
         %NN interpolate preprocessed HRTFs to ipSamplingGrid
-        pHRTF_L_ip = zeros(length(ipSamplingGrid),length(f));
-        pHRTF_R_ip = zeros(length(ipSamplingGrid),length(f));
+        pHRTF_L_ip = zeros(size(ipSamplingGrid,1),length(f));
+        pHRTF_R_ip = zeros(size(ipSamplingGrid,1),length(f));
         
         for nPoint = 1:size(ipSamplingGrid,1)
 
@@ -411,8 +411,8 @@ switch ipMethod
         %Also interpolate TOAs if ppMethod = 'OBTA'
         if strcmp(ppMethod,'OBTA')
             
-            toa_L_ip = zeros(1,length(ipSamplingGrid));
-            toa_R_ip = zeros(1,length(ipSamplingGrid));
+            toa_L_ip = zeros(1,size(ipSamplingGrid,1));
+            toa_R_ip = zeros(1,size(ipSamplingGrid,1));
             
             for nPoint = 1:size(ipSamplingGrid,1)
 
@@ -428,8 +428,8 @@ switch ipMethod
         %Also interpolate Phase if ppMethod = 'MagPhase'
         if strcmp(ppMethod,'MagPhase')  
             
-            pHRTF_L_ph_ip = zeros(length(ipSamplingGrid),length(f));
-            pHRTF_R_ph_ip = zeros(length(ipSamplingGrid),length(f));
+            pHRTF_L_ph_ip = zeros(size(ipSamplingGrid,1),length(f));
+            pHRTF_R_ph_ip = zeros(size(ipSamplingGrid,1),length(f));
 
             for nPoint = 1:size(ipSamplingGrid,1)
 
@@ -462,8 +462,8 @@ switch ipMethod
         %Function returns barycentric weights / coordinates u and v of the intersection point -> w = 1-u-v
         %P = w*A + u*B + v*C
         orig = [0 0 0];
-        pHRTF_L_ip = zeros(length(ipSamplingGrid),length(f));
-        pHRTF_R_ip = zeros(length(ipSamplingGrid),length(f));
+        pHRTF_L_ip = zeros(size(ipSamplingGrid,1),length(f));
+        pHRTF_R_ip = zeros(size(ipSamplingGrid,1),length(f));
         
         for nPoint = 1:size(ipSamplingGrid,1)
 
@@ -482,8 +482,8 @@ switch ipMethod
         %Also interpolate TOAs if ppMethod = 'OBTA'
         if strcmp(ppMethod,'OBTA')
             
-            toa_L_ip = zeros(1,length(ipSamplingGrid));
-            toa_R_ip = zeros(1,length(ipSamplingGrid));
+            toa_L_ip = zeros(1,size(ipSamplingGrid,1));
+            toa_R_ip = zeros(1,size(ipSamplingGrid,1));
             
             for nPoint = 1:size(ipSamplingGrid,1)
 
@@ -503,8 +503,8 @@ switch ipMethod
         %Also interpolate Phase if ppMethod = 'MagPhase'
         if strcmp(ppMethod,'MagPhase')  
             
-            pHRTF_L_ph_ip = zeros(length(ipSamplingGrid),length(f));
-            pHRTF_R_ph_ip = zeros(length(ipSamplingGrid),length(f));
+            pHRTF_L_ph_ip = zeros(size(ipSamplingGrid,1),length(f));
+            pHRTF_R_ph_ip = zeros(size(ipSamplingGrid,1),length(f));
 
             for nPoint = 1:size(ipSamplingGrid,1)
 
@@ -699,8 +699,8 @@ if ~isnan(mc)
             [ipSamplingGrid_cart(:,1), ipSamplingGrid_cart(:,2), ipSamplingGrid_cart(:,3)] = sph2cart(ipSamplingGrid(:,1)/360*2*pi, pi/2-ipSamplingGrid(:,2)/360*2*pi,1);
 
             %NN interpolate ERB filters to ipSamplingGrid
-            cl_ip = zeros(length(ferb),length(ipSamplingGrid));
-            cr_ip = zeros(length(ferb),length(ipSamplingGrid));
+            cl_ip = zeros(length(ferb),size(ipSamplingGrid,1));
+            cr_ip = zeros(length(ferb),size(ipSamplingGrid,1));
 
             for nPoint = 1:size(ipSamplingGrid,1)
 
@@ -731,8 +731,8 @@ if ~isnan(mc)
             %Function returns barycentric weights / coordinates u and v of the intersection point -> w = 1-u-v
             %P = w*A + u*B + v*C
             orig = [0 0 0];
-            cl_ip = zeros(length(ferb),length(ipSamplingGrid));
-            cr_ip = zeros(length(ferb),length(ipSamplingGrid));
+            cl_ip = zeros(length(ferb),size(ipSamplingGrid,1));
+            cr_ip = zeros(length(ferb),size(ipSamplingGrid,1));
 
             for nPoint = 1:size(ipSamplingGrid,1)
 

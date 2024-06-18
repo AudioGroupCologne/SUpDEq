@@ -36,7 +36,7 @@
 %                 with big sampling grids
 %                 Default: 'sofia'
 % phaseOnly     - Set to 1 if eqTF_L/R should only contain the phase response 
-%                 of eqDataset (allpass-fitlers) and not the magnitude response too
+%                 of eqDataset (allpass-filters) and not the magnitude response too
 %                 Default: 0 (eqTF_L/R with magnitude and phase)
 %
 % Dependencies: SOFiA toolbox, AKtools
@@ -44,7 +44,7 @@
 % Reference: -
 %
 % (C) 2020 by JMA, Johannes M. Arend
-%             TH Köln - University of Applied Sciences
+%             TH Kï¿½ln - University of Applied Sciences
 %             Institute of Communications Engineering
 %             Department of Acoustics and Audio Signal Processing 
 
