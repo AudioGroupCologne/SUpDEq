@@ -32,7 +32,7 @@ transformCore = 'ak';
 [sparseHRTFdataset.HRTF_L, sparseHRTFdataset.HRTF_R] = supdeq_getArbHRTF_HUTUBS(ref,samplingGrid,mode,channel,transformCore);
 
 NmaxSparse= Ns;
-FFToversize = 1; % ----> figure out the right fftoversize ...
+FFToversize = 1; % ----> figure out the right fftoversize ... 2 / 3
 sparseGrid = sgS;
 
 %Fill struct with additional info
@@ -209,8 +209,12 @@ sparseHRIRdataset_SOFA = HRIRdataset_simulated_SOFA;
 %Convert reference  hrir to hrtf
 ref_HRTF = supdeq_sofa2hrtf(sparseHRIRdataset_SOFA, Nd,[],FFToversize);
 
+ref_HRTF.fs = sparseHRIRdataset_SOFA.Data.SamplingRate;
+ref_HRTF.HRIR_L = squeeze(sparseHRIRdataset_SOFA.Data.IR(:,1,:));
+ref_HRTF.HRIR_R = squeeze(sparseHRIRdataset_SOFA.Data.IR(:,2,:));
+
 % add SH Order to struct for further processing
-ref_HRTF.N = Nd;
+ref_HRTF.N = Ns;
 
 %Get SampelingGrid of the ref and interpolated data
 ref_HRTF_sampgrid = ref_HRTF.samplingGrid(:,1:2);
@@ -348,3 +352,7 @@ text(xlim(1)+250, ylim(2)-3,combinedStr ,'Interpreter','latex','FontSize',20,'Fo
 %Set R and L text
 text(interpHRTF_mca.f(idx_max_mc), max_interpHRTF_mca + 1.5,upper_lab,'FontSize',24,'FontWeight','bold')
 text(interpHRTF_mca.f(idx_max_mc), value_other_channel - 1.5,lower_lab,'FontSize',24,'FontWeight','bold')
+
+
+%% (9) Save Dataset in mat. data to for further processing/calculations
+save('HUTUBS_interp.mat','ref_HRTF','interpHRTF_mca','interpHRTF_con','interpHRTF_ild')

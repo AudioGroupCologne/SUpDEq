@@ -321,4 +321,4 @@ text(interpHRTF_mca.f(idx_max_mc), value_other_channel - 1.5,lower_lab,'FontSize
 
 %% (9) Save Dataset in mat. data to for further processing/calculations
 
-%save('ref_HRTF','interpHRTF_mca','interpHRTF_con','interpHRTF_ild')
+%save('HUTUBS_interp.mat','ref_HRTF','interpHRTF_mca','interpHRTF_con','interpHRTF_ild')
