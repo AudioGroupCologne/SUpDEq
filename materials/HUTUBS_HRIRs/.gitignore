@@ -1,6 +1,4 @@
 # Ignore .sofa and .mat files
-*.sofa
-*.mat
 
 # Ignore Figures folder and all its contents
 /Figures/
