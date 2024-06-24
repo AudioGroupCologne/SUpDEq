@@ -24,13 +24,16 @@ SOFiA and AMT partly work with MEX files. The required MEX files for Mac and Win
 
 
 ## Installation
-Simply clone or zip download this repository and add it to your Matlab path.
+For a simple utilisation simply clone or zip download this repository and add it to your Matlab path.
+
+However, if you want to execute the MCA demo with the HUTUBS database as HRIRS (script `supdeq_demo_MCA_HUTUBS.`) you will have to download this database directly from [the official page](https://depositonce.tu-berlin.de/items/dc2a3076-a291-417e-97f0-7697e332c960) (The HUTUBS head-related transfer function (HRTF) database) [21]  and copy the unzipped content of the HIRIs folder directly into the folder `materials/HUTUBSHRIRs`.
 
 ## First Steps
 After installation, we recommend to go through the `supdeq_demo` script step by step for the original SUpDEq implementation as presented in [1]. This will lead you through the basic processing. The resulting dense HRTF dataset can then be perceptually and technically compared to the (dense) reference HRTF dataset with the provided evaluation functions.
 
-## HRTF Interpolation
+To test the MCA with ILD compensation use the demo files `supdeq_demo_MCA` or `supdeq_demo_MCA_HUTUBS`. Please, mind that the latter needs the HUTUBS database to be manually downloaded as described previously. Further analysis of the results of the `supdeq_demo_MCA` and `supdeq_demo_MCA_HUTUBS` script is provided by the `MAG_error_dILD/dILD_error_ku100.m` and `MAG_error_dILD/magnitude_error_ku100.m` scripts. The Interim results are automaticly stored into the `mat_data` folder.
 
+## HRTF Interpolation
 For an extended selection of pre-processing, interpolation, and post-processing methods, we recommend checking the `supdeq_interpHRTF` function. The function provides various SUpDEq pre-processing methods as well as other time-alignment methods as described in [7]. The function allows SH, Natural Neighbor, Barycentric, or SARITA interpolation of the (pre-processed) HRTFs [7,8,18]. Pre-processing and interpolation can (in most cases) be freely combined to obtain the best results depending on the specific conditions. Moreover, the function allows to perform post-interpolation magnitude-correction using the MCA method (MCA - Magnitude-Corrected and Time-Aligned Interpolation) presented in [11], further improving the interpolation results. The script `supdeq_demo_MCA` offers an easy introduction to MCA interpolation.
 
 ## Near-Field HRTF Synthesis
@@ -77,5 +80,6 @@ Thanks to Fabian Brinkmann (Audio Communication Group, TU Berlin) for useful dis
 [17] Jaroslaw Tuszynski (2021). Triangle/Ray Intersection (https://www.mathworks.com/matlabcentral/fileexchange/33073-triangle-ray-intersection), MATLAB Central File Exchange. Retrieved October 29, 2021.  
 [18] T. Lübeck, J. M. Arend, and C. Pörschmann, “Spatial Upsampling of Sparse Spherical Microphone Array Signals,” IEEE/ACM Trans. Audio Speech Lang. Proc., vol. 31, pp. 1163–1174, 2023.  
 [19] J. M. Arend, H. R. Liesefeld, and C. Pörschmann, “On the influence of non-individual binaural cues and the impact of level normalization on auditory distance estimation of nearby sound sources,” Acta Acust., vol. 5, no. 10, pp. 1–21, 2021.  
-[20] J. M. Arend, M. Ramírez, H. R. Liesefeld, and C. Pörschmann, “Do near-field cues enhance the plausibility of non-individual binaural rendering in a dynamic multimodal virtual acoustic scene?,” Acta Acust., vol. 5, no. 55, pp. 1–14, 2021.  
+[20] J. M. Arend, M. Ramírez, H. R. Liesefeld, and C. Pörschmann, “Do near-field cues enhance the plausibility of non-individual binaural rendering in a dynamic multimodal virtual acoustic scene?,” Acta Acust., vol. 5, no. 55, pp. 1–14, 2021.
+[21] F. Brinkmann, M. Dinakaran, R. Pelzer, P. Grosche, D. Voss, S. Weinzierl, "A Cross-Evaluated Database of Measured and Simulated HRTFs Including 3D Head Meshes, Anthropometric Features, and Headphone Impulse Responses," J. Audio Eng. Soc., vol. 67, pp. 705-718, 2019.
 
