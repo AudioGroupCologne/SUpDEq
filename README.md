@@ -1,4 +1,4 @@
-## SUpDEq - Spatial Upsampling by Directional Equalization
+## SUpDEq - Spatial Upsampling by Directional Equalization (Description of the Original Branch)
 This toolbox is a MATLAB implementation of the SUpDEq method, as presented in [1-7]. In general, the SUpDEq method is an approach to generate dense HRTF datasets based on sparsely measured HRTF datasets. For example, applying the SUpDEq method, a (technically) appropriate full-spherical dense HRTF dataset with 2702 directions can be derived from only 38 actually measured HRTFs. 
 
 Basically, the method attempts to remove direction-dependent temporal and spectral components of the sparse HRTF dataset by a spectral division (equalization) of the HRTFs with corresponding rigid sphere transfer functions (STFs). This equalized HRTF dataset is then transformed to the spherical harmonics (SH) domain by means of a spherical Fourier transform [9-10]. Next, a de-equalization is performed by extracting the equalized HRTFs at the spatial sampling points of the dense grid (SH-interpolation / spatial upsampling) and multiplying these HRTFs with the respective STFs in frequency domain.
@@ -8,6 +8,10 @@ A comparison of various methods for spherical harmonics interpolation of time-al
 The function `supdeq_interpHRTF` furthermore contains various pre-processing and interpolation methods discussed in [7,8,11,18], which (in most cases) can be freely combined. The function also contains the post-interpolation magnitude correction `MCA` (Magnitude-Corrected and Time-Aligned Interpolation) presented in [11] to further improve interpolation results obtained with time-aligned interpolation. 
 
 Various extensions of the toolbox, as presented in [2-8,20], allow e.g., the synthesis of near-field HRTFs based on far-field datasets (distance variation), distance error compensation of measured HRTF datasets, or low frequency extension of (equalized) measured HRTFs.
+
+## SUpDEq - Spatial Upsampling by Directional Equalization (MCA Upsampling Optimisation, Actual Branch)
+Complementing the work of Arend et al. (2023) [11] in the original branch, our focus in this project has been on enhancing interpolation methods for HRTFs. We have implemented and optimized the SUpDEq method along with the Magnitude-Corrected and Time-Aligned Interpolation (MCA) technique to achieve this goal. The objective is to significantly improve the accuracy and perceived quality of spatial audio reproduction
+
 
 ## Requirements
 The toolbox is implemented in MATLAB R2015b, R2018a, R2020a, and R2022b and requires the Signal Processing Toolbox. Older versions of MATLAB might also work. The following third party toolboxes are required for full functionality. All listed toolboxes are part of the SUpDEq toolbox and are stored in the folder "thirdParty".
@@ -26,12 +30,15 @@ SOFiA and AMT partly work with MEX files. The required MEX files for Mac and Win
 ## Installation
 For a simple utilisation simply clone or zip download this repository and add it to your Matlab path.
 
-However, if you want to execute the MCA demo with the HUTUBS database as HRIRS (script `supdeq_demo_MCA_HUTUBS.`) you will have to download this database directly from [the official page](https://depositonce.tu-berlin.de/items/dc2a3076-a291-417e-97f0-7697e332c960) (The HUTUBS head-related transfer function (HRTF) database) [21]  and copy the unzipped content of the HIRIs folder directly into the folder `materials/HUTUBSHRIRs`.
+However, if you want to execute the MCA demo with the HUTUBS database as HRIRS (script `supdeq_demo_MCA_HUTUBS.`) you will have to download this database directly from [the official page](https://depositonce.tu-berlin.de/items/dc2a3076-a291-417e-97f0-7697e332c960) (The HUTUBS head-related transfer function (HRTF) database) [21]  and copy the unzipped content of the HIRIRs folder directly into the folder `materials/HUTUBSHRIRs`.
 
 ## First Steps
 After installation, we recommend to go through the `supdeq_demo` script step by step for the original SUpDEq implementation as presented in [1]. This will lead you through the basic processing. The resulting dense HRTF dataset can then be perceptually and technically compared to the (dense) reference HRTF dataset with the provided evaluation functions.
 
-To test the MCA with ILD compensation use the demo files `supdeq_demo_MCA` or `supdeq_demo_MCA_HUTUBS`. Please, mind that the latter needs the HUTUBS database to be manually downloaded as described previously. Further analysis of the results of the `supdeq_demo_MCA` and `supdeq_demo_MCA_HUTUBS` script is provided by the `MAG_error_dILD/dILD_error_ku100.m` and `MAG_error_dILD/magnitude_error_ku100.m` scripts. The Interim results are automaticly stored into the `mat_data` folder.
+## MCA Upsampling Optimisation Usage
+To test the MCA with ILD compensation use the demo files `supdeq_demo_MCA` or `supdeq_demo_MCA_HUTUBS`. Please, mind that the latter needs the HUTUBS database to be manually downloaded as described previously. Further analysis of the results of the `supdeq_demo_MCA` and `supdeq_demo_MCA_HUTUBS` script is provided by the `MAG_error_dILD/dILD_error_ku100.m` and `MAG_error_dILD/magnitude_error_ku100.m` scripts. The Interim results are automaticly stored into the `mat_data` folder. The computed errors can eventually be used by the plotting scripts in the `plots` folder.
+
+Notes: For the HUTUBS-subject91 dataset, magnitude and ILD errors cannot be computed due to the reference having more sampling grid points than the interpolated data.
 
 ## HRTF Interpolation
 For an extended selection of pre-processing, interpolation, and post-processing methods, we recommend checking the `supdeq_interpHRTF` function. The function provides various SUpDEq pre-processing methods as well as other time-alignment methods as described in [7]. The function allows SH, Natural Neighbor, Barycentric, or SARITA interpolation of the (pre-processed) HRTFs [7,8,18]. Pre-processing and interpolation can (in most cases) be freely combined to obtain the best results depending on the specific conditions. Moreover, the function allows to perform post-interpolation magnitude-correction using the MCA method (MCA - Magnitude-Corrected and Time-Aligned Interpolation) presented in [11], further improving the interpolation results. The script `supdeq_demo_MCA` offers an easy introduction to MCA interpolation.
@@ -40,12 +47,46 @@ For an extended selection of pre-processing, interpolation, and post-processing 
 
 For our studies on near-field HRTFs and nearby sound sources (e.g., [19][20]), we implemented various methods for near-field HRTF synthesis based on far-field data, which we integrated in the SUpDEq toolbox. The function `supdeq_dvf` allows synthesizing near-field HRTFs using distance variation functions (DVFs) in combination with acoustic parallax effects, as used for the listening experiments in [20]. With the function `supdeq_rangeExt`, HRTFs in SH domain can be shifted in distance using radial functions. 
 
-## Documentation
+## Original Documentation
 A HTML documentation of the MATLAB code can be found here:  
 [http://audiogroup.web.th-koeln.de/SUpDEq_doc/index.html](http://audiogroup.web.th-koeln.de/SUpDEq_doc/index.html)  
 The third-party toolboxes are excluded from the documentation.
 
-## About
+## MCA Upsampling Optimisation Main Files
+
+    1. supdeq_interpHRTF.m
+        - This script has been extended to incorporate ILD compensation. It implements the algorithm to generate ILD filters based on interpolated HRTF datasets.
+
+    2. supdeq_demo_MCA.m
+        - A script to generate .mat files containing interpolated data for the ku100 dataset.
+
+    3. supdeq_demo_MCA_HUTUBS.m
+        - Similar to `supdeq_demo_MCA.m`, but specifically for the HUTUBS-subject91 dataset.
+
+
+## Directory Structure and Files in `MAG_error_dILD` folder
+
+- `magnitude_error_ku100.`
+Computes the magnitude error for the ku100 dataset and saves the result as a .mat file in the `mat_data` folder.
+
+- `dILD_error_ku100.m`
+Computes the ILD error for the ku100 dataset and saves the result as a .mat file in the `mat_data` folder.
+
+## Plot Scripts in `plots` Folder
+
+  - `plot_HRTFs_ku100.m`
+Plots the HRTFs for the ku100 dataset.
+
+  - `plot_HRTFs_HUTUBS.m`
+Plots the HRTFs for the HUTUBS-subject91 dataset.
+
+  - `plot_mag_errors_ku100.m`
+Generates a plot for the magnitude error of the ku100 dataset.
+
+  - `plot_dILD_errors_ku100.m`
+Generates a plot for the ILD error of the ku100 dataset.
+
+## About the Original Branch
 Johannes M. Arend and Christoph Pörschmann  
 TH Köln - University of Applied Sciences  
 Institute of Communications Engineering  
