@@ -107,7 +107,7 @@ ylabel('Magnitude in dB','LineWidth',14);
 title('HUTUBS Subject 91')
 grid on;
 clear xlim;
-s
+
 xlim([interpHRTF_ild.f(1) interpHRTF_ild.f(end)]);
 
 if strcmp(upper_lab,'L')
