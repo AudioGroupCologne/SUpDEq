@@ -766,6 +766,7 @@ if ~isnan(mc)
     HRIR_ip(:,:,1) = real(ifft(HRIR_L_ip));
     HRIR_ip(:,:,2) = real(ifft(HRIR_R_ip));
     HRIR_ip = HRIR_ip(1:hrirLength,:,:);
+
     %Save in 3D-array for further processing (Spectrum c(hrir) interpolated)
     c_hrir_ip = AKerbErrorPersistent(HRIR_ip,AKdirac(size(HRIR_ip,1)),[fLowErb fs/2],fs);
 
@@ -773,8 +774,9 @@ if ~isnan(mc)
     corrFilt = c_ip-c_hrir_ip;
 
 
-    %ILD compensation <--- VAR Project code
+    %ILD compensation
     if ILDComp
+
         %Calculate ILDs post auditory smoothings from the original sparse
         %HRTF's (MCA)
         ILD_c_pre_mc_ip = cl - cr;
@@ -821,6 +823,7 @@ if ~isnan(mc)
                 %Right triangle of convex hull picked by ray-triangle intersection test (intersectLinePolygon3d from geom3D toolbox should work too)
                 %Function returns barycentric weights / coordinates u and v of the intersection point -> w = 1-u-v
                 %P = w*A + u*B + v*C
+
                 orig = [0 0 0];
                 ILD_c_mc_ip = zeros(length(ferb),length(ipSamplingGrid));
 
@@ -840,7 +843,6 @@ if ~isnan(mc)
 
     end
 
-    %%%%%
     %Spline interpolate correction filters to 0-fs/2
     corrFilt_l = AKinterpolateSpectrum( squeeze(corrFilt(:,:,1)), ferb, NFFT, {'nearest' 'spline' 'nearest'}, fs);
     corrFilt_r = AKinterpolateSpectrum( squeeze(corrFilt(:,:,2)), ferb, NFFT, {'nearest' 'spline' 'nearest'}, fs);
@@ -873,7 +875,7 @@ if ~isnan(mc)
             corrFilt_l(fAt_bin:fA_bin,:) = corrFilt_l(fAt_bin:fA_bin,:).*ramp.';
             corrFilt_r(1:fAt_bin-1,:) = 0;
             corrFilt_r(fAt_bin:fA_bin,:) = corrFilt_r(fAt_bin:fA_bin,:).*ramp.';
-      
+
         end
 
         if strcmp(limFade,'fadeUp')
@@ -890,7 +892,7 @@ if ~isnan(mc)
             corrFilt_l(1:fA_bin-1,:) = 0;
             corrFilt_l(fA_bin:fAt_bin,:) = corrFilt_l(fA_bin:fAt_bin,:).*ramp.';
             corrFilt_r(1:fA_bin-1,:) = 0;
-            corrFilt_r(fA_bin:fAt_bin,:) = corrFilt_r(fA_bin:fAt_bin,:).*ramp.';      
+            corrFilt_r(fA_bin:fAt_bin,:) = corrFilt_r(fA_bin:fAt_bin,:).*ramp.';
 
         end
 
@@ -911,7 +913,7 @@ if ~isnan(mc)
 
         corrFilt_l_lim = AKsoftLimit(corrFilt_l, mc, mcKnee,[0 fs/2], fs, true);
         corrFilt_r_lim = AKsoftLimit(corrFilt_r, mc, mcKnee,[0 fs/2], fs, true);
-        
+
 
     else %No soft-limiting / Unlimited gain
 
@@ -959,26 +961,27 @@ if ~isnan(mc)
     HRTF_R_ip = HRTF_R_ip.*corrFilt_lim(:,:,2).';
 
     if ILDComp
-     
-        % %calculate ILD with MCA-HRTF's linear
-        % ILD_mc_ap = HRTF_L_ip ./ HRTF_R_ip;
-        
-        % %calculate ILD-Filter
-        % ILD_corrFilt = ILD_mc_ap ./ ILD_c_mc_ip.';
 
-        % calculate log in dB
+        %Calculate ILD between right and left channel of the HRTF's with
+        %applied magnitude correction filter
+        %also transform the calculated ILD to logarithmic values
         ILD_mc_ap = 20*log10(abs(HRTF_L_ip)) - 20*log10(abs(HRTF_R_ip));
-        %calculate ILD-Filter
-        ILD_corrFilt = ILD_mc_ap - 20*log10(abs(ILD_c_mc_ip.'));
-        %Transform to linear values
+
+        %Transform to logarithmic values
+        ILD_c_mc_ip = 20*log10(abs(ILD_c_mc_ip.'));
+
+        %Calculate ILD-Filter
+        ILD_corrFilt = ILD_mc_ap - ILD_c_mc_ip;
+
+        %Transform values of ILD-Filter to linare values
         ILD_corrFilt =  10.^(ILD_corrFilt /20);
 
         %Save intermediate results (ild correction filter) in output struct
         interpHRTFset.p.ILD_corrFilt = ILD_corrFilt;
 
         %Apply ILD-filters to HRTFs
-        %Ear selection depending on angle
-        azimuthVector_ip = ipSamplingGrid(:,1,1);
+        %ear selection depending on angle
+        azimuthVector_ip = round(ipSamplingGrid(:,1,1));
         iEarsideOrientation_ip = zeros(length(ipSamplingGrid),1);
         iEarsideOrientation_ip(azimuthVector_ip == 0 | azimuthVector_ip == 180) = 0; %center 0
         iEarsideOrientation_ip(azimuthVector_ip > 0 & azimuthVector_ip < 180) = 1; %Left ear 1
@@ -986,7 +989,7 @@ if ~isnan(mc)
 
         %Apply ILD - filter to HRTF's
         for i=1:length(iEarsideOrientation_ip)
-            if iEarsideOrientation_ip(i) == -1 %
+            if iEarsideOrientation_ip(i) == -1
                 HRTF_L_ip(i,:,1) = HRTF_L_ip(i,:,1).*ILD_corrFilt(i,:,1); %Apply correction ild filter to left channel
             elseif iEarsideOrientation_ip(i) == 1
                 HRTF_R_ip(i,:,1) = HRTF_R_ip(i,:,1).*ILD_corrFilt(i,:,1); %Apply correction ild filter to right channel
@@ -1035,4 +1038,3 @@ end
 disp('Done...');
 
 end
-
