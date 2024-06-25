@@ -101,6 +101,22 @@ Einsteinufer 17c, D-10587 Berlin, Germany
 
 Thanks to Fabian Brinkmann (Audio Communication Group, TU Berlin) for useful discussions and contributions!  
 
+
+## About the MCA Upsampling Optimisation
+This optimisation project was carried out as part of the Virtual Acoustic Reality course on the Audiocommunication and Technology curriculum at the technical university of Berlin.
+
+Maximilian Jakob Wiedemann (485066)
+Maximilian.wiedenmann@camput-tu.berlin.de
+
+Raphaël Guillaume Gillioz (485054)
+r.gillioz@campus.tu-berlin.de
+
+Mai Pham (485086)
+mai.thuc.an.pham@campus.tu-berlin.de
+
+Erik Hansen (485059)
+erik.hansen@campus.tu-berlin.de
+
 ## References
 [1] C. Pörschmann\*, J.M. Arend\*, and F. Brinkmann, “Directional Equalization of Sparse Head-Related Transfer Function Sets for Spatial Upsampling,” IEEE/ACM Trans. Audio, Speech, Lang. Process., vol. 27, no. 6, pp. 1060–1071, 2019, \*These authors contributed equally to this work.  
 [2] C. Pörschmann and J. M. Arend, “A Method for Spatial Upsampling of Directivity Patterns of Human Speakers by Directional Equalization,” in Proceedings of the 45th DAGA, 2019, pp. 1458–1461.  
