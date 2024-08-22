@@ -1,4 +1,4 @@
-%% SUpDEq - Spatial Upsampling by Directional Equalization
+ %% SUpDEq - Spatial Upsampling by Directional Equalization
 %
 % function [eqHRTFdataset, HRTF_equalized_L, HRTF_equalized_R] = supdeq_eq(sparseHRTFdataset, eqDataset, N, samplingGrid, tikhEps, phaseOnly)
 %

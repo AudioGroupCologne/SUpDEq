@@ -68,7 +68,7 @@ for kk = 1:length(sparseHRTFdataset.samplingGrid(:,1))
     %Get targetDirection from respective sampling grid
     targetDirection = sparseSamplingGrid(kk,:);
     %Shift distance / compensate for distance errors
-    %Use mean of left/right ear starting distance as staring distance for shift
+    %Use mean of left/right ear starting distance as starting distance for shift
     [sparseHRTFdataset.HRTF_L(kk,:),sparseHRTFdataset.HRTF_R(kk,:)] = supdeq_shiftDistance(sparseHRTFdataset.HRTF_L(kk,:),sparseHRTFdataset.HRTF_R(kk,:),mean(startingDistance(kk,:)),targetDistance,targetDirection,r,fs,c);
 end
 

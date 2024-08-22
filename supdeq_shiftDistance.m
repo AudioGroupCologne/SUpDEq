@@ -2,7 +2,7 @@
 %
 % function [shiftedHRTF_L,shiftedHRTF_R] = supdeq_shiftDistance(startingHRTF_L, startingHRTF_R, startingDistance, targetDistance, targetDirection, headRadius, fs, c)
 %
-% This function performs a shifts HRTFs in distance considering a spherical head model
+% This function shifts HRTFs in distance considering a spherical head model
 %
 % Output:
 % shiftedHRTF_L / R     - HRTFs shifted / adapted in distance
