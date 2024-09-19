@@ -162,7 +162,7 @@ for mm = 1:numel(shift)
 end
 
 % normalize it to the standard deviations
-crossCorr = crossCorr / (std(x) * std(y));
+crossCorr = crossCorr ./ (std(x) .* std(y));
 
 % find maximum
 if absolute

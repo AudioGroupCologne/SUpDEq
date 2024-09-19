@@ -689,16 +689,16 @@ if strcmpi(plot_type, 'gd')
     t_str  = 'Group delay';
     
     if strcmpi(du, 'n')
-        d_type = 'Group delay in samples';
+        d_type = 'group delay in samples';
     elseif strcmpi(du, 's')
         data   = data/fs;
-        d_type = 'Group delay in s';
+        d_type = 'group delay in s';
     elseif strcmpi(du, 'ms')
         data   = data/fs*10^3;
-        d_type = 'Group delay in ms';
+        d_type = 'group delay in ms';
     elseif strcmpi(du, 'us')
         data   = data/fs*10^6;
-        d_type = 'Group delay in \mus';
+        d_type = 'group delay in \mus';
     else
         error('AKp:InputDataUnit',[du ' is not a valid data unit. See doc hp for a list of valid d_units'])
     end
@@ -709,10 +709,10 @@ if strcmpi(plot_type, 'p')
     t_str  = 'Phase spectrum';
     
     if strcmpi(du, 'rad')
-        d_type = 'Phase in radians';
+        d_type = 'phase in radians';
     elseif strcmpi(du, 'deg')
         data   = rad2deg(data);
-        d_type = 'Phase in degree';
+        d_type = 'phase in degree';
     else
         error('AKp:InputDataUnit',[du ' is not a valid data unit. See doc hp for a list of valid d_units'])
     end
@@ -723,10 +723,10 @@ if strcmpi(plot_type, 'pu')
     t_str  = 'Unwrapped phase spectrum';
     
     if strcmpi(du, 'rad')
-        d_type = 'Phase in radians';
+        d_type = 'phase in radians';
     elseif strcmpi(du, 'deg')
         data   = rad2deg(data);
-        d_type = 'Phase in degree';
+        d_type = 'phase in degree';
     else
         error('AKp:InputDataUnit',[du ' is not a valid data unit. See doc hp for a list of valid d_units'])
     end
@@ -797,10 +797,10 @@ if strfind(d_type, 'in dB')
 end
 
 %% ----------------------------------------- 4. fractional octave smoothing
+% (discard frequency bin at fs/2 if N is even)
 if ~islogical(frac) && (strcmpi(plot_type, 'm'))
-    data = AKboth2singleSidedSpectrum(data);
-    data = AKfractOctSmooth(data, 'amp', fs, frac);
-    f    = f(1:size(data,1));
+    data = AKfractOctSmooth(data(1:ceil(N/2),:), 'welti', fs, frac);
+    f    = f(1:ceil(N/2));
 end
 
 
@@ -995,7 +995,7 @@ if ~ischar(plot_look) && any(strcmpi(plot_type, {'m' 'p' 'pu' 'toa' 'itd' 'ild' 
     end
     % if data is as radius in balloon plots, negative values don't make any
     % sense. Everthing has to be shiftet to positive values
-    if min(min(data)) < 0 && max(plot_look == 2:4)
+    if min(min(data)) <= 0 && max(plot_look == 2:4)
         data = data - min(min(data)) + 1;
     end
 
@@ -1673,6 +1673,9 @@ elseif ~ischar(plot_look)
                 end
             else
                 if ~ischar(c)
+                    if strcmpi(plot_type,'x') % Isaac 4/10/2020: added this to prevent error with 'x4' plots
+                        c = c(1,:);
+                    end
                     h = surf(X, Y, Z, 'EdgeColor', 'none', 'FaceColor', c);
                 else
                     h = surf(X, Y, Z, 'EdgeColor', 'none', 'FaceColor', [1 121/255 4/255]);

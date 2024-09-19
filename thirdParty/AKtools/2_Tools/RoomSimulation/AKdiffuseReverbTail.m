@@ -242,7 +242,7 @@ switch decay_mode
             decay    = AKsingle2bothSidedSpectrum(decay, is_even);
             decay    = ifft(decay, 'symmetric');
             decay    = circshift(decay, round(N/2));
-            decay    = AKphaseManipulation(decay, fs, 'min', 1, 0);%phase_manipulation(decay, fs, 'min', 1, 0);%JMA-EDit
+            decay    = AKphaseManipulation(decay, fs, 'min', 1, 0);
             
             % non-stationary combination
             nb = min([N n]);     % upper limit of hrir samples used

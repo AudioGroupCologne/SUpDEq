@@ -50,10 +50,17 @@ addpath(genpath(fullfile(pwd,'2_Tools')), '-end')
 
 % add SOFA correctly using the start script (try if the silent option works)
 rmpath(genpath(fullfile(pwd,'2_Tools', 'ThirdParty', 'SOFA_API_MO_1.0.2')))
-try
-    run(fullfile(pwd, '2_Tools', 'ThirdParty', 'SOFA_API_MO', 'SOFAstart(''silent'')'))
-catch %#ok<CTCH>
-    run(fullfile(pwd, '2_Tools', 'ThirdParty', 'SOFA_API_MO', 'SOFAstart'))
+if exist('SOFAgetVersion', 'file') == 2
+    disp('Using installed SOFA API for Matlab located at')
+    disp(which('SOFAgetVersion'))
+else
+    disp('Installing SOFA API for Matlab located from')
+    disp(fullfile(pwd, '2_Tools', 'ThirdParty', 'SOFA_API_MO'))
+    try
+        run(fullfile(pwd, '2_Tools', 'ThirdParty', 'SOFA_API_MO', 'SOFAstart(''silent'')'))
+    catch %#ok<CTCH>
+        run(fullfile(pwd, '2_Tools', 'ThirdParty', 'SOFA_API_MO', 'SOFAstart.m'))
+    end
 end
 
 % - remove third party tools if they were already installed outside AKtools

@@ -134,7 +134,7 @@ if ~isempty(ISM)
             IS_id = ISnumber;
         end
         
-        colors = 'pgym';
+        colors = 'pgy';
         
         % loop accros rays to be plotted
         for nn = 1:numel(IS_id)

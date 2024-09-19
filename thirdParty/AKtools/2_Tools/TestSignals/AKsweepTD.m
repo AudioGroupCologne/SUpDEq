@@ -15,10 +15,10 @@
 % N (2^16)          - sweep length in samples
 % f ([50 fs/2])     - start and stop frequency in Hz
 % fs (44100)        - sampling frequency in Hz
-% phaseCorr (false) - correction of the phase according to [1, eq. 16-22].
-%                     Note that this changes the length of the sweep.
 % fade (20)         - length of fade out in samples. Use 0, or false for
 %                     not applying a fade out.
+% phaseCorr (false) - correction of the phase according to [1, eq. 16-22].
+%                     Note that this changes the length of the sweep.
 %
 % OUTPUT
 % y  - sweep time signal
@@ -49,7 +49,7 @@
 function [y, N] = AKsweepTD(type, N, f, fs, fade, phaseCorr)
 
 if ~exist('type', 'var')
-    type = 'log';
+    type = 'exp';
 end
 if ~exist('N', 'var')
     N = 2^16;

@@ -1,0 +1,67 @@
+# compiled convention files
+/SOFAtoolbox/conventions/*.mat
+/SOFAtoolbox/conventions/*.txt
+
+# test files for demos
+/SOFAtoolbox/demos/*.sofa
+/SOFAtoolbox/demos/demo_FreeFieldHRTF/*.fig
+/SOFAtoolbox/demos/demo_FreeFieldHRTF/*.png
+/SOFAtoolbox/demos/LigetiHall_CubeletToSt450/
+/SOFAtoolbox/demos/demo_ExampleFiles.m
+/SOFAtoolbox/test/*.sofa
+/SOFAtoolbox/test/*/*.wav
+/SOFAtoolbox/test/LigetiHall_CubeletToSt450/
+/data/ARI/*/*.mat
+/data/BTDEI/*/*/*/*/*/*.mat
+/data/BTDEI/*/headphones_info.mat
+/data/CIPIC/*/*.mat
+/data/CIPIC/show_data/
+/data/CIPIC/CIPIC_hrtf_database/
+/data/FHK/*.mat
+/data/IEM/*.wav
+/data/IEM/*.pdf
+/data/IEM/LigetiHall_CubeletToSt450
+/data/LISTEN/IRC_1002/
+/data/MIT KEMAR/full/*/*.wav
+/data/Oldenburg/HRIR_database_mat/
+/data/SCUT/nearfield/
+/data/SOFA/sofatoolbox_test/*.sofa
+/data/SOFA/database/*/*.sofa
+/data/SOFA/headphones/*/*.sofa
+/data/SOFA/urlDatabase
+/data/TU-Berlin KEMAR/*.mat
+/data/UMA/*.mat
+/SOFAtoolbox/helpers/*.m
+/SOFAtoolbox/conventions/check
+
+# doc & mediawiki files
+/SOFAtoolbox/doc
+/doc/FreeFieldDirectivityTF_1.0.txt
+/doc/FreeFieldDirectivityTF_1.1.txt
+/doc/FreeFieldHRIR_1.0.txt
+/doc/FreeFieldHRTF_1.0.txt
+/doc/GeneralFIR-E_2.0.txt
+/doc/GeneralFIRE_1.0.txt
+/doc/GeneralFIR_0.9.txt
+/doc/GeneralFIR_1.0.txt
+/doc/GeneralSOS_1.0.txt
+/doc/GeneralString_0.2.txt
+/doc/GeneralTF-E_1.0.txt
+/doc/GeneralTF_1.0.txt
+/doc/GeneralTF_2.0.txt
+/doc/General_1.0.txt
+/doc/MultiSpeakerBRIR_0.3.txt
+/doc/SimpleFreeFieldHRIR_1.0.txt
+/doc/SimpleFreeFieldHRSOS_1.0.txt
+/doc/SimpleFreeFieldHRTF_1.0.txt
+/doc/SimpleFreeFieldSOS_1.0.txt
+/doc/SimpleHeadphoneIR_1.0.txt
+/doc/SingleRoomDRIR_0.3.txt
+/doc/SingleRoomMIMOSRIR_1.0.txt
+/doc/SingleRoomSRIR_1.0.txt
+/doc/AnnotatedEmitterAudio_0.1.txt
+/doc/AnnotatedReceiverAudio_0.1.txt
+
+# temp files
+~*.ods#
+*.csv#

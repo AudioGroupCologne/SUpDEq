@@ -150,7 +150,7 @@ rs.rec = 'FABIAN';
 % headphones without applying a headphone compensation filter. In this
 % case, the inverse diffuse field HRTF transfer function serves as an
 % approximation for a headphone filter.
-rs.recDTFcompensation = false;
+rs.recDTFcompensation = true;
 
 
 %% ------------------------------------------------------- model parameters
@@ -277,7 +277,7 @@ AKroomSimulationPlot(rs, ISM, 1, 'N', 0:1)
 %% ----------------------------------------------------------------- listen
 %  uncomment the last line to listen to the audio - beware of the level!!!
 
-% choose the IR for auralization ('ISM', 'SR', or 'hybrid')
+% choose the IR for auralization ('ISM', 'SR', 'hybrid', or 'anechoic')
 auralization = 'hybrid';
 % choose audio ('string', or 'noise')
 audio        = 'string';
@@ -299,12 +299,56 @@ end
 x = [x; zeros(size(hSR,1), size(x, 2))];
 
 % filter audio with IRs
-if any( strcmpi(auralization, {'ISM', 'hybrid'}) )
+if any( strcmpi(auralization, {'ISM', 'hybrid', 'anechoic'}) )
     % select the IR
     if strcmpi(auralization, 'ISM')
         h = hISM;
-    else
+    elseif strcmpi(auralization, 'hybrid')
         h = hHybrid;
+    else
+        if ~strcmp(rs.rec, 'FABIAN')
+            error('Only works if receiver is FABIAN')
+        end 
+        
+        % get source positions
+        if strcmpi(rs.srcCoordinates, 'carthesian')
+            xyz = rs.srcPos - rs.recPos;
+            [az, el, d] = cart2sph(xyz(:,1), xyz(:,2), xyz(:,3));
+            az = az / pi * 180;
+            el = el / pi * 180;
+        else
+            az = rs.srcPos(:,1);
+            el = rs.srcPos(:,2);
+            d = rs.srcPos(:,3);
+        end
+        
+        az = az(sources);
+        el = el(sources);
+        d  = d(sources);
+        
+        % get relative gains
+        gain = d / max(d);
+        
+        % get HRIRs
+        if rs.recDTFcompensation
+            [l, r] = AKhrirInterpolation(az, el, 0, 'measured_sh_dir');
+        else
+            [l, r] = AKhrirInterpolation(az, el, 0, 'measured_sh_hrir');
+        end
+        
+        % level HRIRs
+        l = l .* gain';
+        r = r .* gain';
+        
+        % format data
+        h = zeros(size(r,1), 1, 2, numel(sources));
+        for nn = 1:numel(sources)
+            h(:,:,1,nn) = l(:,nn);
+            h(:,:,2,nn) = r(:,nn);
+        end
+        
+        clear xyz az el d gain l r
+        
     end
     % convolve
     y = zeros(size(x,1), size(hHybrid,3));

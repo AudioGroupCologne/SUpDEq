@@ -44,7 +44,7 @@ function [H, h] = AKinterpolateSpectrum(H, f, N, extrapMode, fs, phaseType, logI
 if ~exist('N', 'var')
     N = 128;
 end
-if ~exist('extrap_mode', 'var')
+if ~exist('extrapMode', 'var')
     extrapMode = {'lin' 'lin' 'lin'};
 end
 if ~exist('fs', 'var')
@@ -107,10 +107,10 @@ for cc = 1:C
     h(f_lim(2)+1:end, cc) = interp1(log(f), H(:,cc), log(f_interp(f_lim(2)+1:end)), extrapMode{3}, 'extrap');  
 end
 
+% we can not interpolate to 0 Hz on a log scale
+h(1,:) = h(2,:);
 
 if logInterp
-    % we can not interpolate to 0 Hz on a log scale
-    h(1,:) = h(2,:);
     % de-log
     h = 10.^(h/20);
 end
@@ -125,24 +125,25 @@ if nargout == 2
     h = ifft(h, 'symmetric');
     
     % get minimum/linear phase IRs
-    NFFTdouble = 1;
-    [h, dev] = AKphaseManipulation(h, fs, phaseType, NFFTdouble, false);
-    while dev(1)>1 && 2^NFFTdouble * M < 2^18
-        NFFTdouble = NFFTdouble + 1;
-        [h, dev] = AKphaseManipulation(h, fs, phaseType, NFFTdouble, false);
+    if strcmpi(phaseType, 'min')
+        NFFTdouble = 1;
+        [h_min, dev] = AKphaseManipulation(h, fs, phaseType, NFFTdouble, false);
+        while dev(1)>.5 && 2^NFFTdouble * M < 2^18
+            NFFTdouble = NFFTdouble + 1;
+            [h_min, dev] = AKphaseManipulation(h, fs, phaseType, NFFTdouble, false);
+        end
+        h = h_min;
+    else
+        h = AKphaseManipulation(h, fs, phaseType, (N-1)/2, false);
     end
     
     if N < M
         if strcmpi(phaseType, 'min')
             h = AKfade(h, N, 0, 10);
+        elseif strcmpi(phaseType, 'lin')
+            h = AKfade(h, N, 10, 10);
         else
-            if mod(N, 2)
-                h = h(ceil(M/2)-floor(N/2):ceil(M/2)+floor(N/2),:);
-            else
-                h = h(M/2-N/2:M/2+N/2-1,:);
-            end
-            
-            h = AKfade(h, [], 5, 5);
+            error('N must at least be 1024 if phaseType is ''zero''')
         end
     end
     

@@ -30,6 +30,84 @@ T = [1.05 1.01 1   .95  .87  .7  .45];
 f = [64   250  500 1000 2000 4000 8000];
 
 
+%% ---------------------------------- demo using non-stationary combination
+% This is the default method, that is the most accurate but also the least
+% efficient. It uses a time-variant filter to apply the frequency and time-
+% dependent decay.
+
+% a) binaural corelation, frequency dependend
+non_stat_a = AKdiffuseReverbTail(T, f);
+% b) decorrelated, frequency dependend
+non_stat_b = AKdiffuseReverbTail(T, f, 'rev_channel', 2, 'bin_coherence', false);
+% c) mono, frequency dependend
+non_stat_c = [non_stat_b(:,1) non_stat_b(:,1)];
+% d) binaural corelation, frequency independend
+non_stat_d = AKdiffuseReverbTail(T(4), f(4));
+
+% a) binaural corelation, frequency dependend
+% soundsc(non_stat_a, 44100)
+
+% b) decorrelated, frequency dependend
+% soundsc(non_stat_b, 44100)
+
+% c) mono, frequency dependend
+% soundsc(non_stat_c, 44100)
+
+% d) binaural corelation, frequency independend
+% soundsc(non_stat_d, 44100)
+
+
+%% ------------------------------------ demo using fft with overlap and add
+% This approach applies the time- and frequency dependent decay in over-
+% lapping FFT blocks. It is reasonably accurate and fast.
+
+% a) binaural corelation, frequency dependend
+fft_ola_a = AKdiffuseReverbTail(T, f, 'decay_mode', 'fft_ola');
+% % b) decorrelated, frequency dependend
+fft_ola_b = AKdiffuseReverbTail(T, f, 'rev_channel', 2, 'bin_coherence', false, 'decay_mode', 'fft_ola');
+% % % c) mono, frequency dependend
+fft_ola_c = [fft_ola_b(:,1) fft_ola_b(:,1)];
+% % % d) binaural corelation, frequency independend
+fft_ola_d = AKdiffuseReverbTail(T(4), f(4), 'decay_mode', 'fft_ola');
+
+% a) binaural corelation, frequency dependend
+% soundsc(fft_a, 44100)
+
+% b) decorrelated, frequency dependend
+% soundsc(fft_b, 44100)
+
+% c) mono, frequency dependend
+% soundsc(fft_c, 44100)
+
+% d) binaural corelation, frequency independend
+% soundsc(fft_d, 44100)
+
+
+%% --------------------------------------------------------- demo using fft
+% This works as the above but with non-overlapping FFT blocks.
+
+% a) binaural corelation, frequency dependend
+fft_a = AKdiffuseReverbTail(T, f, 'decay_mode', 'fft');
+% % b) decorrelated, frequency dependend
+fft_b = AKdiffuseReverbTail(T, f, 'rev_channel', 2, 'bin_coherence', false, 'decay_mode', 'fft');
+% % % c) mono, frequency dependend
+fft_c = [fft_b(:,1) fft_b(:,1)];
+% % % d) binaural corelation, frequency independend
+fft_d = AKdiffuseReverbTail(T(4), f(4), 'decay_mode', 'fft');
+
+% a) binaural corelation, frequency dependend
+% soundsc(fft_a, 44100)
+
+% b) decorrelated, frequency dependend
+% soundsc(fft_b, 44100)
+
+% c) mono, frequency dependend
+% soundsc(fft_c, 44100)
+
+% d) binaural corelation, frequency independend
+% soundsc(fft_d, 44100)
+
+
 %% ----------------------------------------------- demo using a filter bank
 %  this is the common way of generating this type of reverb. A noise signal
 %  is filterd in fractional octave bands, a decay curve is applied to each
@@ -55,82 +133,3 @@ filter_bank_d = AKdiffuseReverbTail(T(4), f(4), 'decay_mode', 'filt_bank');
 
 % d) binaural corelation, frequency independend
 % soundsc(filter_bank_d, 44100)
-
-
-%% ------------------------------------ demo using fft with overlap and add
-%  an other and more efficient way of doing this is to apply a time varying
-%  filter to the input signal. The filter changes it's frequency dependent
-%  amplitude according to the frequency dependent energy decay. There are
-%  three realizations of this procedure available.
-%  i)   fft based with overlap
-%  ii)  fft based without overlap
-%  iii) using a time domain filter (non-stationary combination)
-
-% a) binaural corelation, frequency dependend
-fft_ola_a = AKdiffuseReverbTail(T, f, 'decay_mode', 'fft_ola');
-% % b) decorrelated, frequency dependend
-fft_ola_b = AKdiffuseReverbTail(T, f, 'rev_channel', 2, 'bin_coherence', false, 'decay_mode', 'fft_ola');
-% % % c) mono, frequency dependend
-fft_ola_c = [fft_ola_b(:,1) fft_ola_b(:,1)];
-% % % d) binaural corelation, frequency independend
-fft_ola_d = AKdiffuseReverbTail(T(4), f(4), 'decay_mode', 'fft_ola');
-
-% a) binaural corelation, frequency dependend
-% soundsc(fft_a, 44100)
-
-% b) decorrelated, frequency dependend
-% soundsc(fft_b, 44100)
-
-% c) mono, frequency dependend
-% soundsc(fft_c, 44100)
-
-% d) binaural corelation, frequency independend
-% soundsc(fft_d, 44100)
-
-
-%% --------------------------------------------------------- demo using fft
-
-% a) binaural corelation, frequency dependend
-fft_a = AKdiffuseReverbTail(T, f, 'decay_mode', 'fft');
-% % b) decorrelated, frequency dependend
-fft_b = AKdiffuseReverbTail(T, f, 'rev_channel', 2, 'bin_coherence', false, 'decay_mode', 'fft');
-% % % c) mono, frequency dependend
-fft_c = [fft_b(:,1) fft_b(:,1)];
-% % % d) binaural corelation, frequency independend
-fft_d = AKdiffuseReverbTail(T(4), f(4), 'decay_mode', 'fft');
-
-% a) binaural corelation, frequency dependend
-% soundsc(fft_a, 44100)
-
-% b) decorrelated, frequency dependend
-% soundsc(fft_b, 44100)
-
-% c) mono, frequency dependend
-% soundsc(fft_c, 44100)
-
-% d) binaural corelation, frequency independend
-% soundsc(fft_d, 44100)
-
-
-%% ---------------------------------- demo using non-stationary combination
-
-% a) binaural corelation, frequency dependend
-non_stat_a = AKdiffuseReverbTail(T, f);
-% b) decorrelated, frequency dependend
-non_stat_b = AKdiffuseReverbTail(T, f, 'rev_channel', 2, 'bin_coherence', false);
-% c) mono, frequency dependend
-non_stat_c = [non_stat_b(:,1) non_stat_b(:,1)];
-% d) binaural corelation, frequency independend
-non_stat_d = AKdiffuseReverbTail(T(4), f(4));
-
-% a) binaural corelation, frequency dependend
-% soundsc(non_stat_a, 44100)
-
-% b) decorrelated, frequency dependend
-% soundsc(non_stat_b, 44100)
-
-% c) mono, frequency dependend
-% soundsc(non_stat_c, 44100)
-
-% d) binaural corelation, frequency independend
-% soundsc(non_stat_d, 44100)

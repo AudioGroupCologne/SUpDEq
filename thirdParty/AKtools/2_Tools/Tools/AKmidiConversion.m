@@ -57,7 +57,7 @@ function [midiNoteNumber, noteString] = freq2midi(f0, fA4)
         fA4  = 440;
     end
 
-    midiNoteNumber = 69 + 12*log2(f0/fA4);
+    midiNoteNumber = round(69 + 12*log2(f0/fA4));
     noteString = midi2str( round(midiNoteNumber) );
 end
 
@@ -79,3 +79,30 @@ function noteString = midi2str(midiNoteNumber)
     notes      = {'C','C#','D','D#','E','F','F#','G','G#','A','A#','B'};
     noteString = [notes{mod(midiNoteNumber, 12)+1} num2str(floor(midiNoteNumber/12)-1)];
 end
+
+function midiNoteNumber = str2midi(noteString)
+
+    notes = {'C','C#','D','D#','E','F','F#','G','G#','A','A#','B'};
+
+    noteString = upper(noteString);
+
+    idSharp =  strfind(noteString, '#');
+
+    if idSharp
+        noteOctave = str2double( noteString( idSharp+1:end ) );
+        note       = noteString(1:idSharp);
+    else
+        noteOctave = str2double( noteString( 2:end ) );
+        note       = noteString(1);
+    end
+
+    [~, noteID] = ismember(note, notes);
+
+    midiNoteNumber = (noteOctave+1)*12 + noteID-1;
+end
+
+
+
+
+
+

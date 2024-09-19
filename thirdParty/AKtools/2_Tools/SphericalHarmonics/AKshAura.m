@@ -1,4 +1,4 @@
-% [y, azI, elI] = AKshAura(x, az, el, fnm1, fnm2, SHTmode, doIFFT, isEven, N)
+% [y, azI, elI] = AKshAura(x, az, el, fnm1, fnm2, SHTmode, doIFFT, isEven, N, toa1, toa2)
 % renders an auralization for the trajectory defined by az and el based on
 % the input audio file x that is convolved with impulse responses obtained
 % from spherical harmonics (SH) coefficients fnm1 and fnm2.
@@ -30,6 +30,13 @@
 % doIFFT  - See AKish.m for help (default = true).
 % isEven  - See AKsh.m for help (default = 1).
 % N       - Block size for convolution (default = 512).
+% toa1    - Spherical harmonics coefficients describing the left ear time
+%           of arrival in samples. If this is passed, the time of arrival
+%           is obtained from the coefficients, and the IRs obtained from
+%           fnm1 are delayed accordingly
+%           (Format as in HUTUBS HRTF database)
+% toa2    - Spherical harmonics coefficients describing the right ear time
+%           of arrival.
 %
 % OUTPUT:
 % y       - Input signal x convolved with IRs from fnm coefficients
@@ -51,7 +58,8 @@
 % WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 % See the License for the specific language governing  permissions and
 % limitations under the License.
-function [y, azI, elI] = AKshAura(x, az, el, fnm1, fnm2, SHTmode, doIFFT, isEven, N)
+function [y, azI, elI] = AKshAura(...
+    x, az, el, fnm1, fnm2, SHTmode, doIFFT, isEven, N, toa1, toa2)
 
 if ~exist('N', 'var')
     N = 512;
@@ -67,6 +75,12 @@ if ~exist('SHTmode', 'var')
 end
 if ~exist('fnm2', 'var')
     fnm2 = [];
+end
+if ~exist('toa1', 'var')
+    toa1 = [];
+end
+if ~exist('toa2', 'var')
+    toa2 = [];
 end
 
 if numel(az) ~= numel(el)
@@ -105,14 +119,14 @@ if numel(az) > 1
     end
     
     % get IRs for first channel
-    h1 = AKisht(fnm1, doIFFT, [azI 90-elI], SHTmode, isEven);
+    h1 = get_IRs(fnm1, toa1, azI, elI, doIFFT, SHTmode, isEven);
     
     % length of IRs
     Nh = size(h1,1);
     
     % get irs of second channel
     if ~isempty(fnm2)
-        h2 = AKisht(fnm2, doIFFT, [azI 90-elI], SHTmode, isEven);
+        h2 = get_IRs(fnm2, toa2, azI, elI, doIFFT, SHTmode, isEven);
         
         % match size of input signal
         if size(x,2) == 1
@@ -142,11 +156,11 @@ if numel(az) > 1
 else
     
     % get IRs for first channel
-    h1 = AKisht(fnm1, doIFFT, [az 90-el], SHTmode, isEven);
+    h1 = get_IRs(fnm1, toa1, az, el, doIFFT, SHTmode, isEven);
     
     % get irs of second channel
     if ~isempty(fnm2)
-        h2 = AKisht(fnm2, doIFFT, [az 90-el], SHTmode, isEven);
+        h2 = get_IRs(fnm2, toa2, az, el, doIFFT, SHTmode, isEven);
         
         % match size of input signal
         if size(x,2) == 1
@@ -172,3 +186,16 @@ end
 
 % normalize to match input level
 y = y * max(abs(x(:))) / max(abs(y(:)));
+
+end
+
+function h = get_IRs(fnm, toa, az, el, doIFFT, SHTmode, isEven)
+% get IRs for first channel
+h = AKisht(fnm, doIFFT, [az 90-el], SHTmode, isEven);
+    
+if ~isempty(toa)
+    d = AKisht(toa, false, [az 90-el], ...
+        'complex', true, false, 'real');
+    h = AKfractionalDelayCyclic(h, d);
+end
+end

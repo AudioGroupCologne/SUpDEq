@@ -67,7 +67,7 @@ if data.raw || data.IR
             end
             
             if data.raw
-                file = fullfile(data.dir, 'Data', [s.name '_setup.mat']);
+                file = fullfile(data.dir, 'Data', [s.name '_raw.mat']);
                 save(file, 'raw', 'sweep');
                 disp('Excitation signal and recorded sweep saved to ...');
                 fprintf('% 64s\n', ['''',file,'''']);

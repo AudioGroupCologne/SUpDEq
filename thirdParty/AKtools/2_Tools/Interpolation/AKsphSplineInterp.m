@@ -76,7 +76,7 @@ if(strcmpi(angle_type,'deg'))
     xq_elev = deg2rad(xq_elev);
 end
 
-%% Solve the equation (R_n + n*lambda*I)*c -dT = z  T'c = 0 for c and d
+%% Solve the equation (R_n + n*lambda*I)*c + dT = z  T'c = 0 for c and d
 %  where z are the values at the sample points and R_n is a matrix with
 %  the m,n th entry defined by R(P_m,P_n)
 
@@ -101,6 +101,7 @@ B = [x;0];
 %% Solve A*c = B
 c = linsolve(A,B);
 
+
 %% Interpolate points
 %  Calculate Sum i=1:n(c_i(R(P,P_i)) + d
 
@@ -122,31 +123,52 @@ end
 end
 
 
-function z = R_function(phi1, theta1, phi2,theta2,m)
+function q = R_function(phi1, theta1, phi2,theta2,m)
 
-%greatcircle distance d
-d = sin(0.5*(theta1-theta2)).^2 + cos(theta1).*cos(theta2).*sin(0.5*(phi1-phi2)).^2;
+% %angle between sampel points and query points
+% g = acos(sin(theta1).*sin(theta2)  + cos(theta1).*cos(theta2).*cos(phi1-phi2));
+% 
+% % defined in [1],eq. 3.3
+% z = cos(g);
+% 
+% %Equations for m = 1..3 defined in [1],table 1 (haversine function with z = cos(g))
+% w = (1 - z)./2;
 
-%Equations for m = 1..3 defined in [1],table 1
+% if the two points are close together one might end up with cos(x) = 0.99999999, 
+% leading to an inaccurate answer. Since the haversine formula uses sines, 
+% it avoids that problem.
+w = sin(0.5*(theta1-theta2)).^2 + cos(theta1).*cos(theta2).*sin(0.5*(phi1-phi2)).^2;
 
-a = 2* log(1+(1./sqrt(d)));
-c = 2*sqrt(d);
+a = log(1+(1./sqrt(w)));
+c = 2*sqrt(w);
 
 lim_val = 0;    %value of polynom for d->0
 
 if(m == 1)
-    z = a.*d - c+1;
+    k = 3/2;
+    q = 2* a.*w - c+1;
+    q = (q/factorial(2*k-2) - 1/factorial(2*k-1))./(2*pi);
+    
     lim_val = 1;
+    lim_val = (lim_val/factorial(2*k-2) - 1/factorial(2*k-1))./(2*pi);
 elseif(m == 2)
-    z = (a.*(12.*d.^2-4.*d)-6.*c.*d+6.*d+1)/2;
+    k = 2;
+    q = (a.*(12.*w.^2-4.*w)-6.*c.*w+6.*w+1)/2;
+    q = (q/factorial(2*k-2) - 1/factorial(2*k-1))./(2*pi);
+
     lim_val = 1/2;
+    lim_val = (lim_val/factorial(2*k-2) - 1/factorial(2*k-1))./(2*pi);
 elseif(m == 3)
-    z = (a.*(60*d.^3-36*d.^2)+30*d.^2+c.*(8*d-30*d.^2)-3*d+1)/3;
+    k = 5/2;
+    q = (a.*(60*w.^3-36*w.^2)+30*w.^2+c.*(8*w-30*w.^2)-3*w+1)/3;
+    q = (q/factorial(2*k-2) - 1/factorial(2*k-1))./(2*pi);
+    
     lim_val = 1/3;
+    lim_val = (lim_val/factorial(2*k-2) - 1/factorial(2*k-1))./(2*pi);
 end
 
-f = isnan(z);
-z(f) = lim_val;
+f = isnan(q);
+q(f) = lim_val;
 
 end
 

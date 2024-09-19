@@ -114,10 +114,6 @@ function X_s = AKfractOctSmooth(x,operation,fs,frac,mode,band,b,do_plot)
 % value
 CALC_TIME_WARNING_SEC = 30;
 
-if size(x,2) > size(x,1)
-    x = x.';
-end
-
 if nargin < 2 || isempty(operation)
     operation = 'amp';
 end
@@ -293,7 +289,7 @@ oct_N = oct*log10(2)/log10(oct_spacing);
 
 % logarithmic warping
 f_log = logspace(log10(f_start_i),log10(f_stop_i),f_N);
-H_log = interp1(1:length(H),H,f_log,'spline');
+H_log = interp1(1:size(H,1),H,f_log,'spline');
 H_log = reshape(H_log,size(H));
 % don't change to SPLINE(), because of interpolation per column (not row)
 
@@ -326,7 +322,7 @@ for ch = 1:size(H_log,ndims(H_log))
 end
 
 % get rid of extra bins from adding lead and lag
-H_smooth = H_smooth(length(H_ext)+length(win)/2 + [1:length(f_log)],:,:); %#ok<NBRAK>
+H_smooth = H_smooth(size(H_ext,1)+length(win)/2 + (1:length(f_log)),:,:); 
 
 % dewarping to linear
 H_smooth = interp1(f_log,H_smooth,1:f_stop_i,'spline');
