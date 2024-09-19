@@ -50,10 +50,11 @@ Department of Acoustics and Audio Signal Processing
 Betzdorfer Str. 2, D-50679 Cologne, Germany  
 [https://www.th-koeln.de/akustik](https://www.th-koeln.de/akustik) 
 
-J. M. Arend is now at Technical University of Berlin  
-Audio Communication Group  
-Einsteinufer 17c, D-10587 Berlin, Germany  
-[https://www.ak.tu-berlin.de/menue/fachgebiet_audiokommunikation](https://www.ak.tu-berlin.de/menue/fachgebiet_audiokommunikation/)
+J. M. Arend is now at Aalto University     
+Department of Information and Communications Engineering
+Acoustics Lab
+Otakaari 5 A, Espoo, Finland   
+[https://www.aalto.fi/en/aalto-acoustics-lab](https://www.aalto.fi/en/aalto-acoustics-lab)
 
 Thanks to Fabian Brinkmann (Audio Communication Group, TU Berlin) for useful discussions and contributions!  
 
