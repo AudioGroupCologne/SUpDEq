@@ -36,11 +36,11 @@ g      = AKgreatCircleGrid(90:-7.5:-90, 7.5, 90, 0);
 g(:,2) = 90-g(:,2);
 
 % set order
-N = 2;
+N = 1;
 M = [];
 
 % get spherical harmonics basis functions
-[Ynm, n, m] = AKsh(N, M, g(:,1), g(:,2));
+[Ynm, n, m] = AKsh(N, M, g(:,1), g(:,2), 'real');
 
 % view onto specified axis {'x', 'y', 'z', 'xyz'}
 viewPoint = 'xyz';
